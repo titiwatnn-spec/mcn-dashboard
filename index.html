@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCN Analytics Dashboard</title>
@@ -18,8 +19,7 @@
 
     <script type="text/babel">
         // เรียกใช้งาน Hooks จากตัวแปร Global ของ React ที่โหลดมาใน Head
-        const { useState, useCallback, useMemo, useEffect } = React;
-
+        const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = window.Recharts;
         // ดึงคอมโพเนนต์แผนภูมิจาก Recharts ที่ระบบโหลดให้อัตโนมัติ (ผ่าน Global Scope หลังบ้าน)
         const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = window.Recharts || {};
 
