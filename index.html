@@ -17,18 +17,55 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // 📥 นำโค้ด React JavaScript ที่คุณต้องการใช้งานมาวางทับตรงพื้นที่นี้ได้เลยครับ
-        // ตัวอย่างโครงสร้าง:
+        // เรียกใช้งาน Hooks จากตัวแปร Global ของ React ที่โหลดมาใน Head
         const { useState, useCallback, useMemo, useEffect } = React;
-        
-        // ก๊อปปี้โค้ดตั้งแต่บรรทัดที่เป็นฟังก์ชัน และ STYLES มาวางตรงนี้
-        // ตัวอย่างเช่น:
-        // export default function YTDashboard() { ... }
-        // function YTDashboard() { ... })
-        
-        // บรรทัดสุดท้ายสำหรับสั่งเรนเดอร์เข้าสู่หน้าเว็บ (เปิดทิ้งไว้ห้ามลบ)
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<YTDashboard />);
-    </script>
-</body>
-</html>
+
+        // ดึงคอมโพเนนต์แผนภูมิจาก Recharts ที่ระบบโหลดให้อัตโนมัติ (ผ่าน Global Scope หลังบ้าน)
+        const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = window.Recharts || {};
+
+        // ─── THEME & COMPANY BRANDING CI (WHITE & BLUE STYLING) ──────────────────────
+        const CI = {
+          bg: "#f8fafc",        
+          card: "#ffffff",      
+          border: "#e2e8f0",    
+          text: "#0f172a",      
+          muted: "#64748b",     
+          blueLight: "#e0f2fe", 
+          blueBrand: "#0284c7"  
+        };
+
+        const STYLES = {
+          card: { background: CI.card, borderRadius: 12, padding: 18, border: `1px solid ${CI.border}`, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)" },
+          btnBase: { color: "#fff", fontWeight: 700, fontSize: 12, border: "none", borderRadius: 20, padding: "8px 16px", cursor: "pointer", transition: "all 0.2s" },
+          btnDel: { background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: "4px", padding: "2px 6px", fontSize: "10px", fontWeight: "bold", cursor: "pointer", marginLeft: "6px" },
+          input: { background: "#ffffff", border: `1px solid ${CI.border}`, borderRadius: 7, padding: "7px 12px", color: CI.text, fontSize: 12, fontWeight: "bold" },
+          th: { padding: "10px 12px", textAlign: "left", color: CI.muted, fontWeight: 600, borderBottom: `2px solid ${CI.border}`, backgroundColor: "#f1f5f9", whiteSpace: "nowrap" },
+          td: { padding: "10px 12px", borderBottom: `1px solid ${CI.border}`, whiteSpace: "nowrap" },
+          badge: { display: "inline-flex", alignItems: "center", background: "#e0f2fe", color: "#0369a1", padding: "4px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "bold", marginRight: "6px", marginBottom: "6px" }
+        };
+
+        // ─── HELPERS ──────────────────────────────────────────────────────────────────
+        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        const fmtNum = (v) => Number(v || 0).toLocaleString();
+        const pct = (a, b) => {
+          if (!b || b === 0) return "0.0";
+          return (((a - b) / b) * 100).toFixed(1);
+        };
+
+        const getMonthWeight = (label) => {
+          const l = String(label).toLowerCase();
+          if (l.includes("jan")) return 1;  if (l.includes("feb")) return 2;
+          if (l.includes("mar")) return 3;  if (l.includes("apr")) return 4;
+          if (l.includes("may")) return 5;  if (l.includes("jun")) return 6;
+          if (l.includes("jul")) return 7;  if (l.includes("aug")) return 8;
+          if (l.includes("sep")) return 9;  if (l.includes("oct")) return 10;
+          if (l.includes("nov")) return 11; if (l.includes("dec")) return 12;
+          return 99;
+        };
+
+        // ─── MAIN PROGRAM FUNCTION ───────────────────────────────────────────────────
+        function YTDashboard() {
+          const [months, setMonths] = useState([]);
+          const [assets, setAssets] = useState([]);
+          const [tab, setTab] = useState("overview");
+          const
