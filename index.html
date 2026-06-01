@@ -181,7 +181,7 @@
           return (
             <div style={{ padding: 24 }}>
               <div style={STYLES.card}>
-                <h2 style={{ margin: 0, color: CI.blueBrand }}>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตรรายเดือน</h2>
+                <h2 style={{ margin: 0, color: CI.blueBrand }}>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายรายเดือน</h2>
                 <div style={{ marginTop: 12 }}>
                   {months.map(m => <span key={m.label} style={STYLES.badge}>{m.label} (ช่อง) <button onClick={() => handleRemoveData(m.label, "channel")} style={STYLES.btnDel}>✕</button></span>)}
                   {assets.map(a => <span key={a.label} style={{...STYLES.badge, background:"#f0fdf4", color:"#166534"}}>{a.label} (Asset) <button onClick={() => handleRemoveData(a.label, "asset")} style={STYLES.btnDel}>✕</button></span>)}
