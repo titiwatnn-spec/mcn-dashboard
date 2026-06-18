@@ -5,336 +5,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S1 MUSIC - MCN Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
-        #root { min-height: 100vh; }
-        .loading-screen { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 16px; font-weight: 600; color: #0284c7; }
+        .container { padding: 24px; }
+        .card { background: #ffffff; border-radius: 12px; padding: 18px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { margin: 0; color: #0284c7; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .btn-group { display: flex; gap: 6px; margin-bottom: 16px; }
+        .btn { padding: 8px 16px; background: #fff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn.active { background: #0284c7; color: #fff; }
+        .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
+        .badge-asset { background: #f0fdf4; color: #166534; }
+        .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; margin-left: 6px; }
+        select { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 12px; color: #0f172a; font-size: 12px; font-weight: bold; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 10px 12px; text-align: left; color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0; background-color: #f1f5f9; font-size: 11px; white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap; }
+        .input-file-label { font-weight: bold; font-size: 12px; color: #0284c7; display: block; margin-bottom: 8px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div id="root">
-        <div class="loading-screen">⚡ กำลังเปิดระบบศูนย์บัญชาการข้อมูล S1 MUSIC...</div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตรรายเดือน</h2>
+            <div style="margin-top: 12px;" id="badge-container">
+                <small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <label class="input-file-label">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น APR.csv, MAY.csv)</label>
+                <input type="file" id="channel-upload" accept=".csv" />
+            </div>
+            <div class="card">
+                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</label>
+                <input type="file" id="asset-upload" accept=".csv" />
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่อง</button>
+            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset</button>
+        </div>
+
+        <div class="card">
+            <div id="view-overview">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                    <span style="font-size: 12px; font-weight: bold;">เปรียบเทียบงวดเวลา:</span>
+                    <select id="channel-base-select" onchange="renderChannelTable()"><option value="">เลือกเดือนฐาน</option></select>
+                    <span>➔</span>
+                    <select id="channel-target-select" onchange="renderChannelTable()"><option value="">เลือกเดือนเปรียบเทียบ</option></select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">ชื่อช่องพาร์ทเนอร์</th>
+                                <th style="text-align: right;">รายได้สุทธิ</th>
+                                <th style="text-align: right;">Premium รายได้</th>
+                                <th style="text-align: right;">ยอดวิวรวม</th>
+                                <th style="text-align: right;">RPM</th>
+                                <th style="text-align: right;">Playback CPM</th>
+                                <th style="text-align: right;">อัตราเติบโต</th>
+                            </tr>
+                        </thead>
+                        <tbody id="channel-table-body">
+                            <tr><td colSpan="7" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV รายช่องเพื่อเริ่มแสดงผล</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-assets" class="hidden">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                    <span style="font-size: 12px; font-weight: bold;">เปรียบเทียบรอบ Asset:</span>
+                    <select id="asset-base-select" onchange="renderAssetTable()"><option value="">เลือกเดือนฐาน</option></select>
+                    <span>➔</span>
+                    <select id="asset-target-select" onchange="renderAssetTable()"><option value="">เลือกเดือนเปรียบเทียบ</option></select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">ชื่อ Asset ผลงานเพลง</th>
+                                <th style="text-align: right;">รายได้ชิ้นงาน</th>
+                                <th style="text-align: right;">Premium รายได้</th>
+                                <th style="text-align: right;">ยอดวิว</th>
+                                <th style="text-align: right;">RPM</th>
+                                <th style="text-align: right;">เติบโต MoM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asset-table-body">
+                            <tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset เพื่อเริ่มแสดงผล</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script type="text/babel">
-        const { useState, useCallback, useMemo, useEffect } = React;
-        
-        // ดึงคอมโพเนนต์กราฟออกมาโดยตรงเพื่อไม่ให้คอมพิวเตอร์ค้างตอนเริ่มระบบ
-        const AreaChart = window.Recharts.AreaChart;
-        const Area = window.Recharts.Area;
-        const XAxis = window.Recharts.XAxis;
-        const YAxis = window.Recharts.YAxis;
-        const CartesianGrid = window.Recharts.CartesianGrid;
-        const Tooltip = window.Recharts.Tooltip;
-        const Legend = window.Recharts.Legend;
-        const ResponsiveContainer = window.Recharts.ResponsiveContainer;
-
-        // ─── THEME & COMPANY BRANDING CI (S1 MUSIC LIGHT BLUE) ──────────────────────
-        const CI = {
-          bg: "#f8fafc",        
-          card: "#ffffff",      
-          border: "#e2e8f0",    
-          text: "#0f172a",      
-          muted: "#64748b",     
-          blueLight: "#e0f2fe", 
-          blueBrand: "#0284c7"  
-        };
-
-        const STYLES = {
-          card: { background: CI.card, borderRadius: 12, padding: 18, border: `1px solid ${CI.border}`, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)", marginBottom: 20 },
-          btnBase: { color: "#fff", fontWeight: 700, fontSize: 12, border: "none", borderRadius: 20, padding: "8px 16px", cursor: "pointer" },
-          btnDel: { background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: "4px", padding: "2px 6px", fontSize: "10px", fontWeight: "bold", cursor: "pointer", marginLeft: "6px" },
-          input: { background: "#ffffff", border: `1px solid ${CI.border}`, borderRadius: 7, padding: "7px 12px", color: CI.text, fontSize: 12, fontWeight: "bold" },
-          th: { padding: "10px 12px", textAlign: "left", color: CI.muted, fontWeight: 600, borderBottom: `2px solid ${CI.border}`, backgroundColor: "#f1f5f9", whiteSpace: "nowrap" },
-          td: { padding: "10px 12px", borderBottom: `1px solid ${CI.border}`, whiteSpace: "nowrap" },
-          badge: { display: "inline-flex", alignItems: "center", background: "#e0f2fe", color: "#0369a1", padding: "4px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "bold", marginRight: "6px", marginBottom: "6px" }
-        };
+    <script>
+        let store = { channels: {}, assets: {} };
+        let activeTab = 'overview';
 
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
-        const pct = (a, b) => (b ? (((a - b) / b) * 100).toFixed(1) : "0.0");
-
-        const getMonthWeight = (label) => {
-          const l = String(label).toLowerCase();
-          if (l.includes("jan")) return 1;  if (l.includes("feb")) return 2;
-          if (l.includes("mar")) return 3;  if (l.includes("apr")) return 4;
-          if (l.includes("may")) return 5;  if (l.includes("jun")) return 6;
-          if (l.includes("jul")) return 7;  if (l.includes("aug")) return 8;
-          if (l.includes("sep")) return 9;  if (l.includes("oct")) return 10;
-          if (l.includes("nov")) return 11; if (l.includes("dec")) return 12;
-          return 99;
-        };
-
-        // ─── MAIN APP COMPONENT ───
-        function YTDashboard() {
-          const [months, setMonths] = useState([]);
-          const [assets, setAssets] = useState([]);
-          const [tab, setTab] = useState("overview");
-
-          const [baseMonth, setBaseMonth] = useState("");
-          const [targetMonth, setTargetMonth] = useState("");
-          const [baseAssetMonth, setBaseAssetMonth] = useState("");
-          const [targetAssetMonth, setTargetAssetMonth] = useState("");
-
-          useEffect(() => {
-            if (months.length >= 2 && !baseMonth && !targetMonth) {
-              setBaseMonth(months[months.length - 2].label);
-              setTargetMonth(months[months.length - 1].label);
-            } else if (months.length === 1 && !targetMonth) {
-              setTargetMonth(months[0].label);
-            }
-          }, [months, baseMonth, targetMonth]);
-
-          useEffect(() => {
-            if (assets.length >= 2 && !baseAssetMonth && !targetAssetMonth) {
-              setBaseAssetMonth(assets[assets.length - 2].label);
-              setTargetAssetMonth(assets[assets.length - 1].label);
-            } else if (assets.length === 1 && !targetAssetMonth) {
-              setTargetAssetMonth(assets[0].label);
-            }
-          }, [assets, baseAssetMonth, targetAssetMonth]);
-
-          const handleRemoveData = (label, type) => {
-            if (type === "channel") {
-              setMonths(prev => prev.filter(m => m.label !== label));
-              if (baseMonth === label) setBaseMonth("");
-              if (targetMonth === label) setTargetMonth("");
-            } else {
-              setAssets(prev => prev.filter(a => a.label !== label));
-              if (baseAssetMonth === label) setBaseAssetMonth("");
-              if (targetAssetMonth === label) setTargetAssetMonth("");
-            }
-          };
-
-          const handleFile = (fname, rows) => {
-            if (!rows || rows.length === 0) return;
-            const keys = Object.keys(rows[0]);
-            const assetKey = keys.find(k => k.toLowerCase() === "asset" || k.toLowerCase() === "asset name");
-            const channelKey = keys.find(k => k.toLowerCase() === "channel" || k.toLowerCase() === "channel title");
-            
-            const revKey = keys.find(k => k.toLowerCase().includes("revenue"));
-            const premiumKey = keys.find(k => k.toLowerCase().includes("premium"));
-            const pCpmKey = keys.find(k => k.toLowerCase().includes("playback-based cpm"));
-            const cpmKey = keys.find(k => k.toLowerCase() === "cpm (thb)");
-            const rpmKey = keys.find(k => k.toLowerCase() === "rpm (thb)");
-            const viewsKey = keys.find(k => k.toLowerCase() === "views");
-
-            const label = fname.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
-            const isAssetFile = !!assetKey;
-
-            const processed = rows.filter(r => {
-              const val = String(r[assetKey || channelKey] || "").trim().toLowerCase();
-              return val !== "total" && val !== "";
-            }).map(r => ({
-              id: String(r[assetKey || channelKey] || "").trim(),
-              name: String(r["Channel title"] || r["Asset name"] || r[assetKey || channelKey] || "Unknown").trim(),
-              rev: parseFloat(String(r[revKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              premium: parseFloat(String(r[premiumKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              playbackCpm: parseFloat(String(r[pCpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              cpm: parseFloat(String(r[cpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              rpm: parseFloat(String(r[rpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              views: parseFloat(String(r[viewsKey] || 0).replace(/[^0-9.-]/g, "")) || 0
-            }));
-
-            if (isAssetFile) {
-              setAssets(prev => [...prev.filter(a => a.label !== label), { label, data: processed }].sort((a,b)=>getMonthWeight(a.label)-getMonthWeight(b.label)));
-            } else {
-              setMonths(prev => [...prev.filter(m => m.label !== label), { label, data: processed }].sort((a,b)=>getMonthWeight(a.label)-getMonthWeight(b.label)));
-            }
-          };
-
-          const channelAnalysis = useMemo(() => {
-            const cur = months.find(m => m.label === targetMonth);
-            const prev = months.find(m => m.label === baseMonth);
-            if (!cur) return [];
-            if (!prev) return cur.data.map(c => ({ ...c, rev1: 0, rev2: c.rev, growth: "0.0" }));
-            return cur.data.map(c2 => {
-              const c1 = prev.data.find(x => String(x.id).trim() === String(c2.id).trim());
-              return { ...c2, rev1: c1 ? c1.rev : 0, rev2: c2.rev, growth: pct(c2.rev, c1 ? c1.rev : 0) };
-            }).sort((a, b) => b.rev2 - a.rev2);
-          }, [months, baseMonth, targetMonth]);
-
-          const assetAnalysis = useMemo(() => {
-            const cur = assets.find(a => a.label === targetAssetMonth);
-            const prev = assets.find(a => a.label === baseAssetMonth);
-            if (!cur) return [];
-            if (!prev) return cur.data.map(a => ({ ...a, rev1: 0, rev2: a.rev, growth: "0.0" }));
-            return cur.data.map(a2 => {
-              const a1 = prev.data.find(x => String(x.id).trim() === String(a2.id).trim());
-              return { ...a2, rev1: a1 ? a1.rev : 0, rev2: a2.rev, growth: pct(a2.rev, a1 ? a1.rev : 0) };
-            }).sort((a, b) => b.rev2 - a.rev2);
-          }, [assets, baseAssetMonth, targetAssetMonth]);
-
-          const lineChartData = useMemo(() => {
-            return months.map(m => ({
-              name: m.label,
-              "Estimated Revenue": m.data.reduce((s, x) => s + x.rev, 0),
-              "Premium Revenue": m.data.reduce((s, x) => s + x.premium, 0)
-            }));
-          }, [months]);
-
-          return (
-            <div style={{ padding: 24 }}>
-              <div style={STYLES.card}>
-                <h2 style={{ margin: 0, color: CI.blueBrand }}>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตรรายเดือน</h2>
-                <div style={{ marginTop: 12 }}>
-                  {months.map(m => <span key={m.label} style={STYLES.badge}>{m.label} (ช่อง) <button onClick={() => handleRemoveData(m.label, "channel")} style={STYLES.btnDel}>✕</button></span>)}
-                  {assets.map(a => <span key={a.label} style={{...STYLES.badge, background:"#f0fdf4", color:"#166534"}}>{a.label} (Asset) <button onClick={() => handleRemoveData(a.label, "asset")} style={STYLES.btnDel}>✕</button></span>)}
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-                <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>📁 ลากหรือเลือกไฟล์สรุปรายช่องทาง (เช่น MAR.csv, APR.csv)</div>
-                  <input type="file" style={{ marginTop: 10 }} onChange={e => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                      const lines = evt.target.result.split("\n").map(l => l.split(","));
-                      const headers = lines[0].map(h => h.replace(/"/g, "").trim());
-                      const rawData = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
-                        let obj = {}; headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
-                        return obj;
-                      });
-                      handleFile(file.name, rawData);
-                    };
-                    reader.readAsText(file, "UTF-8");
-                  }} />
-                </div>
-                <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>💎 ลากหรือเลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</div>
-                  <input type="file" style={{ marginTop: 10 }} onChange={e => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                      const lines = evt.target.result.split("\n").map(l => l.split(","));
-                      const headers = lines[0].map(h => h.replace(/"/g, "").trim());
-                      const rawData = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
-                        let obj = {}; headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
-                        return obj;
-                      });
-                      handleFile(file.name, rawData);
-                    };
-                    reader.readAsText(file, "UTF-8");
-                  }} />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                <button onClick={() => setTab("overview")} style={{ ...STYLES.btnBase, background: tab === "overview" ? CI.blueBrand : "#fff", color: tab === "overview" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>📺 ตารางข้อมูลรายช่อง</button>
-                <button onClick={() => setTab("assets")} style={{ ...STYLES.btnBase, background: tab === "assets" ? CI.blueBrand : "#fff", color: tab === "assets" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>🎵 ตารางข้อมูลราย Asset</button>
-                <button onClick={() => setTab("charts")} style={{ ...STYLES.btnBase, background: tab === "charts" ? CI.blueBrand : "#fff", color: tab === "charts" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>📉 แผนภูมิเส้นการวิเคราะห์</button>
-              </div>
-
-              <div style={STYLES.card}>
-                {tab === "overview" && (
-                  <div>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
-                      <span style={{ fontSize: 12, fontWeight: "bold" }}>เปรียบเทียบงวดเวลา:</span>
-                      <select style={STYLES.input} value={baseMonth} onChange={e => setBaseMonth(e.target.value)}><option value="">เลือกเดือนฐาน</option>{months.map(m=><option key={m.label}>{m.label}</option>)}</select>
-                      <span>➔</span>
-                      <select style={STYLES.input} value={targetMonth} onChange={e => setTargetMonth(e.target.value)}><option value="">เลือกเดือนเปรียบเทียบ</option>{months.map(m=><option key={m.label}>{m.label}</option>)}</select>
-                    </div>
-                    <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                          <tr>
-                            <th style={STYLES.th}>ชื่อช่องพาร์ทเนอร์</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>รายได้สุทธิ</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>Premium รายได้</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>ยอดวิวรวม</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>RPM</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>Playback CPM</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>อัตราเติบโต</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {channelAnalysis.map((ch, i) => (
-                            <tr key={i}>
-                              <td style={STYLES.td}><b>{ch.name}</b></td>
-                              <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(ch.rev)}</td>
-                              <td align="right" style={STYLES.td}>{fmtTHB(ch.premium)}</td>
-                              <td align="right" style={STYLES.td}>{fmtNum(ch.views)}</td>
-                              <td align="right" style={{...STYLES.td, color: "#16a34a"}}>{fmtTHB(ch.rpm)}</td>
-                              <td align="right" style={STYLES.td}>{fmtTHB(ch.playbackCpm)}</td>
-                              <td align="right" style={{...STYLES.td, color: parseFloat(ch.growth) >= 0 ? "green" : "red", fontWeight:"bold"}}>{ch.growth}%</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {tab === "assets" && (
-                  <div>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
-                      <span style={{ fontSize: 12, fontWeight: "bold" }}>เปรียบเทียบรอบ Asset:</span>
-                      <select style={STYLES.input} value={baseAssetMonth} onChange={e => setBaseAssetMonth(e.target.value)}><option value="">เลือกเดือนฐาน</option>{assets.map(a=><option key={a.label}>{a.label}</option>)}</select>
-                      <span>➔</span>
-                      <select style={STYLES.input} value={targetAssetMonth} onChange={e => setTargetAssetMonth(e.target.value)}><option value="">เลือกเดือนเปรียบเทียบ</option>{assets.map(a=><option key={a.label}>{a.label}</option>)}</select>
-                    </div>
-                    <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                          <tr>
-                            <th style={STYLES.th}>ชื่อ Asset ผลงานเพลง</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>รายได้ชิ้นงาน</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>Premium รายได้</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>ยอดวิว</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>RPM</th>
-                            <th style={{...STYLES.th, textAlign:"right"}}>เติบโต MoM</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {assetAnalysis.map((as, i) => (
-                            <tr key={i}>
-                              <td style={STYLES.td}><b>{as.name}</b></td>
-                              <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(as.rev)}</td>
-                              <td align="right" style={STYLES.td}>{fmtTHB(as.premium)}</td>
-                              <td align="right" style={STYLES.td}>{fmtNum(as.views)}</td>
-                              <td align="right" style={STYLES.td}>{fmtTHB(as.rpm)}</td>
-                              <td align="right" style={{...STYLES.td, color: parseFloat(as.growth) >= 0 ? "green" : "red", fontWeight:"bold"}}>{as.growth}%</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {tab === "charts" && (
-                  <div style={{ height: 300 }}>
-                    {lineChartData.length === 0 ? <div style={{textAlign:"center", padding:20}}>โปรดอัปโหลดไฟล์ข้อมูลเพื่อแสดงผลกราฟแนวโน้ม</div> : (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={lineChartData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis tickFormatter={v => `฿${(v / 1000).toFixed(0)}K`} />
-                          <Tooltip formatter={v => fmtTHB(v)} />
-                          <Legend />
-                          <Area type="monotone" name="รายได้รวมทั้งหมด" dataKey="Estimated Revenue" stroke="#0284c7" fill="#e0f2fe" strokeWidth={3} />
-                          <Area type="monotone" name="รายได้จาก Premium" dataKey="Premium Revenue" stroke="#f59e0b" fill="transparent" strokeWidth={2} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
+        
+        function parseCSV(text) {
+            let lines = text.split(/\r\n|\n/);
+            return lines.map(line => {
+                let matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+                return matches.map(v => v.replace(/^"|"$/g, '').trim());
+            });
         }
 
-        // สั่งรันแอปพลิเคชัน
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<YTDashboard />);
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
+            document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
+            document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
+            document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
+        }
+
+        document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
+        document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
+
+        function handleFileUpload(e, type) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const label = file.name.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const rows = parseCSV(evt.target.result);
+                if (rows.length < 2) return;
+                
+                const headers = rows[0].map(h => h.toLowerCase());
+                const idIdx = headers.findIndex(h => h.includes('channel') || h.includes('asset'));
+                const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name') || h.includes('channel') || h.includes('asset'));
+                const revIdx = headers.findIndex(h => h.includes('revenue'));
+                const premiumIdx = headers.findIndex(h => h.includes('premium'));
+                const viewsIdx = headers.findIndex(h => h === 'views');
+                const rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                const cpmIdx = headers.findIndex(h => h.includes('playback-based cpm') || h === 'cpm (thb)');
+
+                const processedData = [];
+                for(let i = 1; i < rows.length; i++) {
+                    let r = rows[i];
+                    if(!r[idIdx] || r[idIdx].toLowerCase() === 'total') continue;
+                    
+                    processedData.push({
+                        id: r[idIdx],
+                        name: r[nameIdx] || 'Unknown',
+                        rev: parseFloat(String(r[revIdx] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                        premium: parseFloat(String(r[premiumKey] || r[premiumIdx] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                        views: parseInt(String(r[viewsIdx] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                        rpm: parseFloat(String(r[rpmIdx] || 0).replace(/[^0-9.-]/g, "")) || 0,
+                        cpm: parseFloat(String(r[cpmIdx] || 0).replace(/[^0-9.-]/g, "")) || 0
+                    });
+                }
+                
+                store[type][label] = processedData;
+                updateDropdownsAndBadges();
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+
+        function updateDropdownsAndBadges() {
+            const badgeContainer = document.getElementById('badge-container');
+            badgeContainer.innerHTML = '';
+            
+            const chBase = document.getElementById('channel-base-select');
+            const chTarget = document.getElementById('channel-target-select');
+            const chLabels = Object.keys(store.channels);
+            
+            const astBase = document.getElementById('asset-base-select');
+            const astTarget = document.getElementById('asset-target-select');
+            const astLabels = Object.keys(store.assets);
+
+            chLabels.forEach(l => {
+                badgeContainer.innerHTML += `<span class="badge">${l} (ช่อง) <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`;
+            });
+            astLabels.forEach(l => {
+                badgeContainer.innerHTML += `<span class="badge badge-asset">${l} (Asset) <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`;
+            });
+            if(chLabels.length === 0 && astLabels.length === 0) {
+                badgeContainer.innerHTML = '<small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>';
+            }
+
+            updateSelectOptions(chBase, chLabels);
+            updateSelectOptions(chTarget, chLabels);
+            updateSelectOptions(astBase, astLabels);
+            updateSelectOptions(astTarget, astLabels);
+
+            if(chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
+            if(chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
+            if(astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
+            if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
+
+            renderChannelTable();
+            renderAssetTable();
+        }
+
+        function updateSelectOptions(selectElement, labels) {
+            const currentVal = selectElement.value;
+            selectElement.innerHTML = `<option value="">เลือกเดือน</option>`;
+            labels.forEach(l => {
+                selectElement.innerHTML += `<option value="${l}">${l}</option>`;
+            });
+            selectElement.value = currentVal;
+        }
+
+        function deleteMonth(label, type) {
+            delete store[type][label];
+            updateDropdownsAndBadges();
+        }
+
+        function renderChannelTable() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
+            const tbody = document.getElementById('channel-table-body');
+            
+            if (!target || !store.channels[target]) {
+                tbody.innerHTML = `<tr><td colSpan="7" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV หรือเลือกงวดเวลาเปรียบเทียบ</td></tr>`;
+                return;
+            }
+
+            const curData = store.channels[target];
+            const prevData = base ? store.channels[base] : null;
+            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            
+            tbody.innerHTML = '';
+            sorted.forEach(c => {
+                let growth = "0.0";
+                if (prevData) {
+                    let prevItem = prevData.find(x => x.id === c.id);
+                    if(prevItem && prevItem.rev > 0) {
+                        growth = (((c.rev - prevItem.rev) / prevItem.rev) * 100).toFixed(1);
+                    }
+                }
+                const growthColor = parseFloat(growth) >= 0 ? "green" : "red";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${c.name}</b></td>
+                        <td align="right" style="color:#0284c7; font-weight:bold;">${fmtTHB(c.rev)}</td>
+                        <td align="right">${fmtTHB(c.premium)}</td>
+                        <td align="right">${fmtNum(c.views)}</td>
+                        <td align="right" style="color:#16a34a;">${fmtTHB(c.rpm)}</td>
+                        <td align="right">${fmtTHB(c.cpm)}</td>
+                        <td align="right" style="color:${growthColor}; font-weight:bold;">${growth}%</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderAssetTable() {
+            const base = document.getElementById('asset-base-select').value;
+            const target = document.getElementById('asset-target-select').value;
+            const tbody = document.getElementById('asset-table-body');
+            
+            if (!target || !store.assets[target]) {
+                tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset หรือเลือกงวดเวลาเปรียบเทียบ</td></tr>`;
+                return;
+            }
+
+            const curData = store.assets[target];
+            const prevData = base ? store.assets[base] : null;
+            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            
+            tbody.innerHTML = '';
+            sorted.forEach(a => {
+                let growth = "0.0";
+                if (prevData) {
+                    let prevItem = prevData.find(x => x.id === a.id);
+                    if(prevItem && prevItem.rev > 0) {
+                        growth = (((a.rev - prevItem.rev) / prevItem.rev) * 100).toFixed(1);
+                    }
+                }
+                const growthColor = parseFloat(growth) >= 0 ? "green" : "red";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${a.name}</b></td>
+                        <td align="right" style="color:#0284c7; font-weight:bold;">${fmtTHB(a.rev)}</td>
+                        <td align="right">${fmtTHB(a.premium)}</td>
+                        <td align="right">${fmtNum(a.views)}</td>
+                        <td align="right">${fmtTHB(a.rpm)}</td>
+                        <td align="right" style="color:${growthColor}; font-weight:bold;">${growth}%</td>
+                    </tr>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
