@@ -3,27 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCN Analytics Dashboard</title>
+    <title>S1 MUSIC - MCN Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
     <style>
-        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; }
+        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
         #root { min-height: 100vh; }
+        .loading-screen { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 16px; font-weight: 600; color: #0284c7; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <div class="loading-screen">⚡ กำลังเปิดระบบศูนย์บัญชาการข้อมูล S1 MUSIC...</div>
+    </div>
 
     <script type="text/babel">
-        // เรียกใช้งาน Hooks จากตัวแปร Global ของ React ที่โหลดมาใน Head
         const { useState, useCallback, useMemo, useEffect } = React;
+        
+        // ดึงคอมโพเนนต์กราฟออกมาโดยตรงเพื่อไม่ให้คอมพิวเตอร์ค้างตอนเริ่มระบบ
+        const AreaChart = window.Recharts.AreaChart;
+        const Area = window.Recharts.Area;
+        const XAxis = window.Recharts.XAxis;
+        const YAxis = window.Recharts.YAxis;
+        const CartesianGrid = window.Recharts.CartesianGrid;
+        const Tooltip = window.Recharts.Tooltip;
+        const Legend = window.Recharts.Legend;
+        const ResponsiveContainer = window.Recharts.ResponsiveContainer;
 
-        // ดึงคอมโพเนนต์แผนภูมิจาก Recharts ที่ระบบโหลดให้อัตโนมัติ (ผ่าน Global Scope หลังบ้าน)
-        const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = window.Recharts || {};
-
-        // ─── THEME & COMPANY BRANDING CI (WHITE & BLUE STYLING) ──────────────────────
+        // ─── THEME & COMPANY BRANDING CI (S1 MUSIC LIGHT BLUE) ──────────────────────
         const CI = {
           bg: "#f8fafc",        
           card: "#ffffff",      
@@ -35,8 +46,8 @@
         };
 
         const STYLES = {
-          card: { background: CI.card, borderRadius: 12, padding: 18, border: `1px solid ${CI.border}`, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)" },
-          btnBase: { color: "#fff", fontWeight: 700, fontSize: 12, border: "none", borderRadius: 20, padding: "8px 16px", cursor: "pointer", transition: "all 0.2s" },
+          card: { background: CI.card, borderRadius: 12, padding: 18, border: `1px solid ${CI.border}`, boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)", marginBottom: 20 },
+          btnBase: { color: "#fff", fontWeight: 700, fontSize: 12, border: "none", borderRadius: 20, padding: "8px 16px", cursor: "pointer" },
           btnDel: { background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: "4px", padding: "2px 6px", fontSize: "10px", fontWeight: "bold", cursor: "pointer", marginLeft: "6px" },
           input: { background: "#ffffff", border: `1px solid ${CI.border}`, borderRadius: 7, padding: "7px 12px", color: CI.text, fontSize: 12, fontWeight: "bold" },
           th: { padding: "10px 12px", textAlign: "left", color: CI.muted, fontWeight: 600, borderBottom: `2px solid ${CI.border}`, backgroundColor: "#f1f5f9", whiteSpace: "nowrap" },
@@ -44,13 +55,9 @@
           badge: { display: "inline-flex", alignItems: "center", background: "#e0f2fe", color: "#0369a1", padding: "4px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "bold", marginRight: "6px", marginBottom: "6px" }
         };
 
-        // ─── HELPERS ──────────────────────────────────────────────────────────────────
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
-        const pct = (a, b) => {
-          if (!b || b === 0) return "0.0";
-          return (((a - b) / b) * 100).toFixed(1);
-        };
+        const pct = (a, b) => (b ? (((a - b) / b) * 100).toFixed(1) : "0.0");
 
         const getMonthWeight = (label) => {
           const l = String(label).toLowerCase();
@@ -63,12 +70,11 @@
           return 99;
         };
 
-        // ─── MAIN PROGRAM FUNCTION ───────────────────────────────────────────────────
+        // ─── MAIN APP COMPONENT ───
         function YTDashboard() {
           const [months, setMonths] = useState([]);
           const [assets, setAssets] = useState([]);
           const [tab, setTab] = useState("overview");
-          const [pending, setPending] = useState({ label: "", data: null, type: "" });
 
           const [baseMonth, setBaseMonth] = useState("");
           const [targetMonth, setTargetMonth] = useState("");
@@ -105,287 +111,160 @@
             }
           };
 
-          const handleFile = useCallback((fname, rows) => {
-            if (!rows.length) return;
-            
+          const handleFile = (fname, rows) => {
+            if (!rows || rows.length === 0) return;
             const keys = Object.keys(rows[0]);
-            const assetKey = keys.find(k => k.toLowerCase() === "asset");
-            const channelKey = keys.find(k => k.toLowerCase() === "channel");
-            const titleKey = keys.find(k => k.toLowerCase().includes("title") || k.toLowerCase().includes("name"));
+            const assetKey = keys.find(k => k.toLowerCase() === "asset" || k.toLowerCase() === "asset name");
+            const channelKey = keys.find(k => k.toLowerCase() === "channel" || k.toLowerCase() === "channel title");
             
-            const revKey = keys.find(k => k.toLowerCase().includes("estimated partner revenue"));
-            const premiumKey = keys.find(k => k.toLowerCase().includes("premium partner revenue"));
+            const revKey = keys.find(k => k.toLowerCase().includes("revenue"));
+            const premiumKey = keys.find(k => k.toLowerCase().includes("premium"));
             const pCpmKey = keys.find(k => k.toLowerCase().includes("playback-based cpm"));
             const cpmKey = keys.find(k => k.toLowerCase() === "cpm (thb)");
             const rpmKey = keys.find(k => k.toLowerCase() === "rpm (thb)");
             const viewsKey = keys.find(k => k.toLowerCase() === "views");
-            const watchKey = keys.find(k => k.toLowerCase().includes("watch time"));
 
+            const label = fname.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
             const isAssetFile = !!assetKey;
-            const detectedLabel = fname.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
 
-            const processedData = rows.filter(r => {
-              const checkVal = String(r[assetKey || channelKey] || "").trim().toLowerCase();
-              return checkVal !== "total" && checkVal !== "";
+            const processed = rows.filter(r => {
+              const val = String(r[assetKey || channelKey] || "").trim().toLowerCase();
+              return val !== "total" && val !== "";
             }).map(r => ({
               id: String(r[assetKey || channelKey] || "").trim(),
-              name: String(r[titleKey] || "Unknown Name").trim(),
+              name: String(r["Channel title"] || r["Asset name"] || r[assetKey || channelKey] || "Unknown").trim(),
               rev: parseFloat(String(r[revKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
               premium: parseFloat(String(r[premiumKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
               playbackCpm: parseFloat(String(r[pCpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
               cpm: parseFloat(String(r[cpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
               rpm: parseFloat(String(r[rpmKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              views: parseFloat(String(r[viewsKey] || 0).replace(/[^0-9.-]/g, "")) || 0,
-              watch: parseFloat(String(r[watchKey] || 0).replace(/[^0-9.-]/g, "")) || 0
+              views: parseFloat(String(r[viewsKey] || 0).replace(/[^0-9.-]/g, "")) || 0
             }));
 
-            setPending({
-              label: detectedLabel,
-              data: processedData,
-              type: isAssetFile ? "asset" : "channel"
-            });
-          }, []);
-
-          const commitData = () => {
-            if (!pending.data) return;
-            if (pending.type === "channel") {
-              setMonths(prev => [...prev.filter(m => m.label !== pending.label), { label: pending.label, data: pending.data }]
-                .sort((a, b) => getMonthWeight(a.label) - getMonthWeight(b.label)));
+            if (isAssetFile) {
+              setAssets(prev => [...prev.filter(a => a.label !== label), { label, data: processed }].sort((a,b)=>getMonthWeight(a.label)-getMonthWeight(b.label)));
             } else {
-              setAssets(prev => [...prev.filter(m => m.label !== pending.label), { label: pending.label, data: pending.data }]
-                .sort((a, b) => getMonthWeight(a.label) - getMonthWeight(b.label)));
+              setMonths(prev => [...prev.filter(m => m.label !== label), { label, data: processed }].sort((a,b)=>getMonthWeight(a.label)-getMonthWeight(b.label)));
             }
-            setPending({ label: "", data: null, type: "" });
           };
 
           const channelAnalysis = useMemo(() => {
-            const currentMonthData = months.find(m => m.label === targetMonth);
-            const previousMonthData = months.find(m => m.label === baseMonth);
-
-            if (!currentMonthData) return [];
-            if (!previousMonthData) {
-              return currentMonthData.data.map(c => ({
-                name: c.name, rev1: 0, rev2: c.rev, premium1: 0, premium2: c.premium,
-                playbackCpm1: 0, playbackCpm2: c.playbackCpm, cpm1: 0, cpm2: c.cpm,
-                rpm1: 0, rpm2: c.rpm, views1: 0, views2: c.views, growth: "0.0"
-              }));
-            }
-            
-            return currentMonthData.data.map(ch2 => {
-              const ch1 = previousMonthData.data.find(c => String(c.id).trim() === String(ch2.id).trim());
-              const r1 = ch1 ? ch1.rev : 0;
-              return {
-                name: ch2.name,
-                rev1: r1, rev2: ch2.rev,
-                premium1: ch1 ? ch1.premium : 0, premium2: ch2.premium,
-                playbackCpm1: ch1 ? ch1.playbackCpm : 0, playbackCpm2: ch2.playbackCpm,
-                cpm1: ch1 ? ch1.cpm : 0, cpm2: ch2.cpm,
-                rpm1: ch1 ? ch1.rpm : 0, rpm2: ch2.rpm,
-                views1: ch1 ? ch1.views : 0, views2: ch2.views,
-                growth: pct(ch2.rev, r1)
-              };
+            const cur = months.find(m => m.label === targetMonth);
+            const prev = months.find(m => m.label === baseMonth);
+            if (!cur) return [];
+            if (!prev) return cur.data.map(c => ({ ...c, rev1: 0, rev2: c.rev, growth: "0.0" }));
+            return cur.data.map(c2 => {
+              const c1 = prev.data.find(x => String(x.id).trim() === String(c2.id).trim());
+              return { ...c2, rev1: c1 ? c1.rev : 0, rev2: c2.rev, growth: pct(c2.rev, c1 ? c1.rev : 0) };
             }).sort((a, b) => b.rev2 - a.rev2);
           }, [months, baseMonth, targetMonth]);
 
           const assetAnalysis = useMemo(() => {
-            const currentAssetData = assets.find(a => a.label === targetAssetMonth);
-            const previousAssetData = assets.find(a => a.label === baseAssetMonth);
-
-            if (!currentAssetData) return [];
-            if (!previousAssetData) {
-              return currentAssetData.data.map(a => ({
-                name: a.name, rev1: 0, rev2: a.rev, premium1: 0, premium2: a.premium,
-                rpm1: 0, rpm2: a.rpm, views1: 0, views2: a.views, growth: "0.0"
-              }));
-            }
-
-            return currentAssetData.data.map(as2 => {
-              const as1 = previousAssetData.data.find(a => String(a.id).trim() === String(as2.id).trim());
-              const r1 = as1 ? as1.rev : 0;
-              return {
-                name: as2.name,
-                rev1: r1, rev2: as2.rev,
-                premium1: as1 ? as1.premium : 0, premium2: as2.premium,
-                rpm1: as1 ? as1.rpm : 0, rpm2: as2.rpm,
-                views1: as1 ? as1.views : 0, views2: as2.views,
-                growth: pct(as2.rev, r1)
-              };
+            const cur = assets.find(a => a.label === targetAssetMonth);
+            const prev = assets.find(a => a.label === baseAssetMonth);
+            if (!cur) return [];
+            if (!prev) return cur.data.map(a => ({ ...a, rev1: 0, rev2: a.rev, growth: "0.0" }));
+            return cur.data.map(a2 => {
+              const a1 = prev.data.find(x => String(x.id).trim() === String(a2.id).trim());
+              return { ...a2, rev1: a1 ? a1.rev : 0, rev2: a2.rev, growth: pct(a2.rev, a1 ? a1.rev : 0) };
             }).sort((a, b) => b.rev2 - a.rev2);
           }, [assets, baseAssetMonth, targetAssetMonth]);
-
-          const executiveInsights = useMemo(() => {
-            const activeMonth = months.find(m => m.label === targetMonth);
-            if (!activeMonth) return null;
-
-            const totalNetworkRev = activeMonth.data.reduce((sum, c) => sum + c.rev, 0);
-            const sortedChannels = [...activeMonth.data].sort((a, b) => b.rev - a.rev);
-            const top1Share = totalNetworkRev ? ((sortedChannels[0]?.rev || 0) / totalNetworkRev * 100).toFixed(1) : "0.0";
-            const top3Share = totalNetworkRev ? (sortedChannels.slice(0, 3).reduce((sum, c) => sum + c.rev, 0) / totalNetworkRev * 100).toFixed(1) : "0.0";
-            const totalPremiumRev = activeMonth.data.reduce((sum, c) => sum + c.premium, 0);
-            const premiumRatio = totalNetworkRev ? ((totalPremiumRev / totalNetworkRev) * 100).toFixed(1) : "0.0";
-
-            return {
-              top1Name: sortedChannels[0]?.name || "N/A",
-              top1Share,
-              top3Share,
-              premiumRatio
-            };
-          }, [months, targetMonth]);
 
           const lineChartData = useMemo(() => {
             return months.map(m => ({
               name: m.label,
-              "Estimated Partner Revenue (THB)": m.data.reduce((sum, item) => sum + item.rev, 0),
-              "YouTube Premium Revenue (THB)": m.data.reduce((sum, item) => sum + item.premium, 0),
-              "Views (ครั้ง)": m.data.reduce((sum, item) => sum + item.views, 0),
-              "Playback-based CPM เฉลี่ย": m.data.reduce((sum, item) => sum + item.playbackCpm, 0) / (m.data.length || 1),
-              "RPM เฉลี่ยเครือข่าย": m.data.reduce((sum, item) => sum + item.rpm, 0) / (m.data.length || 1)
+              "Estimated Revenue": m.data.reduce((s, x) => s + x.rev, 0),
+              "Premium Revenue": m.data.reduce((s, x) => s + x.premium, 0)
             }));
           }, [months]);
 
           return (
-            <div style={{ minHeight: "100vh", background: CI.bg, color: CI.text, padding: "24px" }}>
-              
-              <div style={{ ...STYLES.card, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <div>
-                  <h2 style={{ color: CI.blueBrand, margin: 0, fontSize: 20 }}>📊 แดชบอร์ดวิเคราะห์ระบบรายได้เครือข่าย YouTube MCN</h2>
-                  <div style={{ fontSize: 12, color: CI.muted, marginTop: 6, display: "flex", alignItems: "center", flexWrap: "wrap" }}>
-                    <span>📦 รอบงวดเวลาที่มีฐานข้อมูลขณะนี้:</span>
-                    <div style={{ marginLeft: 8 }}>
-                      {months.map(m => (
-                        <span key={m.label} style={STYLES.badge}>
-                          {m.label} (ช่อง)
-                          <button onClick={() => handleRemoveData(m.label, "channel")} style={STYLES.btnDel}>✕</button>
-                        </span>
-                      ))}
-                      {assets.map(a => (
-                        <span key={a.label} style={{ ...STYLES.badge, background: "#f0fdf4", color: "#166534" }}>
-                          {a.label} (Asset)
-                          <button onClick={() => handleRemoveData(a.label, "asset")} style={STYLES.btnDel}>✕</button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+            <div style={{ padding: 24 }}>
+              <div style={STYLES.card}>
+                <h2 style={{ margin: 0, color: CI.blueBrand }}>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตรรายเดือน</h2>
+                <div style={{ marginTop: 12 }}>
+                  {months.map(m => <span key={m.label} style={STYLES.badge}>{m.label} (ช่อง) <button onClick={() => handleRemoveData(m.label, "channel")} style={STYLES.btnDel}>✕</button></span>)}
+                  {assets.map(a => <span key={a.label} style={{...STYLES.badge, background:"#f0fdf4", color:"#166534"}}>{a.label} (Asset) <button onClick={() => handleRemoveData(a.label, "asset")} style={STYLES.btnDel}>✕</button></span>)}
                 </div>
               </div>
-
-              {executiveInsights && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-                  <div style={{ ...STYLES.card, borderLeft: `5px solid ${parseFloat(executiveInsights.top1Share) > 35 ? "#dc2626" : CI.blueBrand}` }}>
-                    <div style={{ fontSize: 11, color: CI.muted, fontWeight: "bold" }}>⚠️ RISK ANALYSIS (ความเสี่ยงพึ่งพาช่องหลัก)</div>
-                    <div style={{ fontSize: 22, fontWeight: "bold", color: CI.text, marginTop: 6 }}>{executiveInsights.top1Share}%</div>
-                    <div style={{ fontSize: 11, color: CI.muted, marginTop: 4 }}>
-                      รายได้ขับเคลื่อนหลักโดยช่อง <span style={{ color: CI.blueBrand, fontWeight: "bold" }}>{executiveInsights.top1Name}</span> (Top 3 ครองรวม {executiveInsights.top3Share}%)
-                    </div>
-                  </div>
-                  <div style={{ ...STYLES.card, borderLeft: `5px solid #16a34a` }}>
-                    <div style={{ fontSize: 11, color: CI.muted, fontWeight: "bold" }}>💎 PREMIUM AUDIENCE RATIO (สัดส่วนผู้ชมกระเป๋าหนัก)</div>
-                    <div style={{ fontSize: 22, fontWeight: "bold", color: "#16a34a", marginTop: 6 }}>{executiveInsights.premiumRatio}%</div>
-                    <div style={{ fontSize: 11, color: CI.muted, marginTop: 4 }}>ของรายรับช่องรวมมาจากระบบสมาชิก YouTube Premium ประจำงวดที่เลือก</div>
-                  </div>
-                </div>
-              )}
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
                 <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, marginBottom: 8, color: CI.blueBrand }}>📁 นำเข้าไฟล์สรุปบัญชีรายช่อง (เช่น Mar.csv, Apr.csv)</div>
-                  <input type="file" onChange={e => {
+                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>📁 ลากหรือเลือกไฟล์สรุปรายช่องทาง (เช่น MAR.csv, APR.csv)</div>
+                  <input type="file" style={{ marginTop: 10 }} onChange={e => {
                     const file = e.target.files[0];
-                    if(file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        const txt = evt.target.result;
-                        const lines = txt.split("\n").map(l => l.split(","));
-                        const headers = lines[0].map(h => h.replace(/"/g, "").trim());
-                        const items = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
-                          let obj = {};
-                          headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
-                          return obj;
-                        });
-                        handleFile(file.name, items);
-                      };
-                      reader.readAsText(file, "UTF-8");
-                    }
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                      const lines = evt.target.result.split("\n").map(l => l.split(","));
+                      const headers = lines[0].map(h => h.replace(/"/g, "").trim());
+                      const rawData = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
+                        let obj = {}; headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
+                        return obj;
+                      });
+                      handleFile(file.name, rawData);
+                    };
+                    reader.readAsText(file, "UTF-8");
                   }} />
                 </div>
                 <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, marginBottom: 8, color: CI.blueBrand }}>💎 นำเข้าไฟล์สรุปประสิทธิภาพรายชิ้นงาน / Asset (เช่น Asset Mar.csv)</div>
-                  <input type="file" onChange={e => {
+                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>💎 ลากหรือเลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</div>
+                  <input type="file" style={{ marginTop: 10 }} onChange={e => {
                     const file = e.target.files[0];
-                    if(file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        const txt = evt.target.result;
-                        const lines = txt.split("\n").map(l => l.split(","));
-                        const headers = lines[0].map(h => h.replace(/"/g, "").trim());
-                        const items = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
-                          let obj = {};
-                          headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
-                          return obj;
-                        });
-                        handleFile(file.name, items);
-                      };
-                      reader.readAsText(file, "UTF-8");
-                    }
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                      const lines = evt.target.result.split("\n").map(l => l.split(","));
+                      const headers = lines[0].map(h => h.replace(/"/g, "").trim());
+                      const rawData = lines.slice(1).filter(l => l.length >= headers.length).map(line => {
+                        let obj = {}; headers.forEach((h, idx) => { obj[h] = line[idx]?.replace(/"/g, "").trim(); });
+                        return obj;
+                      });
+                      handleFile(file.name, rawData);
+                    };
+                    reader.readAsText(file, "UTF-8");
                   }} />
                 </div>
               </div>
 
-              {pending.data && (
-                <div style={{ ...STYLES.card, background: CI.blueLight, borderColor: CI.blueBrand, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <span style={{ fontSize: 12 }}>ระบบแกะเจอโครงสร้างงวดข้อมูล: <b style={{ color: CI.blueBrand }}>{pending.label}</b></span>
-                  <button onClick={commitData} style={{ ...STYLES.btnBase, background: CI.blueBrand }}>อนุมัติและโหลดเข้าแดชบอร์ด</button>
-                </div>
-              )}
-
               <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                <button onClick={() => setTab("overview")} style={{ padding: "8px 16px", background: tab === "overview" ? CI.blueBrand : "#ffffff", border: `1px solid ${CI.border}`, color: tab === "overview" ? "#ffffff" : CI.text, fontSize: 12, borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>📺 ผลงานการเงินรวมรายช่อง</button>
-                <button onClick={() => setTab("assets")} style={{ padding: "8px 16px", background: tab === "assets" ? CI.blueBrand : "#ffffff", border: `1px solid ${CI.border}`, color: tab === "assets" ? "#ffffff" : CI.text, fontSize: 12, borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>🎵 สถิติสัดส่วนราย Asset ศิลปิน</button>
-                <button onClick={() => setTab("linesAnalysis")} style={{ padding: "8px 16px", background: tab === "linesAnalysis" ? CI.blueBrand : "#ffffff", border: `1px solid ${CI.border}`, color: tab === "linesAnalysis" ? "#ffffff" : CI.text, fontSize: 12, borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>📉 รายการกราฟเส้นเพื่อการวิเคราะห์</button>
+                <button onClick={() => setTab("overview")} style={{ ...STYLES.btnBase, background: tab === "overview" ? CI.blueBrand : "#fff", color: tab === "overview" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>📺 ตารางข้อมูลรายช่อง</button>
+                <button onClick={() => setTab("assets")} style={{ ...STYLES.btnBase, background: tab === "assets" ? CI.blueBrand : "#fff", color: tab === "assets" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>🎵 ตารางข้อมูลราย Asset</button>
+                <button onClick={() => setTab("charts")} style={{ ...STYLES.btnBase, background: tab === "charts" ? CI.blueBrand : "#fff", color: tab === "charts" ? "#fff" : CI.text, border: `1px solid ${CI.border}` }}>📉 แผนภูมิเส้นการวิเคราะห์</button>
               </div>
 
               <div style={STYLES.card}>
                 {tab === "overview" && (
                   <div>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center", background: "#f8fafc", padding: 12, borderRadius: 8, border: `1px solid ${CI.border}`, marginBottom: 16 }}>
-                      <span style={{ fontSize: 12, fontWeight: "bold" }}>🕹️ ช่วงเวลาวิเคราะห์รายเดือน (Dynamic Selection):</span>
-                      <select style={STYLES.input} value={baseMonth} onChange={e => setBaseMonth(e.target.value)}>
-                        <option value="">(ไม่มีเดือนฐาน / ดูรายงวดเดี่ยว)</option>
-                        {months.map(m => <option key={m.label} value={m.label}>เดือนฐาน: {m.label}</option>)}
-                      </select>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
+                      <span style={{ fontSize: 12, fontWeight: "bold" }}>เปรียบเทียบงวดเวลา:</span>
+                      <select style={STYLES.input} value={baseMonth} onChange={e => setBaseMonth(e.target.value)}><option value="">เลือกเดือนฐาน</option>{months.map(m=><option key={m.label}>{m.label}</option>)}</select>
                       <span>➔</span>
-                      <select style={STYLES.input} value={targetMonth} onChange={e => setTargetMonth(e.target.value)}>
-                        {months.map(m => <option key={m.label} value={m.label}>เดือนเปรียบเทียบ: {m.label}</option>)}
-                      </select>
+                      <select style={STYLES.input} value={targetMonth} onChange={e => setTargetMonth(e.target.value)}><option value="">เลือกเดือนเปรียบเทียบ</option>{months.map(m=><option key={m.label}>{m.label}</option>)}</select>
                     </div>
-
                     <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
                         <thead>
                           <tr>
-                            <th align="left" style={STYLES.th}>ชื่อช่องพาร์ทเนอร์ในเครือข่าย</th>
-                            <th align="right" style={STYLES.th}>Estimated Revenue ({targetMonth || "ล่าสุด"})</th>
-                            <th align="right" style={STYLES.th}>Premium Revenue</th>
-                            <th align="right" style={STYLES.th}>Views (ครั้ง)</th>
-                            <th align="right" style={STYLES.th}>ค่า RPM</th>
-                            <th align="right" style={STYLES.th}>ค่า CPM</th>
-                            <th align="right" style={STYLES.th}>Playback-based CPM</th>
-                            <th align="right" style={STYLES.th}>อัตราเติบโต MoM</th>
+                            <th style={STYLES.th}>ชื่อช่องพาร์ทเนอร์</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>รายได้สุทธิ</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>Premium รายได้</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>ยอดวิวรวม</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>RPM</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>Playback CPM</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>อัตราเติบโต</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {channelAnalysis.length === 0 ? <tr><td colSpan={8} align="center" style={{ padding: 24, color: CI.muted }}>ไม่มีข้อมูลในระบบในขณะนี้</td></tr> : channelAnalysis.map((ch, i) => (
+                          {channelAnalysis.map((ch, i) => (
                             <tr key={i}>
                               <td style={STYLES.td}><b>{ch.name}</b></td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.blueBrand, fontWeight: "bold" }}>{fmtTHB(ch.rev2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.text }}>{fmtTHB(ch.premium2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.muted }}>{fmtNum(ch.views2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: "#16a34a", fontWeight: "bold" }}>{fmtTHB(ch.rpm2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.muted }}>{fmtTHB(ch.cpm2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: "#0284c7" }}>{fmtTHB(ch.playbackCpm2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: parseFloat(ch.growth) > 0 ? "#16a34a" : parseFloat(ch.growth) < 0 ? "#dc2626" : CI.muted, fontWeight: "bold" }}>
-                                {parseFloat(ch.growth) > 0 ? "▲ " : parseFloat(ch.growth) < 0 ? "▼ " : ""}{ch.growth}%
-                              </td>
+                              <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(ch.rev)}</td>
+                              <td align="right" style={STYLES.td}>{fmtTHB(ch.premium)}</td>
+                              <td align="right" style={STYLES.td}>{fmtNum(ch.views)}</td>
+                              <td align="right" style={{...STYLES.td, color: "#16a34a"}}>{fmtTHB(ch.rpm)}</td>
+                              <td align="right" style={STYLES.td}>{fmtTHB(ch.playbackCpm)}</td>
+                              <td align="right" style={{...STYLES.td, color: parseFloat(ch.growth) >= 0 ? "green" : "red", fontWeight:"bold"}}>{ch.growth}%</td>
                             </tr>
                           ))}
                         </tbody>
@@ -396,41 +275,33 @@
 
                 {tab === "assets" && (
                   <div>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center", background: "#f8fafc", padding: 12, borderRadius: 8, border: `1px solid ${CI.border}`, marginBottom: 16 }}>
-                      <span style={{ fontSize: 12, fontWeight: "bold" }}>🕹️ ช่วงเวลาวิเคราะห์รายชิ้นงาน (Asset Comparator):</span>
-                      <select style={STYLES.input} value={baseAssetMonth} onChange={e => setBaseAssetMonth(e.target.value)}>
-                        <option value="">(ไม่มีเดือนฐาน / ดูรายงวดเดี่ยว)</option>
-                        {assets.map(a => <option key={a.label} value={a.label}>เดือนฐาน Asset: {a.label}</option>)}
-                      </select>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
+                      <span style={{ fontSize: 12, fontWeight: "bold" }}>เปรียบเทียบรอบ Asset:</span>
+                      <select style={STYLES.input} value={baseAssetMonth} onChange={e => setBaseAssetMonth(e.target.value)}><option value="">เลือกเดือนฐาน</option>{assets.map(a=><option key={a.label}>{a.label}</option>)}</select>
                       <span>➔</span>
-                      <select style={STYLES.input} value={targetAssetMonth} onChange={e => setTargetAssetMonth(e.target.value)}>
-                        {assets.map(a => <option key={a.label} value={a.label}>เดือนเปรียบเทียบ Asset: {a.label}</option>)}
-                      </select>
+                      <select style={STYLES.input} value={targetAssetMonth} onChange={e => setTargetAssetMonth(e.target.value)}><option value="">เลือกเดือนเปรียบเทียบ</option>{assets.map(a=><option key={a.label}>{a.label}</option>)}</select>
                     </div>
-
                     <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
                         <thead>
                           <tr>
-                            <th align="left" style={STYLES.th}>ชื่อชิ้นงานผลงานคอนเทนต์ดิจิทัล (Asset Title)</th>
-                            <th align="right" style={STYLES.th}>Estimated Revenue ({targetAssetMonth || "ล่าสุด"})</th>
-                            <th align="right" style={STYLES.th}>Premium Revenue</th>
-                            <th align="right" style={STYLES.th}>Views (ครั้ง)</th>
-                            <th align="right" style={STYLES.th}>ค่า RPM</th>
-                            <th align="right" style={STYLES.th}>อัตราการขยายตัว</th>
+                            <th style={STYLES.th}>ชื่อ Asset ผลงานเพลง</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>รายได้ชิ้นงาน</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>Premium รายได้</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>ยอดวิว</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>RPM</th>
+                            <th style={{...STYLES.th, textAlign:"right"}}>เติบโต MoM</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {assetAnalysis.length === 0 ? <tr><td colSpan={6} align="center" style={{ padding: 24, color: CI.muted }}>ไม่มีข้อมูลในระบบในขณะนี้</td></tr> : assetAnalysis.map((as, i) => (
+                          {assetAnalysis.map((as, i) => (
                             <tr key={i}>
                               <td style={STYLES.td}><b>{as.name}</b></td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.blueBrand, fontWeight: "bold" }}>{fmtTHB(as.rev2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.text }}>{fmtTHB(as.premium2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: CI.muted }}>{fmtNum(as.views2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: "#16a34a" }}>{fmtTHB(as.rpm2)}</td>
-                              <td align="right" style={{ ...STYLES.td, color: parseFloat(as.growth) > 0 ? "#16a34a" : parseFloat(as.growth) < 0 ? "#dc2626" : CI.muted, fontWeight: "bold" }}>
-                                {parseFloat(as.growth) > 0 ? "▲ " : parseFloat(as.growth) < 0 ? "▼ " : ""}{as.growth}%
-                              </td>
+                              <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(as.rev)}</td>
+                              <td align="right" style={STYLES.td}>{fmtTHB(as.premium)}</td>
+                              <td align="right" style={STYLES.td}>{fmtNum(as.views)}</td>
+                              <td align="right" style={STYLES.td}>{fmtTHB(as.rpm)}</td>
+                              <td align="right" style={{...STYLES.td, color: parseFloat(as.growth) >= 0 ? "green" : "red", fontWeight:"bold"}}>{as.growth}%</td>
                             </tr>
                           ))}
                         </tbody>
@@ -439,52 +310,29 @@
                   </div>
                 )}
 
-                {tab === "linesAnalysis" && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                    {lineChartData.length === 0 ? (
-                      <div style={{ textAlign: "center", padding: "40px 0", color: CI.muted }}>โปรดอัปโหลดไฟล์ข้อมูลเพื่อแสดงโครงสร้างแผนภูมิแนวโน้ม</div>
-                    ) : (
-                      <>
-                        <div style={{ border: `1px solid ${CI.border}`, padding: 16, borderRadius: 8, background: "#f8fafc" }}>
-                          <div style={{ fontSize: 12, fontWeight: "bold", marginBottom: 10 }}>📈 สรุปแนวโน้มรายได้ปกติเปรียบเทียบรายได้จากระบบพรีเมียมเครือข่ายรวม (บาท)</div>
-                          <ResponsiveContainer width="100%" height={240}>
-                            <AreaChart data={lineChartData}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                              <XAxis dataKey="name" />
-                              <YAxis tickFormatter={v => `฿${(v / 1000).toFixed(0)}K`} />
-                              <Tooltip formatter={v => fmtTHB(v)} />
-                              <Legend />
-                              <Area type="monotone" name="Estimated Partner Revenue" dataKey="Estimated Partner Revenue (THB)" stroke="#0284c7" fill={CI.blueLight} strokeWidth={3.5} />
-                              <Area type="monotone" name="YouTube Premium Revenue" dataKey="YouTube Premium Revenue (THB)" stroke="#f59e0b" fill="transparent" strokeWidth={2.5} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        <div style={{ border: `1px solid ${CI.border}`, padding: 16, borderRadius: 8, background: "#f8fafc" }}>
-                          <div style={{ fontSize: 12, fontWeight: "bold", marginBottom: 10 }}>📉 มิติวิเคราะห์ดัชนีคุณค่าโฆษณา (Playback CPM vs RPM เฉลี่ยเครือข่าย)</div>
-                          <ResponsiveContainer width="100%" height={200}>
-                            <AreaChart data={lineChartData}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                              <XAxis dataKey="name" />
-                              <YAxis tickFormatter={v => `฿${v}`} />
-                              <Tooltip formatter={v => fmtTHB(v)} />
-                              <Legend />
-                              <Area type="monotone" name="Playback-based CPM เฉลี่ย" dataKey="Playback-based CPM เฉลี่ย" stroke="#6366f1" fill="transparent" strokeWidth={2.5} />
-                              <Area type="monotone" name="RPM เฉลี่ยเครือข่าย" dataKey="RPM เฉลี่ยเครือข่าย" stroke="#10b981" fill="transparent" strokeWidth={2.5} />
-                            </AreaChart>
-                  </ResponsiveContainer>
-                        </div>
-                      </>
+                {tab === "charts" && (
+                  <div style={{ height: 300 }}>
+                    {lineChartData.length === 0 ? <div style={{textAlign:"center", padding:20}}>โปรดอัปโหลดไฟล์ข้อมูลเพื่อแสดงผลกราฟแนวโน้ม</div> : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={lineChartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis tickFormatter={v => `฿${(v / 1000).toFixed(0)}K`} />
+                          <Tooltip formatter={v => fmtTHB(v)} />
+                          <Legend />
+                          <Area type="monotone" name="รายได้รวมทั้งหมด" dataKey="Estimated Revenue" stroke="#0284c7" fill="#e0f2fe" strokeWidth={3} />
+                          <Area type="monotone" name="รายได้จาก Premium" dataKey="Premium Revenue" stroke="#f59e0b" fill="transparent" strokeWidth={2} />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     )}
                   </div>
                 )}
               </div>
-
             </div>
           );
         }
 
-        // ─── คำสั่งเปิดเครื่องและเรนเดอร์ React App เข้าสู่แท็ก DOM หน้าเว็บ ──────────────────
+        // สั่งรันแอปพลิเคชัน
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<YTDashboard />);
     </script>
