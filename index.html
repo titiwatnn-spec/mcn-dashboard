@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Dashboard (MoM Corrected)</title>
+    <title>S1 MUSIC - MCN Dashboard (Executive Presentation Edition)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -16,6 +16,7 @@
         .btn { padding: 8px 16px; background: #fff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
         .btn.active { background: #0284c7; color: #fff; }
         .btn-copy { background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-copy:hover { background: #15803d; }
         .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
         .badge-asset { background: #f0fdf4; color: #166534; }
         .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; margin-left: 6px; }
@@ -26,12 +27,15 @@
         td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; white-space: nowrap; vertical-align: top; }
         .input-file-label { font-weight: bold; font-size: 12px; color: #0284c7; display: block; margin-bottom: 8px; }
         .hidden { display: none; }
-        .cell-base-val { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        
+        /* 🛠️ ปรับลดขนาดชื่องวดเดือนลงมาเพื่อดันตัวเลขจริงให้เด่นชัด ไม่รกสายตา */
+        .cell-base-val { font-size: 10px; color: #94a3b8; margin-bottom: 1px; font-weight: normal; }
         .cell-target-val { font-size: 13px; font-weight: 700; color: #0f172a; }
         .mom-indicator { font-size: 11px; display: block; font-weight: bold; margin-top: 3px; }
         .up { color: #16a34a; }
         .down { color: #dc2626; }
         .neutral { color: #94a3b8; }
+        
         .chart-row { margin-bottom: 16px; }
         .chart-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #334155; }
         .bar-container { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; }
@@ -43,7 +47,7 @@
         .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
-        textarea { width: 100%; height: 220px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; box-sizing: border-box; }
+        textarea { width: 100%; height: 260px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -62,7 +66,7 @@
                 <input type="file" id="channel-upload" accept=".csv" />
             </div>
             <div class="card">
-                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพหน (เช่น APR ASSET.csv)</label>
+                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง (เช่น APR ASSET.csv)</label>
                 <input type="file" id="asset-upload" accept=".csv" />
             </div>
         </div>
@@ -130,11 +134,13 @@
                     <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้เดือนฐาน</span></div>
                     <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้เดือนเปรียบเทียบ</span></div>
                 </div>
-                <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง</h3>
+                <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง (เรียงตามรายรับสูงสุด)</h3>
                 <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
                 <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
+                <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
+                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กดปุ่มด้านล่างเพื่อก๊อปปี้รายงานสรุปวิเคราะห์เปรียบเทียบ MoM เพื่อนำไปส่งให้ AI แปรรูปทำสไลด์นำเสนอผู้บริหารได้ทันที</p>
                 <textarea id="ai-summary-text" readonly></textarea>
-                <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('ai-summary-text').value); alert('คัดลอกแล้ว!');">📋 คัดลอกเนื้อหาสำหรับ NotebookLM</button>
+                <button class="btn-copy" onclick="copySummaryToClipboard()">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
             </div>
         </div>
     </div>
@@ -148,8 +154,10 @@
         
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
-            let baseText = prevLabel ? `${prevLabel}: ${formatter(prevVal)}` : `ฐาน: --`;
-            let targetText = curLabel ? `${curLabel}: ${formatter(curVal)}` : `เทียบ: ${formatter(curVal)}`;
+            // 🛠️ ตกแต่งสีข้อความงวดเดือนให้ตัวหนังสือเล็กลงและจางลง ป้องกันสายตาสับสน
+            let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
+            let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
+            
             let indicatorText = '';
             if (prevVal === undefined || prevVal === null || prevVal === 0) {
                 indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
@@ -202,7 +210,6 @@
                 const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
                 const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
                 
-                // 🛠️ ล็อกเงื่อนไขหัวคอลัมน์ระดับสัมบูรณ์ ป้องกันการจำตำแหน่งสลับช่องของฝั่ง Asset
                 let revIdx = headers.findIndex(h => h === 'estimated partner revenue (thb)' || h === 'estimated partner revenue');
                 let premiumIdx = headers.findIndex(h => h === 'youtube premium partner revenue (thb)' || h === 'youtube premium partner revenue');
                 let viewsIdx = headers.findIndex(h => h === 'views');
@@ -247,6 +254,7 @@
             if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
             renderChannelTable(); renderAssetTable();
+            if (activeTab === 'analysis') generateBarChartAndSummary();
         }
 
         function updateSelectOptions(selectElement, labels) {
@@ -279,19 +287,85 @@
             });
         }
 
+        // 🛠️ ล็อกระบบการคำนวณ Insight และโครงสร้างรายงาน Markdown แบบสมบูรณ์เพื่อพร้อมส่งให้ NotebookLM เจนงานต่อได้ทันที
         function generateBarChartAndSummary() {
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
             const container = document.getElementById('bar-chart-container'); const aiTextBox = document.getElementById('ai-summary-text');
-            if (!target || !store.channels[target]) return;
+            
+            document.getElementById('legend-base-label').innerText = base ? `รายได้เดือนฐาน (${base})` : "รายได้เดือนฐาน";
+            document.getElementById('legend-target-label').innerText = target ? `รายได้เดือนเปรียบเทียบ (${target})` : "รายได้เดือนเปรียบเทียบ";
+
+            if (!target || !store.channels[target]) {
+                container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">[ระบบว่าง] โปรดอัปโหลดไฟล์รายงานเพื่อเริ่มคำนวณพล็อตข้อมูลสไลด์</p>`;
+                aiTextBox.value = "ระบบจะพิมพ์โครงร่างรายงานสไลด์ให้ที่นี่อัตโนมัติ เมื่อมีการใส่ไฟล์รายเดือนเข้าสู่ระบบ...";
+                return;
+            }
+            
             const curData = store.channels[target]; const prevData = base ? store.channels[base] : null;
             const top10 = [...curData].sort((a, b) => b.rev - a.rev).slice(0, 10);
             let maxRev = 1; top10.forEach(c => { if (c.rev > maxRev) maxRev = c.rev; });
+            
             container.innerHTML = '';
             top10.forEach(c => {
                 let p = prevData ? prevData.find(x => x.id === c.id) : null;
                 container.innerHTML += `<div class="chart-row"><div class="chart-label">${c.name}</div><div class="bar-container"><div class="bar-wrapper"><div class="bar bar-base" style="width: ${(p?.rev||0)/maxRev*100}%;"></div><span>${base||'ฐาน'}: ${fmtTHB(p?.rev||0)}</span></div><div class="bar-wrapper"><div class="bar bar-target" style="width: ${c.rev/maxRev*100}%;"></div><span style="color:#0284c7;">${target}: ${fmtTHB(c.rev)}</span></div></div></div>`;
             });
-            aiTextBox.value = "ประมวลผลข้อมูลโครงร่างสไลด์เรียบร้อย กดคัดลอกด้านล่างไปส่งต่อใน NotebookLM ได้เลย!";
+
+            // เจนหัวข้อรายงานสไลด์สรุปเนื้อหาจริงของบริษัท S1 MUSIC
+            let mcnTotalCur = curData.reduce((s, x) => s + x.rev, 0);
+            let mcnTotalPrev = prevData ? prevData.reduce((s, x) => s + x.rev, 0) : 0;
+            let mcnTotalViewsCur = curData.reduce((s, x) => s + x.views, 0);
+            let mcnTotalViewsPrev = prevData ? prevData.reduce((s, x) => s + x.views, 0) : 0;
+            
+            let totalGrowthStr = prevData && mcnTotalPrev > 0 ? (((mcnTotalCur - mcnTotalPrev)/mcnTotalPrev)*100).toFixed(1) + "%" : "--";
+            let totalViewsGrowthStr = prevData && mcnTotalViewsPrev > 0 ? (((mcnTotalViewsCur - mcnTotalViewsPrev)/mcnTotalViewsPrev)*100).toFixed(1) + "%" : "--";
+
+            let topGrower = { name: '--', pct: -9999 }; let topDropper = { name: '--', pct: 9999 };
+            if (prevData) {
+                curData.forEach(c => {
+                    let p = prevData.find(x => x.id === c.id);
+                    if (p && p.rev > 1000) {
+                        let change = ((c.rev - p.rev) / p.rev) * 100;
+                        if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
+                        if (change < topDropper.pct) { topDropper = { name: c.name, pct: change }; }
+                    }
+                });
+            }
+
+            let aiText = `## โครงร่างสำหรับสรุปสไลด์รายงานพาร์ทเนอร์ MCN (S1 MUSIC Executive Summary)\n`;
+            aiText += `รายงานวิเคราะห์ความแตกต่างประจำงวดเดือน: ${base || 'งวดก่อนหน้า'} เปรียบเทียบกับงวดทองคำ ${target}\n\n`;
+            aiText += `### SLIDE 1: ผลประกอบการด้านการเงินรวมพาร์ทเนอร์ (MCN Overall Health Dashboard)\n`;
+            aiText += `- มูลค่ารายได้สุทธิรวมของสถานีในเครือข่าย: ${fmtTHB(mcnTotalCur)}\n`;
+            aiText += `- ดัชนีการเติบโตของรายรับรวม (MoM Growth): ${totalGrowthStr}\n`;
+            aiText += `- อัตราปริมาณการเข้าชมรวม (Views Performance): ${fmtNum(mcnTotalViewsCur)} ยอดวิว (แนวโน้มการเปลี่ยนแปลง: ${totalViewsGrowthStr})\n\n`;
+            aiText += `### SLIDE 2: ข้อมูลช่องทางดาวรุ่งสูงสุด และช่องทางสัญญาณอันตราย (MCN Key Focus Areas)\n`;
+            aiText += `- สถานีพันธมิตรที่สร้างการเติบโตได้สูงที่สุด: ช่อง [ ${topGrower.name} ] ดีดตัวบวกพุ่งแรงถึง +${topGrower.pct.toFixed(1)}%\n`;
+            aiText += `- สถานีที่มีอัตราสัดส่วนรายรับถดถอยที่ต้องส่งทีมตรวจสอบซ่อมแซม: ช่อง [ ${topDropper.name} ] ดิ่งตัวลง ${topDropper.pct.toFixed(1)}%\n\n`;
+            aiText += `### SLIDE 3: กางทำเนียบพาร์ทเนอร์ยอดเยี่ยมอันดับสูงสุด (Top 5 Strategic Partners)\n`;
+            top10.slice(0, 5).forEach((c, idx) => {
+                let p = prevData ? prevData.find(x => x.id === c.id) : null;
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) + "%" : "--";
+                aiText += `${idx + 1}. ค่าย/ช่อง ${c.name} ➔ รายรับรอบนี้: ${fmtTHB(c.rev)} (สรุป MoM: ${c_pct})\n`;
+            });
+            aiText += `\n### SLIDE 4: แผนปฏิบัติการเชิงกลยุทธ์ทีมบริหารประจำงวดหน้า (Actionable Recommendations)\n`;
+            aiText += `1. ส่งแผนสถิติและเทียบค่า RPM ข้ามเดือนให้กับช่องดาวรุ่งเพื่อรักษามาตรฐานยอดเงินการกระจายเสียงโฆษณาลิขสิทธิ์\n`;
+            aiText += `2. นัดประชุมด่วนร่วมกับสถานีที่มีการติดลบของรายรับ เพื่อประเมินว่าปัญหาเกิดจากอัตราวิวสะสมตก หรือค่า CPM ตลาดโดนกดดัน\n`;
+            aiText += `3. ใช้โครงสร้างนี้ในการปรับแนวระดับเงินปันผลการทำสัญญาและซื้อลิขสิทธิ์เพลงใหม่ในกลุ่มค่าย S1 MUSIC ต่อไป`;
+
+            aiTextBox.value = aiText;
+        }
+
+        // 🛠️ แก้ไขบั๊กของระบบปุ่มคัดลอกให้ดึงโครงร่างรายงานสไลด์ตัวจริงติดคลิปบอร์ดไป 100% ไม่ติดข้อความแจ้งเตือนสถานะเว็บ
+        function copySummaryToClipboard() {
+            const textarea = document.getElementById('ai-summary-text');
+            if (!textarea || textarea.value.includes("ระบบจะพิมพ์โครงร่าง")) {
+                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกสคริปต์สไลด์ครับ");
+                return;
+            }
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(textarea.value);
+            alert("📋 คัดลอกโครงร่างรายงานสไลด์สำหรับ NotebookLM สำเร็จเรียบร้อยแล้วครับ! สามารถนำไปวาง (Ctrl+V) สั่งงาน AI ต่อได้ทันทีเลยครับ");
         }
     </script>
 </body>
