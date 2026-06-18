@@ -24,7 +24,7 @@
     <script type="text/babel">
         const { useState, useCallback, useMemo, useEffect } = React;
         
-        // ดึงคอมโพเนนต์กราฟออกมาโดยตรงเพื่อไม่ให้คอมพิวเตอร์ค้างตอนเริ่มระบบ
+        // ดึงคอมโพเนนต์จาก Window Scope (สไตล์ดั้งเดิมที่รันบน GitHub Pages ผ่าน 100%)
         const AreaChart = window.Recharts.AreaChart;
         const Area = window.Recharts.Area;
         const XAxis = window.Recharts.XAxis;
@@ -34,7 +34,6 @@
         const Legend = window.Recharts.Legend;
         const ResponsiveContainer = window.Recharts.ResponsiveContainer;
 
-        // ─── THEME & COMPANY BRANDING CI (S1 MUSIC LIGHT BLUE) ──────────────────────
         const CI = {
           bg: "#f8fafc",        
           card: "#ffffff",      
@@ -57,7 +56,10 @@
 
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
-        const pct = (a, b) => (b ? (((a - b) / b) * 100).toFixed(1) : "0.0");
+        const pct = (a, b) => {
+          if (!b || b === 0) return "0.0";
+          return (((a - b) / b) * 100).toFixed(1);
+        };
 
         const getMonthWeight = (label) => {
           const l = String(label).toLowerCase();
@@ -70,7 +72,6 @@
           return 99;
         };
 
-        // ─── MAIN APP COMPONENT ───
         function YTDashboard() {
           const [months, setMonths] = useState([]);
           const [assets, setAssets] = useState([]);
@@ -117,12 +118,12 @@
             const assetKey = keys.find(k => k.toLowerCase() === "asset" || k.toLowerCase() === "asset name");
             const channelKey = keys.find(k => k.toLowerCase() === "channel" || k.toLowerCase() === "channel title");
             
-            const revKey = keys.find(k => k.toLowerCase().includes("revenue"));
-            const premiumKey = keys.find(k => k.toLowerCase().includes("premium"));
-            const pCpmKey = keys.find(k => k.toLowerCase().includes("playback-based cpm"));
-            const cpmKey = keys.find(k => k.toLowerCase() === "cpm (thb)");
-            const rpmKey = keys.find(k => k.toLowerCase() === "rpm (thb)");
-            const viewsKey = keys.find(k => k.toLowerCase() === "views");
+            const revKey = keys.find(k => k.toLowerCase().includes("estimated partner revenue")) || "";
+            const premiumKey = keys.find(k => k.toLowerCase().includes("premium partner revenue")) || "";
+            const pCpmKey = keys.find(k => k.toLowerCase().includes("playback-based cpm")) || "";
+            const cpmKey = keys.find(k => k.toLowerCase() === "cpm (thb)") || "";
+            const rpmKey = keys.find(k => k.toLowerCase() === "rpm (thb)") || "";
+            const viewsKey = keys.find(k => k.toLowerCase() === "views") || "";
 
             const label = fname.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
             const isAssetFile = !!assetKey;
@@ -190,7 +191,7 @@
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
                 <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>📁 ลากหรือเลือกไฟล์สรุปรายช่องทาง (เช่น MAR.csv, APR.csv)</div>
+                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>📁 เลือกไฟล์สรุปรายช่องทาง (เช่น MAR.csv, APR.csv)</div>
                   <input type="file" style={{ marginTop: 10 }} onChange={e => {
                     const file = e.target.files[0];
                     if (!file) return;
@@ -208,7 +209,7 @@
                   }} />
                 </div>
                 <div style={STYLES.card}>
-                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>💎 ลากหรือเลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</div>
+                  <div style={{ fontWeight: "bold", fontSize: 12, color: CI.blueBrand }}>💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</div>
                   <input type="file" style={{ marginTop: 10 }} onChange={e => {
                     const file = e.target.files[0];
                     if (!file) return;
@@ -256,7 +257,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          {channelAnalysis.map((ch, i) => (
+                          {channelAnalysis.length === 0 ? <tr><td colSpan={7} align="center" style={{padding:24, color:CI.muted}}>[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV รายช่องเพื่อเริ่มแสดงผลตาราง</td></tr> : channelAnalysis.map((ch, i) => (
                             <tr key={i}>
                               <td style={STYLES.td}><b>{ch.name}</b></td>
                               <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(ch.rev)}</td>
@@ -294,7 +295,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          {assetAnalysis.map((as, i) => (
+                          {assetAnalysis.length === 0 ? <tr><td colSpan={6} align="center" style={{padding:24, color:CI.muted}}>[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset เพื่อเริ่มแสดงผลตาราง</td></tr> : assetAnalysis.map((as, i) => (
                             <tr key={i}>
                               <td style={STYLES.td}><b>{as.name}</b></td>
                               <td align="right" style={{...STYLES.td, color: CI.blueBrand, fontWeight:"bold"}}>{fmtTHB(as.rev)}</td>
@@ -312,7 +313,7 @@
 
                 {tab === "charts" && (
                   <div style={{ height: 300 }}>
-                    {lineChartData.length === 0 ? <div style={{textAlign:"center", padding:20}}>โปรดอัปโหลดไฟล์ข้อมูลเพื่อแสดงผลกราฟแนวโน้ม</div> : (
+                    {lineChartData.length === 0 ? <div style={{textAlign:"center", padding:20, color:CI.muted}}>โปรดอัปโหลดไฟล์ข้อมูลเพื่อแสดงผลกราฟแนวโน้ม</div> : (
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={lineChartData}>
                           <CartesianGrid strokeDasharray="3 3" />
@@ -332,7 +333,6 @@
           );
         }
 
-        // สั่งรันแอปพลิเคชัน
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<YTDashboard />);
     </script>
