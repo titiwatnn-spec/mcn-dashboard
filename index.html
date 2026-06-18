@@ -161,7 +161,7 @@
                 indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
             } else {
                 const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                // 🛠️ ถอดคำอธิบายไทยออก เหลือเพียงลูกศรและตัวเลข % เพื่อความคล่องตัวทางสายตา
+                // 🛠️ ถอดข้อความภาษาไทยออกทั้งหมดเรียบร้อย เหลือเฉพาะ สัญลักษณ์ และ %
                 indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
             }
             return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
@@ -181,7 +181,6 @@
             });
         }
 
-        // ปรับปรุงการสลับแท็บให้ล้างค่ากราฟและบทวิเคราะห์ให้สัมพันธ์กัน
         function switchTab(tabName) {
             activeTab = tabName;
             document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
@@ -353,7 +352,6 @@
             aiTextBox.value = aiText;
         }
 
-        // 🛠️ ตรึงไอดีรับคำสั่งเดี่ยวสำหรับปุ่มก๊อปปี้วิเคราะห์ AI ให้เสถียรและได้เนื้อความสไลด์ 4 หน้าเต็มร้อยเปอร์เซ็นต์
         document.getElementById('final-copy-btn').addEventListener('click', function() {
             const textarea = document.getElementById('ai-summary-text');
             if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
