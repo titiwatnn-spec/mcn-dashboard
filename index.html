@@ -28,7 +28,6 @@
         .input-file-label { font-weight: bold; font-size: 12px; color: #0284c7; display: block; margin-bottom: 8px; }
         .hidden { display: none; }
         
-        /* 🛠️ ปรับลดขนาดชื่องวดเดือนลงมาเพื่อดันตัวเลขจริงให้เด่นชัด ไม่รกสายตา */
         .cell-base-val { font-size: 10px; color: #94a3b8; margin-bottom: 1px; font-weight: normal; }
         .cell-target-val { font-size: 13px; font-weight: 700; color: #0f172a; }
         .mom-indicator { font-size: 11px; display: block; font-weight: bold; margin-top: 3px; }
@@ -47,7 +46,7 @@
         .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
-        textarea { width: 100%; height: 260px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
+        textarea { width: 100%; height: 280px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -138,9 +137,9 @@
                 <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
                 <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
                 <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
-                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กดปุ่มด้านล่างเพื่อก๊อปปี้รายงานสรุปวิเคราะห์เปรียบเทียบ MoM เพื่อนำไปส่งให้ AI แปรรูปทำสไลด์นำเสนอผู้บริหารได้ทันที</p>
-                <textarea id="ai-summary-text" readonly></textarea>
-                <button class="btn-copy" onclick="copySummaryToClipboard()">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
+                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลด้านล่างนี้ได้รับการคำนวณ Insight แบบออโต้แล้ว สามารถกดปุ่มเพื่อคัดลอกเนื้อหาไปทำสไลด์พรีเซนต์ต่อได้ทันที</p>
+                <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Markdown...</textarea>
+                <button class="btn-copy" id="final-copy-btn">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
             </div>
         </div>
     </div>
@@ -154,7 +153,6 @@
         
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
-            // 🛠️ ตกแต่งสีข้อความงวดเดือนให้ตัวหนังสือเล็กลงและจางลง ป้องกันสายตาสับสน
             let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
             let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
             
@@ -287,7 +285,7 @@
             });
         }
 
-        // 🛠️ ล็อกระบบการคำนวณ Insight และโครงสร้างรายงาน Markdown แบบสมบูรณ์เพื่อพร้อมส่งให้ NotebookLM เจนงานต่อได้ทันที
+        // 🛠️ ล็อกระบบการคำนวณข้อความรายงานจริง ไม่ให้ส่งข้อความจำลองสั้นๆ ติดไปในปุ่ม
         function generateBarChartAndSummary() {
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
             const container = document.getElementById('bar-chart-container'); const aiTextBox = document.getElementById('ai-summary-text');
@@ -297,7 +295,7 @@
 
             if (!target || !store.channels[target]) {
                 container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">[ระบบว่าง] โปรดอัปโหลดไฟล์รายงานเพื่อเริ่มคำนวณพล็อตข้อมูลสไลด์</p>`;
-                aiTextBox.value = "ระบบจะพิมพ์โครงร่างรายงานสไลด์ให้ที่นี่อัตโนมัติ เมื่อมีการใส่ไฟล์รายเดือนเข้าสู่ระบบ...";
+                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Markdown...";
                 return;
             }
             
@@ -311,7 +309,6 @@
                 container.innerHTML += `<div class="chart-row"><div class="chart-label">${c.name}</div><div class="bar-container"><div class="bar-wrapper"><div class="bar bar-base" style="width: ${(p?.rev||0)/maxRev*100}%;"></div><span>${base||'ฐาน'}: ${fmtTHB(p?.rev||0)}</span></div><div class="bar-wrapper"><div class="bar bar-target" style="width: ${c.rev/maxRev*100}%;"></div><span style="color:#0284c7;">${target}: ${fmtTHB(c.rev)}</span></div></div></div>`;
             });
 
-            // เจนหัวข้อรายงานสไลด์สรุปเนื้อหาจริงของบริษัท S1 MUSIC
             let mcnTotalCur = curData.reduce((s, x) => s + x.rev, 0);
             let mcnTotalPrev = prevData ? prevData.reduce((s, x) => s + x.rev, 0) : 0;
             let mcnTotalViewsCur = curData.reduce((s, x) => s + x.views, 0);
@@ -333,7 +330,7 @@
             }
 
             let aiText = `## โครงร่างสำหรับสรุปสไลด์รายงานพาร์ทเนอร์ MCN (S1 MUSIC Executive Summary)\n`;
-            aiText += `รายงานวิเคราะห์ความแตกต่างประจำงวดเดือน: ${base || 'งวดก่อนหน้า'} เปรียบเทียบกับงวดทองคำ ${target}\n\n`;
+            aiText += `รายงานวิเคราะห์ความแตกต่างประจำงวดเดือน: ${base || 'งวดก่อนหน้า'} เปรียบเทียบกับงวดเงินปันผล ${target}\n\n`;
             aiText += `### SLIDE 1: ผลประกอบการด้านการเงินรวมพาร์ทเนอร์ (MCN Overall Health Dashboard)\n`;
             aiText += `- มูลค่ารายได้สุทธิรวมของสถานีในเครือข่าย: ${fmtTHB(mcnTotalCur)}\n`;
             aiText += `- ดัชนีการเติบโตของรายรับรวม (MoM Growth): ${totalGrowthStr}\n`;
@@ -355,18 +352,18 @@
             aiTextBox.value = aiText;
         }
 
-        // 🛠️ แก้ไขบั๊กของระบบปุ่มคัดลอกให้ดึงโครงร่างรายงานสไลด์ตัวจริงติดคลิปบอร์ดไป 100% ไม่ติดข้อความแจ้งเตือนสถานะเว็บ
-        function copySummaryToClipboard() {
+        // 🛠️ ผูกตัวรับคำสั่งปุ่มกดไอดีเดี่ยวตัวจริงเพื่อก๊อปปี้รายงานสไลด์ตัวจริงลงคลิปบอร์ด 100%
+        document.getElementById('final-copy-btn').addEventListener('click', function() {
             const textarea = document.getElementById('ai-summary-text');
-            if (!textarea || textarea.value.includes("ระบบจะพิมพ์โครงร่าง")) {
+            if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
                 alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกสคริปต์สไลด์ครับ");
                 return;
             }
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกโครงร่างรายงานสไลด์สำหรับ NotebookLM สำเร็จเรียบร้อยแล้วครับ! สามารถนำไปวาง (Ctrl+V) สั่งงาน AI ต่อได้ทันทีเลยครับ");
-        }
+            alert("📋 คัดลอกโครงร่างรายงานสไลด์สำหรับ NotebookLM สำเร็จเรียบร้อยแล้วครับ! นำไปกด วาง (Ctrl+V) ใน NoteBookLM ได้ทันทีเลยครับ");
+        });
     </script>
 </body>
 </html>
