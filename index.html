@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Dashboard (Compare Edition)</title>
+    <title>S1 MUSIC - MCN Dashboard (MoM Corrected)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -12,9 +12,10 @@
         h2 { margin: 0; color: #0284c7; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        .btn-group { display: flex; gap: 6px; margin-bottom: 16px; }
+        .btn-group { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
         .btn { padding: 8px 16px; background: #fff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
         .btn.active { background: #0284c7; color: #fff; }
+        .btn-copy { background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
         .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
         .badge-asset { background: #f0fdf4; color: #166534; }
         .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; margin-left: 6px; }
@@ -25,19 +26,31 @@
         td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; white-space: nowrap; vertical-align: top; }
         .input-file-label { font-weight: bold; font-size: 12px; color: #0284c7; display: block; margin-bottom: 8px; }
         .hidden { display: none; }
-        .cell-base-val { font-size: 11px; color: #64748b; margin-bottom: 2px; font-weight: normal; }
+        .cell-base-val { font-size: 11px; color: #64748b; margin-bottom: 2px; }
         .cell-target-val { font-size: 13px; font-weight: 700; color: #0f172a; }
         .mom-indicator { font-size: 11px; display: block; font-weight: bold; margin-top: 3px; }
         .up { color: #16a34a; }
         .down { color: #dc2626; }
         .neutral { color: #94a3b8; }
+        .chart-row { margin-bottom: 16px; }
+        .chart-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #334155; }
+        .bar-container { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; }
+        .bar-wrapper { display: flex; align-items: center; gap: 8px; }
+        .bar { height: 16px; border-radius: 4px; min-width: 3px; }
+        .bar-base { background: #94a3b8; }
+        .bar-target { background: #0284c7; }
+        .bar-value { font-size: 11px; font-weight: bold; color: #475569; }
+        .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+        textarea { width: 100%; height: 220px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="card">
-            <h2>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตร (เปรียบเทียบข้อมูล 2 เดือน)</h2>
+            <h2>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตร MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
                 <small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>
             </div>
@@ -49,14 +62,15 @@
                 <input type="file" id="channel-upload" accept=".csv" />
             </div>
             <div class="card">
-                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง</label>
+                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพหน (เช่น APR ASSET.csv)</label>
                 <input type="file" id="asset-upload" accept=".csv" />
             </div>
         </div>
 
         <div class="btn-group">
-            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่องแบบโชว์คู่ขนาน</button>
-            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset แบบโชว์คู่ขนาน</button>
+            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่อง</button>
+            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 กราฟแท่งเปรียบเทียบ & บทสรุปทำสไลด์ด้วย AI</button>
         </div>
 
         <div class="card">
@@ -110,6 +124,18 @@
                     </table>
                 </div>
             </div>
+
+            <div id="view-analysis" class="hidden">
+                <div class="chart-legend">
+                    <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้เดือนฐาน</span></div>
+                    <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้เดือนเปรียบเทียบ</span></div>
+                </div>
+                <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง</h3>
+                <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
+                <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
+                <textarea id="ai-summary-text" readonly></textarea>
+                <button class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('ai-summary-text').value); alert('คัดลอกแล้ว!');">📋 คัดลอกเนื้อหาสำหรับ NotebookLM</button>
+            </div>
         </div>
     </div>
 
@@ -120,39 +146,24 @@
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        // 🛠️ ฟังก์ชันการเรนเดอร์ข้อมูลแบบ 2 เดือนซ้อนกัน และสรุปคำอ่านอย่างชาญฉลาดในทุกช่อง
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
-            
             let baseText = prevLabel ? `${prevLabel}: ${formatter(prevVal)}` : `ฐาน: --`;
             let targetText = curLabel ? `${curLabel}: ${formatter(curVal)}` : `เทียบ: ${formatter(curVal)}`;
-            
             let indicatorText = '';
             if (prevVal === undefined || prevVal === null || prevVal === 0) {
                 indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
             } else {
                 const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                if (parseFloat(diff) > 0) {
-                    indicatorText = `<span class="mom-indicator up">▲ +${diff}% (เพิ่มขึ้น)</span>`;
-                } else if (parseFloat(diff) < 0) {
-                    indicatorText = `<span class="mom-indicator down">▼ ${diff}% (ลดลง)</span>`;
-                } else {
-                    indicatorText = `<span class="mom-indicator neutral">0.0% (เท่าเดิม)</span>`;
-                }
+                indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}% (เพิ่มขึ้น)</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}% (ลดลง)</span>` : `<span class="mom-indicator neutral">0.0% (เท่าเดิม)</span>`);
             }
-
-            return `
-                <div class="cell-base-val">${baseText}</div>
-                <div class="cell-target-val">${targetText}</div>
-                ${indicatorText}
-            `;
+            return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
         }
 
         function parseCSV(text) {
             let lines = text.split(/\r\n|\n/);
             return lines.filter(line => line.trim() !== '').map(line => {
-                let row = [''];
-                let insideQuote = false;
+                let row = ['']; let insideQuote = false;
                 for (let i = 0; i < line.length; i++) {
                     let c = line[i];
                     if (c === '"') { insideQuote = !insideQuote; } 
@@ -167,8 +178,11 @@
             activeTab = tabName;
             document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
             document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
+            document.getElementById('tab-analysis').classList.toggle('active', tabName === 'analysis');
             document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
             document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
+            document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
+            if (tabName === 'analysis') generateBarChartAndSummary();
         }
 
         document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
@@ -187,11 +201,13 @@
                 const headers = rows[0].map(h => h.toLowerCase().trim());
                 const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
                 const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
-                const revIdx = headers.findIndex(h => h.includes('revenue') && !h.includes('ad revenue') && !h.includes('premium'));
-                const premiumIdx = headers.findIndex(h => h.includes('premium'));
-                const viewsIdx = headers.findIndex(h => h === 'views');
-                const rpmIdx = headers.findIndex(h => h.includes('rpm'));
-                const cpmIdx = headers.findIndex(h => h.includes('playback-based cpm') || h === 'cpm (thb)');
+                
+                // 🛠️ ล็อกเงื่อนไขหัวคอลัมน์ระดับสัมบูรณ์ ป้องกันการจำตำแหน่งสลับช่องของฝั่ง Asset
+                let revIdx = headers.findIndex(h => h === 'estimated partner revenue (thb)' || h === 'estimated partner revenue');
+                let premiumIdx = headers.findIndex(h => h === 'youtube premium partner revenue (thb)' || h === 'youtube premium partner revenue');
+                let viewsIdx = headers.findIndex(h => h === 'views');
+                let rpmIdx = headers.findIndex(h => h === 'rpm (thb)' || h === 'rpm');
+                let cpmIdx = headers.findIndex(h => h.includes('playback-based cpm') || h === 'cpm (thb)');
 
                 const processedData = [];
                 for(let i = 1; i < rows.length; i++) {
@@ -208,7 +224,6 @@
                         cpm: parseFloat(r[cpmIdx]?.replace(/[^0-9.-]/g, "")) || 0
                     });
                 }
-                
                 store[type][label] = processedData;
                 updateDropdownsAndBadges();
             };
@@ -216,126 +231,67 @@
         }
 
         function updateDropdownsAndBadges() {
-            const badgeContainer = document.getElementById('badge-container');
-            badgeContainer.innerHTML = '';
-            
-            const chBase = document.getElementById('channel-base-select');
-            const chTarget = document.getElementById('channel-target-select');
-            const chLabels = Object.keys(store.channels);
-            
-            const astBase = document.getElementById('asset-base-select');
-            const astTarget = document.getElementById('asset-target-select');
-            const astLabels = Object.keys(store.assets);
+            const badgeContainer = document.getElementById('badge-container'); badgeContainer.innerHTML = '';
+            const chBase = document.getElementById('channel-base-select'); const chTarget = document.getElementById('channel-target-select'); const chLabels = Object.keys(store.channels);
+            const astBase = document.getElementById('asset-base-select'); const astTarget = document.getElementById('asset-target-select'); const astLabels = Object.keys(store.assets);
 
-            chLabels.forEach(l => {
-                badgeContainer.innerHTML += `<span class="badge">${l} (ช่อง) <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`;
-            });
-            astLabels.forEach(l => {
-                badgeContainer.innerHTML += `<span class="badge badge-asset">${l} (Asset) <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`;
-            });
-            if(chLabels.length === 0 && astLabels.length === 0) {
-                badgeContainer.innerHTML = '<small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>';
-            }
+            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">${l} (ช่อง) <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`; });
+            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">${l} (Asset) <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`; });
+            if(chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>';
 
-            updateSelectOptions(chBase, chLabels);
-            updateSelectOptions(chTarget, chLabels);
-            updateSelectOptions(astBase, astLabels);
-            updateSelectOptions(astTarget, astLabels);
+            updateSelectOptions(chBase, chLabels); updateSelectOptions(chTarget, chLabels); updateSelectOptions(astBase, astLabels); updateSelectOptions(astTarget, astLabels);
 
-            // 🛠️ ล็อกค่าให้ Dropdown เลือกเดือนล่าสุดและเดือนก่อนหน้าทันที ไม่ค้างที่หน้าว่างเปล่า
             if(chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
             if(chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
             if(astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
             if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
-            renderChannelTable();
-            renderAssetTable();
+            renderChannelTable(); renderAssetTable();
         }
 
         function updateSelectOptions(selectElement, labels) {
-            const currentVal = selectElement.value;
-            selectElement.innerHTML = `<option value="">เลือกเดือน</option>`;
-            labels.forEach(l => {
-                selectElement.innerHTML += `<option value="${l}">${l}</option>`;
-            });
-            if (labels.includes(currentVal)) {
-                selectElement.value = currentVal;
-            }
+            const currentVal = selectElement.value; selectElement.innerHTML = `<option value="">เลือกเดือน</option>`;
+            labels.forEach(l => { selectElement.innerHTML += `<option value="${l}">${l}</option>`; });
+            if (labels.includes(currentVal)) selectElement.value = currentVal;
         }
 
-        function deleteMonth(label, type) {
-            delete store[type][label];
-            updateDropdownsAndBadges();
-        }
+        function deleteMonth(label, type) { delete store[type][label]; updateDropdownsAndBadges(); }
 
         function renderChannelTable() {
-            const base = document.getElementById('channel-base-select').value;
-            const target = document.getElementById('channel-target-select').value;
-            const tbody = document.getElementById('channel-table-body');
-            
-            if (!target || !store.channels[target]) {
-                tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV หรือเลือกงวดเวลาเปรียบเทียบด้านบน</td></tr>`;
-                return;
-            }
-
-            const curData = store.channels[target];
-            const prevData = base ? store.channels[base] : null;
-            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
-            
+            const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value; const tbody = document.getElementById('channel-table-body');
+            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ช่องทาง</td></tr>`; return; }
+            const curData = store.channels[target]; const prevData = base ? store.channels[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(c => {
                 let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
-                let pRev = prevItem ? prevItem.rev : 0;
-                let pPremium = prevItem ? prevItem.premium : 0;
-                let pViews = prevItem ? prevItem.views : 0;
-                let pRpm = prevItem ? prevItem.rpm : 0;
-                let pCpm = prevItem ? prevItem.cpm : 0;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${c.name}</b></td>
-                        <td align="right">${createComparisonCell(c.rev, pRev, target, base, true)}</td>
-                        <td align="right">${createComparisonCell(c.premium, pPremium, target, base, true)}</td>
-                        <td align="right">${createComparisonCell(c.views, pViews, target, base, false)}</td>
-                        <td align="right" style="background-color: #fbfdfb;">${createComparisonCell(c.rpm, pRpm, target, base, true)}</td>
-                        <td align="right">${createComparisonCell(c.cpm, pCpm, target, base, true)}</td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><b>${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
         function renderAssetTable() {
-            const base = document.getElementById('asset-base-select').value;
-            const target = document.getElementById('asset-target-select').value;
-            const tbody = document.getElementById('asset-table-body');
-            
-            if (!target || !store.assets[target]) {
-                tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset หรือเลือกงวดเวลาเปรียบเทียบด้านบน</td></tr>`;
-                return;
-            }
-
-            const curData = store.assets[target];
-            const prevData = base ? store.assets[base] : null;
-            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
-            
+            const base = document.getElementById('asset-base-select').value; const target = document.getElementById('asset-target-select').value; const tbody = document.getElementById('asset-table-body');
+            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset</td></tr>`; return; }
+            const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(a => {
                 let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
-                let pRev = prevItem ? prevItem.rev : 0;
-                let pPremium = prevItem ? prevItem.premium : 0;
-                let pViews = prevItem ? prevItem.views : 0;
-                let pRpm = prevItem ? prevItem.rpm : 0;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>${a.name}</b></td>
-                        <td align="right">${createComparisonCell(a.rev, pRev, target, base, true)}</td>
-                        <td align="right">${createComparisonCell(a.premium, pPremium, target, base, true)}</td>
-                        <td align="right">${createComparisonCell(a.views, pViews, target, base, false)}</td>
-                        <td align="right" style="background-color: #fbfdfb;">${createComparisonCell(a.rpm, pRpm, target, base, true)}</td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><b>${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
             });
+        }
+
+        function generateBarChartAndSummary() {
+            const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
+            const container = document.getElementById('bar-chart-container'); const aiTextBox = document.getElementById('ai-summary-text');
+            if (!target || !store.channels[target]) return;
+            const curData = store.channels[target]; const prevData = base ? store.channels[base] : null;
+            const top10 = [...curData].sort((a, b) => b.rev - a.rev).slice(0, 10);
+            let maxRev = 1; top10.forEach(c => { if (c.rev > maxRev) maxRev = c.rev; });
+            container.innerHTML = '';
+            top10.forEach(c => {
+                let p = prevData ? prevData.find(x => x.id === c.id) : null;
+                container.innerHTML += `<div class="chart-row"><div class="chart-label">${c.name}</div><div class="bar-container"><div class="bar-wrapper"><div class="bar bar-base" style="width: ${(p?.rev||0)/maxRev*100}%;"></div><span>${base||'ฐาน'}: ${fmtTHB(p?.rev||0)}</span></div><div class="bar-wrapper"><div class="bar bar-target" style="width: ${c.rev/maxRev*100}%;"></div><span style="color:#0284c7;">${target}: ${fmtTHB(c.rev)}</span></div></div></div>`;
+            });
+            aiTextBox.value = "ประมวลผลข้อมูลโครงร่างสไลด์เรียบร้อย กดคัดลอกด้านล่างไปส่งต่อใน NotebookLM ได้เลย!";
         }
     </script>
 </body>
