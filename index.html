@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Dashboard (MoM Edition)</title>
+    <title>S1 MUSIC - MCN Dashboard (MoM Fix)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -75,3 +75,261 @@
                                 <th style="text-align: right;">ยอดวิวรวม (Views)</th>
                                 <th style="text-align: right;">RPM (THB)</th>
                                 <th style="text-align: right;">Playback CPM (THB)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="channel-table-body">
+                            <tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV รายช่องเพื่อเริ่มแสดงผล</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-assets" class="hidden">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
+                    <span style="font-size: 12px; font-weight: bold;">เปรียบเทียบรอบ Asset:</span>
+                    <select id="asset-base-select" onchange="renderAssetTable()"><option value="">เลือกเดือนฐาน</option></select>
+                    <span>➔</span>
+                    <select id="asset-target-select" onchange="renderAssetTable()"><option value="">เลือกเดือนเปรียบเทียบ</option></select>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">ชื่อ Asset ผลงานเพลง</th>
+                                <th style="text-align: right;">รายได้ชิ้นงาน (THB)</th>
+                                <th style="text-align: right;">Premium รายได้ (THB)</th>
+                                <th style="text-align: right;">ยอดวิว (Views)</th>
+                                <th style="text-align: right;">RPM (THB)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asset-table-body">
+                            <tr><td colSpan="5" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset เพื่อเริ่มแสดงผล</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let store = { channels: {}, assets: {} };
+        let activeTab = 'overview';
+
+        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        const fmtNum = (v) => Number(v || 0).toLocaleString();
+        
+        const calcMoM = (cur, prev) => {
+            if (prev === undefined || prev === null || prev === 0) return `<span class="mom-val neutral">--</span>`;
+            const diff = (((cur - prev) / prev) * 100).toFixed(1);
+            if (parseFloat(diff) > 0) return `<span class="mom-val up">▲ +${diff}%</span>`;
+            if (parseFloat(diff) < 0) return `<span class="mom-val down">▼ ${diff}%</span>`;
+            return `<span class="mom-val neutral">0.0%</span>`;
+        };
+
+        function parseCSV(text) {
+            let lines = text.split(/\r\n|\n/);
+            return lines.filter(line => line.trim() !== '').map(line => {
+                let row = [''];
+                let insideQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    let c = line[i];
+                    if (c === '"') { insideQuote = !insideQuote; } 
+                    else if (c === ',' && !insideQuote) { row.push(''); } 
+                    else { row[row.length - 1] += c; }
+                }
+                return row.map(v => v.trim());
+            });
+        }
+
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
+            document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
+            document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
+            document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
+        }
+
+        document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
+        document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
+
+        function handleFileUpload(e, type) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const label = file.name.replace(".csv", "").replace("Asset", "").trim().toUpperCase();
+            
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const rows = parseCSV(evt.target.result);
+                if (rows.length < 2) return;
+                
+                const headers = rows[0].map(h => h.toLowerCase().trim());
+                const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
+                const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
+                const revIdx = headers.findIndex(h => h.includes('revenue'));
+                const premiumIdx = headers.findIndex(h => h.includes('premium'));
+                const viewsIdx = headers.findIndex(h => h === 'views');
+                const rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                const cpmIdx = headers.findIndex(h => h.includes('playback-based cpm') || h === 'cpm (thb)');
+
+                const processedData = [];
+                for(let i = 1; i < rows.length; i++) {
+                    let r = rows[i];
+                    if(!r[idIdx] || r[idIdx].toLowerCase() === 'total' || r[idIdx] === '') continue;
+                    
+                    processedData.push({
+                        id: r[idIdx].toLowerCase().trim(), // 🛠️ บังคับเป็นตัวพิมพ์เล็กเพื่อความแม่นยำตอนเช็กข้ามเดือน
+                        name: r[nameIdx] || 'Unknown',
+                        rev: parseFloat(r[revIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        premium: parseFloat(r[premiumIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        views: parseInt(r[viewsIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        rpm: parseFloat(r[rpmIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        cpm: parseFloat(r[cpmIdx]?.replace(/[^0-9.-]/g, "")) || 0
+                    });
+                }
+                
+                store[type][label] = processedData;
+                updateDropdownsAndBadges();
+            };
+            reader.readAsText(file, "UTF-8");
+        }
+
+        function updateDropdownsAndBadges() {
+            const badgeContainer = document.getElementById('badge-container');
+            badgeContainer.innerHTML = '';
+            
+            const chBase = document.getElementById('channel-base-select');
+            const chTarget = document.getElementById('channel-target-select');
+            const chLabels = Object.keys(store.channels);
+            
+            const astBase = document.getElementById('asset-base-select');
+            const astTarget = document.getElementById('asset-target-select');
+            const astLabels = Object.keys(store.assets);
+
+            chLabels.forEach(l => {
+                badgeContainer.innerHTML += `<span class="badge">${l} (ช่อง) <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`;
+            });
+            astLabels.forEach(l => {
+                badgeContainer.innerHTML += `<span class="badge badge-asset">${l} (Asset) <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`;
+            });
+            if(chLabels.length === 0 && astLabels.length === 0) {
+                badgeContainer.innerHTML = '<small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>';
+            }
+
+            updateSelectOptions(chBase, chLabels);
+            updateSelectOptions(chTarget, chLabels);
+            updateSelectOptions(astBase, astLabels);
+            updateSelectOptions(astTarget, astLabels);
+
+            if(chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
+            if(chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
+            if(astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
+            if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
+
+            renderChannelTable();
+            renderAssetTable();
+        }
+
+        function updateSelectOptions(selectElement, labels) {
+            const currentVal = selectElement.value;
+            selectElement.innerHTML = `<option value="">เลือกเดือน</option>`;
+            labels.forEach(l => {
+                selectElement.innerHTML += `<option value="${l}">${l}</option>`;
+            });
+            selectElement.value = currentVal;
+        }
+
+        function deleteMonth(label, type) {
+            delete store[type][label];
+            updateDropdownsAndBadges();
+        }
+
+        function renderChannelTable() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
+            const tbody = document.getElementById('channel-table-body');
+            
+            if (!target || !store.channels[target]) {
+                tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV หรือเลือกงวดเวลาเปรียบเทียบด้านบน</td></tr>`;
+                return;
+            }
+
+            const curData = store.channels[target];
+            const prevData = base ? store.channels[base] : null;
+            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            
+            tbody.innerHTML = '';
+            sorted.forEach(c => {
+                let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${c.name}</b></td>
+                        <td align="right" style="color:#0284c7; font-weight:bold;">
+                            ${fmtTHB(c.rev)}
+                            ${prevItem ? calcMoM(c.rev, prevItem.rev) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtTHB(c.premium)}
+                            ${prevItem ? calcMoM(c.premium, prevItem.premium) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtNum(c.views)}
+                            ${prevItem ? calcMoM(c.views, prevItem.views) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right" style="color:#16a34a;">
+                            ${fmtTHB(c.rpm)}
+                            ${prevItem ? calcMoM(c.rpm, prevItem.rpm) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtTHB(c.cpm)}
+                            ${prevItem ? calcMoM(c.cpm, prevItem.cpm) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderAssetTable() {
+            const base = document.getElementById('asset-base-select').value;
+            const target = document.getElementById('asset-target-select').value;
+            const tbody = document.getElementById('asset-table-body');
+            
+            if (!target || !store.assets[target]) {
+                tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset หรือเลือกงวดเวลาเปรียบเทียบด้านบน</td></tr>`;
+                return;
+            }
+
+            const curData = store.assets[target];
+            const prevData = base ? store.assets[base] : null;
+            const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            
+            tbody.innerHTML = '';
+            sorted.forEach(a => {
+                let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${a.name}</b></td>
+                        <td align="right" style="color:#0284c7; font-weight:bold;">
+                            ${fmtTHB(a.rev)}
+                            ${prevItem ? calcMoM(a.rev, prevItem.rev) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtTHB(a.premium)}
+                            ${prevItem ? calcMoM(a.premium, prevItem.premium) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtNum(a.views)}
+                            ${prevItem ? calcMoM(a.views, prevItem.views) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                        <td align="right">
+                            ${fmtTHB(a.rpm)}
+                            ${prevItem ? calcMoM(a.rpm, prevItem.rpm) : '<span class="mom-val neutral">--</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
