@@ -46,7 +46,7 @@
         .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
-        textarea { width: 100%; height: 280px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
+        textarea { width: 100%; height: 320px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -130,15 +130,15 @@
 
             <div id="view-analysis" class="hidden">
                 <div class="chart-legend">
-                    <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้เดือนฐาน</span></div>
-                    <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้เดือนเปรียบเทียบ</span></div>
+                    <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้งวดฐาน</span></div>
+                    <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้งวดปัจจุบัน</span></div>
                 </div>
                 <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง (เรียงตามรายรับสูงสุด)</h3>
                 <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
                 <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
                 <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
                 <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลด้านล่างนี้ได้รับการคำนวณ Insight แบบออโต้แล้ว สามารถกดปุ่มเพื่อคัดลอกเนื้อหาไปทำสไลด์พรีเซนต์ต่อได้ทันที</p>
-                <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Markdown...</textarea>
+                <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...</textarea>
                 <button class="btn-copy" id="final-copy-btn">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
             </div>
         </div>
@@ -161,7 +161,7 @@
                 indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
             } else {
                 const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                // 🛠️ ถอดข้อความภาษาไทยออกทั้งหมดเรียบร้อย เหลือเฉพาะ สัญลักษณ์ และ %
+                // แสดงเฉพาะ ลูกศร และ % สลับสีเขียวแดง คลีนตาตามบรีฟ
                 indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
             }
             return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
@@ -290,8 +290,8 @@
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
             const container = document.getElementById('bar-chart-container'); const aiTextBox = document.getElementById('ai-summary-text');
             
-            document.getElementById('legend-base-label').innerText = base ? `รายได้เดือนฐาน (${base})` : "รายได้เดือนฐาน";
-            document.getElementById('legend-target-label').innerText = target ? `รายได้เดือนเปรียบเทียบ (${target})` : "รายได้เดือนเปรียบเทียบ";
+            document.getElementById('legend-base-label').innerText = base ? `รายได้งวดฐาน (${base})` : "รายได้งวดฐาน";
+            document.getElementById('legend-target-label').innerText = target ? `รายได้งวดปัจจุบัน (${target})` : "รายได้งวดปัจจุบัน";
 
             if (!target || !store.channels[target]) {
                 container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">[ระบบว่าง] โปรดอัปโหลดไฟล์รายงานเพื่อเริ่มคำนวณพล็อตข้อมูลสไลด์</p>`;
@@ -314,8 +314,11 @@
             let mcnTotalViewsCur = curData.reduce((s, x) => s + x.views, 0);
             let mcnTotalViewsPrev = prevData ? prevData.reduce((s, x) => s + x.views, 0) : 0;
             
-            let totalGrowthStr = prevData && mcnTotalPrev > 0 ? (((mcnTotalCur - mcnTotalPrev)/mcnTotalPrev)*100).toFixed(1) + "%" : "--";
-            let totalViewsGrowthStr = prevData && mcnTotalViewsPrev > 0 ? (((mcnTotalViewsCur - mcnTotalViewsPrev)/mcnTotalViewsPrev)*100).toFixed(1) + "%" : "--";
+            let totalGrowth = prevData && mcnTotalPrev > 0 ? (((mcnTotalCur - mcnTotalPrev)/mcnTotalPrev)*100).toFixed(1) : "0.0";
+            let totalViewsGrowth = prevData && mcnTotalViewsPrev > 0 ? (((mcnTotalViewsCur - mcnTotalViewsPrev)/mcnTotalViewsPrev)*100).toFixed(1) : "0.0";
+            
+            let totalGrowthStr = parseFloat(totalGrowth) >= 0 ? `+${totalGrowth}%` : `${totalGrowth}%`;
+            let totalViewsGrowthStr = parseFloat(totalViewsGrowth) >= 0 ? `+${totalViewsGrowth}%` : `${totalViewsGrowth}%`;
 
             let topGrower = { name: '--', pct: -9999 }; let topDropper = { name: '--', pct: 9999 };
             if (prevData) {
@@ -329,25 +332,26 @@
                 });
             }
 
-            let aiText = `## โครงร่างสำหรับสรุปสไลด์รายงานพาร์ทเนอร์ MCN (S1 MUSIC Executive Summary)\n`;
-            aiText += `รายงานวิเคราะห์ความแตกต่างประจำงวดเดือน: ${base || 'งวดก่อนหน้า'} เปรียบเทียบกับงวดเงินปันผล ${target}\n\n`;
-            aiText += `### SLIDE 1: ผลประกอบการด้านการเงินรวมพาร์ทเนอร์ (MCN Overall Health Dashboard)\n`;
-            aiText += `- มูลค่ารายได้สุทธิรวมของสถานีในเครือข่าย: ${fmtTHB(mcnTotalCur)}\n`;
-            aiText += `- ดัชนีการเติบโตของรายรับรวม (MoM Growth): ${totalGrowthStr}\n`;
-            aiText += `- อัตราปริมาณการเข้าชมรวม (Views Performance): ${fmtNum(mcnTotalViewsCur)} ยอดวิว (แนวโน้มการเปลี่ยนแปลง: ${totalViewsGrowthStr})\n\n`;
-            aiText += `### SLIDE 2: ข้อมูลช่องทางดาวรุ่งสูงสุด และช่องทางสัญญาณอันตราย (MCN Key Focus Areas)\n`;
-            aiText += `- สถานีพันธมิตรที่สร้างการเติบโตได้สูงที่สุด: ช่อง [ ${topGrower.name} ] ดีดตัวบวกพุ่งแรงถึง +${topGrower.pct.toFixed(1)}%\n`;
-            aiText += `- สถานีที่มีอัตราสัดส่วนรายรับถดถอยที่ต้องส่งทีมตรวจสอบซ่อมแซม: ช่อง [ ${topDropper.name} ] ดิ่งตัวลง ${topDropper.pct.toFixed(1)}%\n\n`;
-            aiText += `### SLIDE 3: กางทำเนียบพาร์ทเนอร์ยอดเยี่ยมอันดับสูงสุด (Top 5 Strategic Partners)\n`;
+            let aiText = `## รายงานสรุปผลการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Summary)\n`;
+            aiText += `รายงานผลการวิเคราะห์และเปรียบเทียบสถิติประจำงวด: ประจำเดือน ${base || 'งวดฐาน'} และเดือน ${target}\n\n`;
+            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Performance Dashboard)\n`;
+            aiText += `- **รายได้สุทธิรวมในเครือข่าย (Total Net Revenue):** ${fmtTHB(mcnTotalCur)}\n`;
+            aiText += `- **อัตราการเติบโตของรายได้รวม (MoM Revenue Growth):** ${totalGrowthStr}\n`;
+            aiText += `- **ปริมาณการเข้าชมสะสมรวม (Total Views Performance):** ${fmtNum(mcnTotalViewsCur)} ครั้ง (อัตราการเปลี่ยนแปลงเชิงบวก: ${totalViewsGrowthStr})\n\n`;
+            aiText += `### SLIDE 2: การวิเคราะห์ช่องทางที่มีผลงานโดดเด่นและช่องทางเฝ้าระวัง (Network Key Focus Areas)\n`;
+            aiText += `- **ช่องทางที่มีอัตราการเติบโตสูงสุด (Top Performer):** ช่อง [ ${topGrower.name} ] อัตราการเติบโตเพิ่มขึ้นอย่างมีนัยสำคัญ +${topGrower.pct.toFixed(1)}%\n`;
+            aiText += `- **ช่องทางที่มีอัตราการลดลงของรายได้ที่ต้องตรวจสอบ (Critical Attention Needed):** ช่อง [ ${topDropper.name} ] อัตราการดำเนินงานลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
+            aiText += `### SLIDE 3: อันดับช่องทางพันธมิตรที่สร้างมูลค่าสูงสุด 5 อันดับแรก (Top 5 Strategic Network Partners)\n`;
             top10.slice(0, 5).forEach((c, idx) => {
                 let p = prevData ? prevData.find(x => x.id === c.id) : null;
-                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) + "%" : "--";
-                aiText += `${idx + 1}. ค่าย/ช่อง ${c.name} ➔ รายรับรอบนี้: ${fmtTHB(c.rev)} (สรุป MoM: ${c_pct})\n`;
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
+                let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
+                aiText += `${idx + 1}. **${c.name}** | รายได้งวดปัจจุบัน: ${fmtTHB(c.rev)} (อัตราการเติบโต MoM: ${c_pct_str})\n`;
             });
-            aiText += `\n### SLIDE 4: แผนปฏิบัติการเชิงกลยุทธ์ทีมบริหารประจำงวดหน้า (Actionable Recommendations)\n`;
-            aiText += `1. ส่งแผนสถิติและเทียบค่า RPM ข้ามเดือนให้กับช่องดาวรุ่งเพื่อรักษามาตรฐานยอดเงินการกระจายเสียงโฆษณาลิขสิทธิ์\n`;
-            aiText += `2. นัดประชุมด่วนร่วมกับสถานีที่มีการติดลบของรายรับ เพื่อประเมินว่าปัญหาเกิดจากอัตราวิวสะสมตก หรือค่า CPM ตลาดโดนกดดัน\n`;
-            aiText += `3. ใช้โครงสร้างนี้ในการปรับแนวระดับเงินปันผลการทำสัญญาและซื้อลิขสิทธิ์เพลงใหม่ในกลุ่มค่าย S1 MUSIC ต่อไป`;
+            aiText += `\n### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์และแผนดำเนินงาน (Strategic & Actionable Recommendations)\n`;
+            aiText += `1. **การรักษามาตรฐานรายได้ (Revenue Retention):** จัดทำรายงานวิเคราะห์สถิติและการเปรียบเทียบค่า RPM รายเดือนแก่ช่องทางกลุ่ม Top Growers เพื่อรักษาเสถียรภาพและมาตรฐานการสร้างรายได้โฆษณาลิขสิทธิ์\n`;
+            aiText += `2. **การบริหารจัดการความเสี่ยง (Risk Management):** ดำเนินการตรวจสอบเชิงลึกและร่วมประชุมกับช่องทางที่มีผลประกอบการลดลง เพื่อประเมินสาเหตุระหว่างการลดลงของปริมาณการเข้าชม (Views) หรือความผันผวนของราคาโฆษณาในตลาด (CPM/RPM)\n`;
+            aiText += `3. **การพัฒนาเชิงกลยุทธ์ (Strategic Development):** ใช้โครงสร้างการวิเคราะห์ข้อมูลนี้ เป็นเกณฑ์อ้างอิงในการปรับปรุงนโยบายส่วนแบ่งรายได้ (Revenue Sharing) และการบริหารจัดการสิทธิ์ในผลงานเพลงใหม่ของเครือ S1 MUSIC ในอนาคต`;
 
             aiTextBox.value = aiText;
         }
@@ -361,7 +365,7 @@
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกโครงร่างรายงานสไลด์สำหรับ NotebookLM สำเร็จเรียบร้อยแล้วครับ! นำไปกด วาง (Ctrl+V) ใน NoteBookLM ได้ทันทีเลยครับ");
+            alert("📋 คัดลอกโครงร่างรายงานสรุปสไลด์เวอร์ชันผู้บริหารสำเร็จแล้ว! สามารถนำไปกด วาง (Ctrl+V) สั่งงานใน NotebookLM ต่อได้ทันทีเลยครับ");
         });
     </script>
 </body>
