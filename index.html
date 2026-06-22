@@ -3,141 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Intelligent Dashboard</title>
+    <title>S1 MUSIC - MCN Executive Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
-        .container { padding: 24px; }
-        .card { background: #ffffff; border-radius: 12px; padding: 18px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { margin: 0; color: #0284c7; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        .btn-group { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-        .btn { padding: 8px 16px; background: #fff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 20px; font-weight: 700; font-size: 12px; cursor: pointer; }
-        .btn.active { background: #0284c7; color: #fff; }
-        .btn-copy { background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-copy:hover { background: #15803d; }
-        .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
-        .badge-asset { background: #f0fdf4; color: #166534; }
-        .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; margin-left: 6px; }
-        select { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 12px; color: #0f172a; font-size: 12px; font-weight: bold; }
+        body { margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Sarabun', sans-serif; color: #0f172a; }
+        .container { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .card { background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        h2, h3 { margin: 0; font-weight: 700; }
+        h2 { color: #0284c7; font-size: 20px; }
+        h3 { color: #334155; font-size: 15px; margin-bottom: 16px; }
+        
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
+        
+        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; background: #fff; color: #334155; border: 1px solid #e2e8f0; border-radius: 30px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn.active { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 4px rgba(2,132,199,0.2); }
+        
+        select { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; color: #0f172a; font-size: 13px; font-weight: bold; }
         .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { padding: 12px 12px; text-align: left; color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0; background-color: #f1f5f9; font-size: 11px; white-space: nowrap; }
-        td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; white-space: nowrap; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; }
+        td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; }
+        
+        /* 🎨 Executive Dashboard Styles (หน้าวิเคราะห์โมเดิร์น) */
+        .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .metric-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
+        .metric-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+        .metric-value { font-size: 24px; font-weight: 700; color: #0f172a; }
+        .metric-change { font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-flex; align-items: center; }
+        
+        .panel-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
+        
+        /* สไตล์กลมกราฟ (Donut Visualization) */
+        .donut-container { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
+        .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+        .donut-center { width: 100px; height: 100px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .donut-center .pct { font-size: 20px; font-weight: 700; color: #0f172a; }
+        .donut-center .lbl { font-size: 10px; color: #64748b; font-weight: bold; }
+        .legend-list { display: flex; flex-direction: column; gap: 10px; }
+        .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+        
+        /* สไตล์กราฟแท่งแนวตั้ง (Vertical Bars) */
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 220px; padding-top: 20px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
+        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
+        .v-bar-combo { display: flex; align-items: flex-end; gap: 4px; height: 180px; width: 100%; justify-content: center; }
+        .v-bar { width: 20px; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; }
+        .v-bar:hover::after { content: attr(data-val); position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
+        .v-bar-base { background-color: #cbd5e1; }
+        .v-bar-target { background-color: #38bdf8; }
+        .v-bar-label { font-size: 11px; font-weight: bold; color: #475569; margin-top: 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+
+        .slide-preview-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; }
+        textarea { width: 100%; height: 220px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 12px; font-family: monospace; font-size: 12px; color: #334155; resize: none; }
+        .btn-copy { background: #16a34a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+        .btn-copy:hover { background: #15803d; }
+        .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
+        .badge-asset { background: #f0fdf4; color: #166534; }
+        .btn-del { background: none; color: #ef4444; border: none; cursor: pointer; font-weight: bold; margin-left: 4px; padding: 0; }
         .hidden { display: none; }
-        
-        .cell-base-val { font-size: 10px; color: #94a3b8; margin-bottom: 1px; font-weight: normal; }
-        .cell-target-val { font-size: 13px; font-weight: 700; color: #0f172a; }
-        .mom-indicator { font-size: 11px; display: block; font-weight: bold; margin-top: 3px; }
-        .up { color: #16a34a; }
-        .down { color: #dc2626; }
-        .neutral { color: #94a3b8; }
-        
-        /* สไตล์กราฟแท่งเปรียบเทียบ */
-        .chart-row { margin-bottom: 16px; }
-        .chart-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #334155; }
-        .bar-container { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; }
-        .bar-wrapper { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; color: #475569; }
-        .bar { height: 16px; border-radius: 4px; min-width: 3px; }
-        .bar-base { background: #94a3b8; }
-        .bar-target { background: #0284c7; }
-        .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
-        textarea { width: 100%; height: 380px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
+        .up { color: #16a34a; } .down { color: #ef4444; } .neutral { color: #64748b; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="card">
-            <h2>📊 S1 MUSIC - ศูนย์บริหารข้อมูลเครือข่ายพันธมิตร MCN</h2>
+        <div class="card" style="border-left: 6px solid #0284c7;">
+            <h2>📊 S1 MUSIC — ระบบจัดการสถิติและวิเคราะห์โครงสร้างเครือข่าย MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>
+                <small style="color: #64748b;">[ระบบพร้อมรันข้อมูล] โปรดลากหรืออัปโหลดไฟล์รายงาน .csv ด้านล่างนี้เพื่อเริ่มต้นการคำนวณแบบโมเดิร์น</small>
             </div>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <label style="font-weight:bold; font-size:12px; color:#0284c7; display:block; margin-bottom:8px;">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น APR.csv, MAY.csv)</label>
+        <div class="grid-inputs">
+            <div class="card" style="margin-bottom: 0;">
+                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">📁 อัปโหลดรายงานสถิติรายช่องทาง (เช่น Apr.csv, May.csv)</label>
                 <input type="file" id="channel-upload" accept=".csv" />
             </div>
-            <div class="card">
-                <label style="font-weight:bold; font-size:12px; color:#0284c7; display:block; margin-bottom:8px;">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง (เช่น APR ASSET.csv)</label>
+            <div class="card" style="margin-bottom: 0;">
+                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">💎 อัปโหลดรายงานสัญญาสิทธิ์ระดับ Asset เพลง (เช่น Apr asset.csv)</label>
                 <input type="file" id="asset-upload" accept=".csv" />
             </div>
         </div>
+        <br>
 
         <div class="btn-group">
-            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่อง</button>
-            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset</button>
-            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 บทสรุปทำสไลด์วิเคราะห์ด้วย AI & กราฟแท่ง</button>
+            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 สถิติตารางรายช่องทาง</button>
+            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 สถิติตารางระดับลิขสิทธิ์ Asset</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 ห้องพรีเซนต์ผู้บริหาร (Executive Modern Grid)</button>
         </div>
 
-        <div class="card">
-            <div id="view-overview">
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;"><span style="font-size:12px; font-weight:bold;">เลือกช่วงเวลาเปรียบเทียบรายช่อง:</span><select id="channel-base-select" onchange="renderChannelTable()"></select><span>➔</span><select id="channel-target-select" onchange="renderChannelTable()"></select></div>
-                <div class="table-container"><table><thead><tr><th>ชื่อช่องพาร์ทเนอร์</th><th style="text-align:right;">รายได้สุทธิ (THB)</th><th style="text-align:right;">Premium รายได้ (THB)</th><th style="text-align:right;">ยอดวิวรวม (Views)</th><th style="text-align:right;">RPM (THB)</th><th style="text-align:right;">Playback CPM (THB)</th></tr></thead><tbody id="channel-table-body"></tbody></table></div>
+        <div class="card" id="view-overview">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบข้อมูลช่อง:</span>
+                <select id="channel-base-select" onchange="renderChannelTable()"></select>
+                <span style="color:#cbd5e1;">➔</span>
+                <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
-
-            <div id="view-assets" class="hidden">
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;"><span style="font-size:12px; font-weight:bold;">เลือกช่วงเวลาเปรียบเทียบราย Asset:</span><select id="asset-base-select" onchange="renderAssetTable()"></select><span>➔</span><select id="asset-target-select" onchange="renderAssetTable()"></select></div>
-                <div class="table-container"><table><thead><tr><th>ชื่อ Asset ผลงานเพลง</th><th style="text-align:right;">รายได้ชิ้นงาน (THB)</th><th style="text-align:right;">Premium รายได้ (THB)</th><th style="text-align:right;">ยอดวิว (Views)</th><th style="text-align:right;">RPM (THB)</th></tr></thead><tbody id="asset-table-body"></tbody></table></div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่อสถานี / ช่องพาร์ทเนอร์</th>
+                            <th style="text-align:right;">รายได้พาร์ทเนอร์สุทธิ</th>
+                            <th style="text-align:right;">ส่วนแบ่ง YouTube Premium</th>
+                            <th style="text-align:right;">ปริมาณการรับชมรวม</th>
+                            <th style="text-align:right;">RPM (THB)</th>
+                            <th style="text-align:right;">Playback CPM (THB)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="channel-table-body">
+                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <div id="view-analysis" class="hidden">
-                <div class="chart-legend">
-                    <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้งวดฐาน</span></div>
-                    <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้งวดปัจจุบัน</span></div>
+        <div class="card" id="view-assets" class="hidden">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบชิ้นงานเพลง:</span>
+                <select id="asset-base-select" onchange="renderAssetTable()"></select>
+                <span style="color:#cbd5e1;">➔</span>
+                <select id="asset-target-select" onchange="renderAssetTable()"></select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่อ Asset ผลงานลิขสิทธิ์เพลง</th>
+                            <th style="text-align:right;">รายได้รวมชิ้นงาน</th>
+                            <th style="text-align:right;">รายได้ YouTube Premium</th>
+                            <th style="text-align:right;">ยอดวิวสะสม</th>
+                            <th style="text-align:right;">RPM (THB)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="asset-table-body">
+                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-analysis" class="hidden">
+            
+            <div class="metric-row">
+                <div class="metric-box" style="border-top: 4px solid #38bdf8;">
+                    <div class="metric-title">รายได้สุทธิเครือข่ายรวม (Net Revenue)</div>
+                    <div class="metric-value" id="m-total-rev">฿0.00</div>
+                    <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
-                <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง (เรียงตามรายรับสูงสุด)</h3>
-                <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
-                
-                <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
-                
-                <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
-                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลนี้แจกแจงโครงสร้างรายได้แยกประเภท Ads / Premium และเจาะลึกสัดส่วน Asset รายเพลงให้เรียบร้อยครับ</p>
-                <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...</textarea>
-                <button class="btn-copy" id="final-copy-btn">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
+                <div class="metric-box" style="border-top: 4px solid #4ade80;">
+                    <div class="metric-title">โครงสร้างรายได้โฆษณาปกติ (Ads Revenue)</div>
+                    <div class="metric-value" id="m-ads-rev">฿0.00</div>
+                    <div class="metric-change neutral" style="font-weight: normal;">คำนวณหักลบค่าพรีเมียมออกแล้ว</div>
+                </div>
+                <div class="metric-box" style="border-top: 4px solid #a78bfa;">
+                    <div class="metric-title">ท่อน้ำเลี้ยงส่วนพรีเมียม (YouTube Premium)</div>
+                    <div class="metric-value" id="m-premium-rev">฿0.00</div>
+                    <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนในพอร์ต: --</div>
+                </div>
+                <div class="metric-box" style="border-top: 4px solid #fb923c;">
+                    <div class="metric-title">สถิติปริมาณการเข้าชมรวม (Total views)</div>
+                    <div class="metric-value" id="m-total-views">0</div>
+                    <div class="metric-change" id="m-total-views-change">MoM: --</div>
+                </div>
             </div>
+
+            <div class="panel-split">
+                <div class="card" style="margin-bottom: 0;">
+                    <h3>🟢 สัดส่วนส่วนผสมรายได้ประจำงวดเครือข่าย (Revenue Composition)</h3>
+                    <div class="donut-container">
+                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#38bdf8 0% 70%, #a78bfa 70% 100%);">
+                            <div class="donut-center">
+                                <span class="pct" id="donut-pct-val">61.2%</span>
+                                <span class="lbl">รายได้ฝั่ง Ads</span>
+                            </div>
+                        </div>
+                        <div class="legend-list">
+                            <div><span class="legend-dot" style="background-color: #38bdf8;"></span><span style="font-size:12px; font-weight:700;">รายได้โฆษณาปกติ (Ads)</span></div>
+                            <div><span class="legend-dot" style="background-color: #a78bfa;"></span><span style="font-size:12px; font-weight:700;">รายได้สิทธิ์พรีเมียม (Premium)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 0;">
+                    <h3>📊 เปรียบเทียบผลประกอบการ 5 อันดับแรกประจำเครือข่าย (Top 5 Strategic Partners)</h3>
+                    <div class="v-chart-area" id="v-bar-chart-render">
+                        </div>
+                    <div style="display:flex; justify-content:center; gap:16px; font-size:11px; font-weight:bold; margin-top:12px;">
+                        <div><span style="display:inline-block; width:10px; height:10px; background:#cbd5e1; border-radius:2px; margin-right:4px;"></span>รายได้งวดฐาน</div>
+                        <div><span style="display:inline-block; width:10px; height:10px; background:#38bdf8; border-radius:2px; margin-right:4px;"></span>รายได้งวดปัจจุบัน</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 เอกสารโครงร่างรายงานสรุปสไลด์ (Executive Slide Outline Content)</h3>
+                <div class="slide-preview-box">
+                    <textarea id="ai-summary-text" readonly></textarea>
+                    <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <small style="color:#64748b; font-weight:bold;">✨ คลิกปุ่มเพื่อนำข้อมูลดิบไปสั่งจัดโครงร่างหน้าพรีเซนต์ใน NotebookLM ได้ทันที</small>
+                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาสรุปโครงสร้างสไลด์</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         let store = { channels: {}, assets: {} };
         let activeTab = 'overview';
-
-        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
-        const fmtNum = (v) => Number(v || 0).toLocaleString();
-        
-        function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
-            const formatter = isCurrency ? fmtTHB : fmtNum;
-            let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
-            let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
-            let indicatorText = '';
-            if (prevVal === undefined || prevVal === null || prevVal === 0) {
-                indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
-            } else {
-                const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
-            }
-            return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
-        }
-
-        function parseCSV(text) {
-            let lines = text.split(/\r\n|\n/);
-            return lines.filter(line => line.trim() !== '').map(line => {
-                let row = ['']; let insideQuote = false;
-                for (let i = 0; i < line.length; i++) {
-                    let c = line[i];
-                    if (c === '"') { insideQuote = !insideQuote; } 
-                    else if (c === ',' && !insideQuote) { row.push(''); } 
-                    else { row[row.length - 1] += c; }
-                }
-                return row.map(v => v.trim());
-            });
-        }
 
         function switchTab(tabName) {
             activeTab = tabName;
@@ -148,7 +225,8 @@
             document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
             document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
             document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
-            if (tabName === 'analysis') generateBarChartAndSummary();
+            
+            if (tabName === 'analysis') generateExecutiveReport();
         }
 
         document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
@@ -212,8 +290,7 @@
             if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
             renderChannelTable(); renderAssetTable();
-            // 🛠️ ย้ายฟังก์ชันสร้างกราฟและบทสรุปมาดักวาดไว้ทันทีตรงนี้ ไม่ต้องรอสลับแท็บเพื่อเลี่ยงบั๊กกราฟหาย
-            generateBarChartAndSummary();
+            if (activeTab === 'analysis') generateExecutiveReport();
         }
 
         function updateSelectOptions(selectElement, labels) {
@@ -241,4 +318,156 @@
             const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(a => {
-                let prevItem =
+                let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
+                tbody.innerHTML += `<tr><td><b>${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
+            });
+        }
+
+        // 🧠 🛠️ ฟังก์ชันขับเคลื่อนห้องผู้บริหารหลัก: พล็อต Metric Cards + กราฟโดนัทกลม + แท่งแนวตั้ง + บทสรุป AI ในหน้าเดียวจบ
+        function generateExecutiveReport() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
+            const astTarget = document.getElementById('asset-target-select').value;
+            const astBase = document.getElementById('asset-base-select').value;
+            
+            const aiTextBox = document.getElementById('ai-summary-text');
+            const vBarChartContainer = document.getElementById('v-bar-chart-render');
+            const donutRender = document.getElementById('donut-render');
+            const donutPctVal = document.getElementById('donut-pct-val');
+
+            if (!target || !store.channels[target]) {
+                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสรุปสถิติหน้าผู้บริหาร...";
+                return;
+            }
+
+            const curChannels = store.channels[target];
+            const prevChannels = base ? store.channels[base] : null;
+            const assets = store.assets[astTarget] || [];
+            const prevAssets = store.assets[astBase] || [];
+
+            // 1. คำนวณตัวเลขสำหรับฝังลงช่อง Metric Cards
+            let totalRevCur = curChannels.reduce((sum, x) => sum + x.rev, 0);
+            let totalRevPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.rev, 0) : 0;
+            let premiumCur = curChannels.reduce((sum, x) => sum + x.premium, 0);
+            let adsCur = totalRevCur - premiumCur;
+            let viewsCur = curChannels.reduce((sum, x) => sum + x.views, 0);
+            let viewsPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.views, 0) : 0;
+
+            document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
+            document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
+            document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
+            document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
+
+            // คำนวณร้อยละแนวโน้มความผันผวน
+            if(totalRevPrev > 0) {
+                let diff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
+                document.getElementById('m-total-rev-change').innerHTML = diff > 0 ? `<span class="up">▲ +${diff}% (MoM)</span>` : `<span class="down">▼ ${diff}% (MoM)</span>`;
+            } else { document.getElementById('m-total-rev-change').innerText = 'MoM: --'; }
+
+            if(viewsPrev > 0) {
+                let diffViews = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
+                document.getElementById('m-total-views-change').innerHTML = diffViews > 0 ? `<span class="up">▲ +${diffViews}% (MoM)</span>` : `<span class="down">▼ ${diffViews}% (MoM)</span>`;
+            } else { document.getElementById('m-total-views-change').innerText = 'MoM: --'; }
+
+            let premiumRatio = totalRevCur > 0 ? ((premiumCur / totalRevCur) * 100).toFixed(1) : "0.0";
+            let adsRatio = (100 - parseFloat(premiumRatio)).toFixed(1);
+            document.getElementById('m-premium-ratio').innerText = `สัดส่วนในพอร์ต: ${premiumRatio}%`;
+
+            // 🟢 2. วาดภาพกลมกราฟโดนัทเชิงเทคนิค (Conic-Gradient Rendering)
+            donutRender.style.background = `conic-gradient(#38bdf8 0% ${adsRatio}%, #a78bfa ${adsRatio}% 100%)`;
+            donutPctVal.innerText = `${adsRatio}%`;
+
+            // 📊 3. พล็อตกราฟแท่งแนวตั้ง (Vertical Bar Chart Rendering) กลุ่ม Top 5
+            const top5 = [...curChannels].sort((a,b) => b.rev - a.rev).slice(0, 5);
+            let maxRevenueFound = 1;
+            top5.forEach(c => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                if(c.rev > maxRevenueFound) maxRevenueFound = c.rev;
+                if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
+            });
+
+            vBarChartContainer.innerHTML = '';
+            top5.forEach(c => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                let hBase = p ? ((p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
+                let hTarget = ((c.rev / maxRevenueFound) * 100).toFixed(1);
+
+                vBarChartContainer.innerHTML += `
+                    <div class="v-bar-group">
+                        <div class="v-bar-combo">
+                            <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-val="${fmtTHB(p?.rev||0)}"></div>
+                            <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-val="${fmtTHB(c.rev)}"></div>
+                        </div>
+                        <div class="v-bar-label" title="${c.name}">${c.name}</div>
+                    </div>
+                `;
+            });
+
+            // 🤖 4. สรุปข้อมูลดิบถักร้อยความเชื่อมโยงเป็นโครงร่างสไลด์ในกล่อง Textarea
+            let topGrower = { name: '--', pct: -9999 };
+            let topDropper = { name: '--', pct: 9999 };
+            if (prevChannels) {
+                curChannels.forEach(c => {
+                    let p = prevChannels.find(x => x.id === c.id);
+                    if (p && p.rev > 1000) {
+                        let change = ((c.rev - p.rev) / p.rev) * 100;
+                        if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
+                        if (change < topDropper.pct) { topDropper = { name: c.name, pct: change }; }
+                    }
+                });
+            }
+
+            let aiText = `## รายงานสรุปผลการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Summary)\n`;
+            aiText += `รายงานวิเคราะห์สถิติข้ามงวดประจำรอบบัญชี: เดือน ${base || 'ฐาน'} เปรียบเทียบกับงวดเงินปันผล ${target}\n\n`;
+            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Health Dashboard)\n`;
+            aiText += `- รายได้สุทธิเครือข่ายรวมประจำรอบ (Total Net Revenue): ${fmtTHB(totalRevCur)} (อัตราการเติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace(' (MoM)', '')})\n`;
+            aiText += `- โครงสร้างรายได้ปกติฝั่งโฆษณา (Ad-Supported Revenue): ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ)\n`;
+            aiText += `- ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (YouTube Premium Partner Revenue): ${fmtTHB(premiumCur)} (${premiumRatio}% ของพอร์ตรายรับ)\n`;
+            aiText += `- ปริมาณการเข้าชมสะสมรวม (Total Views Index): ${fmtNum(viewsCur)} ครั้ง (ความผันผวนของยอดวิว: ${document.getElementById('m-total-views-change').innerText.replace(' (MoM)', '')})\n\n`;
+            
+            aiText += `### SLIDE 2: การวิเคราะห์ช่องทางดาวรุ่งสูงสุด และช่องทางสัญญาณเฝ้าระวัง (Network Key Focus Areas)\n`;
+            aiText += `- ช่องทางพันธมิตรที่มีสถิติดึงเงินเติบโตสูงสุด (Top Performer): ค่าย [ ${topGrower.name} ] ดีดตัวบวกขึ้นแรง +${topGrower.pct.toFixed(1)}%\n`;
+            aiText += `- ช่องทางที่มีส่วนต่างรายรับถดถอยที่ต้องส่งทีมตรวจสอบ (Critical Attention Needed): ค่าย [ ${topDropper.name} ] ดิ่งตัวลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
+            
+            aiText += `### SLIDE 3: โครงสร้างประเภทรายรับรายสถานีและอันดับชิ้นงานลิขสิทธิ์เพลง (Revenue Composition & Top Assets)\n`;
+            top5.forEach((c, idx) => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
+                let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
+                let itemAds = c.rev - c.premium;
+                
+                aiText += `${idx + 1}. **ช่องทางพันธมิตร: ${c.name}**\n`;
+                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (แนวโน้มอัตราเติบโต MoM: ${c_pct_str})\n`;
+                aiText += `   - [ส่วนผสมรายได้] ➔ มูลค่าจาก Ads โฆษณา: ${fmtTHB(itemAds)} | มูลค่าจาก Premium สิทธิ์คนดู: ${fmtTHB(c.premium)}\n`;
+                
+                // ระบบ Auto-Mapping ค้นหาเพลงลิขสิทธิ์หลักตัวท็อป 2 เพลงมาฝังใต้สังกัดค่ายทันที
+                let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
+                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
+                
+                if (matchedAssets.length > 0) {
+                    aiText += `   - [Asset ลิขสิทธิ์ย่อยอันดับสูงสุดภายใต้ช่องทาง]\n`;
+                    matchedAssets.forEach(ast => {
+                        let prevAst = prevAssets.find(x => x.id === ast.id);
+                        let astPctStr = '--';
+                        if (prevAst && prevAst.rev > 0) {
+                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
+                            astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
+                        }
+                        aiText += `     • ${ast.name} ➔ รายรับรอบนี้: ${fmtTHB(ast.rev)} (สรุป MoM: ${astPctStr})\n`;
+                    });
+                } else {
+                    aiText += `   - [Asset ลิขสิทธิ์ย่อย] ไม่พบข้อมูลผลงานเพลงสอดคล้องกับชื่อช่องผ่านระบบ Auto-Mapping รอบนี้\n`;
+                }
+                aiText += `\n`;
+            });
+            
+            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์สำหรับทีมบริหารประจำงวดหน้า (Strategic Action Items)\n`;
+            aiText += `1. รักษาสมดุลรายได้ของช่องดาวรุ่งด้วยการเปรียบเทียบค่าสถิติความคุ้มค่าโฆษณา (RPM) เพื่อยึดหัวหาดรายรับลิขสิทธิ์รวม\n`;
+            aiText += `2. ส่งทีมงานนัดประชุมด่วนกับช่องทางกลุ่มเฝ้าระวัง เพื่อคัดแยกความผิดปกติระหว่างปริมาณการเข้าชมตก (Views Drop) หรือราคาโฆษณาในตลาดโดนกดดัน\n`;
+            aiText += `3. ใช้โครงสร้างการกระจายตัวของเงินโฆษณาปกติปะทะพรีเมียมในการปรับเงื่อนไขสัญญาส่วนแบ่งเงินปันผลการซื้อสิทธิ์เพลงใหม่ในอนาคต`;
+
+            aiTextBox.value = aiText;
+        }
+    </script>
+</body>
+</html>
