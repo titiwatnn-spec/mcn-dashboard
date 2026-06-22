@@ -50,17 +50,19 @@
         .legend-list { display: flex; justify-content: center; gap: 16px; width: 100%; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
         
-        /* Vertical Bar Chart */
+        /* Vertical Bar Chart (ดีไซน์ตัวเลขคลีน ไร้กรอบ) */
         .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 300px; padding-top: 60px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; gap: 12px; }
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 100px; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 12px; height: 220px; width: 100%; justify-content: center; position: relative; }
         
         .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 32px; }
         
-        .v-bar-val-top { position: absolute; top: -50px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.4; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; z-index: 5; }
-        .v-bar-val-top.target { border-color: #bae6fd; background: #f0f9ff; }
+        /* ปรับสไตล์ตัวเลขบนหัวกราฟให้บางเบา ไร้กรอบพื้นหลัง */
+        .v-bar-val-top { position: absolute; font-size: 10px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.2; z-index: 5; }
         
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; position: relative; cursor: pointer; }
+        .v-bar:hover::after { content: attr(data-tooltip); position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
+        
         .v-bar-base { background-color: #cbd5e1; opacity: 0.7; }
         .v-bar-target { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 6px rgba(2,132,199,0.2); }
         .v-bar-label { font-size: 12px; font-weight: 700; color: #475569; margin-top: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
@@ -250,7 +252,6 @@
             return `<div style="margin-bottom:2px;">${baseText}</div><div>${targetText} &nbsp;${indicatorText}</div>`;
         }
 
-        // ⚠️ แก้บั๊กการแยกไฟล์ CSV เรียบร้อยแล้ว เปลี่ยนชื่อตัวแปรที่ผิดเป็น insideQuote ให้ถูกต้อง
         function parseCSV(text) {
             let lines = text.split(/\r\n|\n/);
             return lines.filter(line => line.trim() !== '').map(line => {
@@ -438,6 +439,7 @@
                 if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
+            // 📊 อัปเดตสไตล์ตัวเลขบนกราฟเป็นแบบบางเบา ไม่มีกล่องและเส้นขอบกวนสายตา
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
@@ -453,11 +455,11 @@
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHB(p?.rev||0)}</div>
+                                <div class="v-bar-val-top" style="bottom: calc(${Math.max(hBase, 2)}% + 6px); color:#94a3b8;">${fmtTHB(p?.rev||0)}</div>
                                 <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHB(c.rev)}<br><span style="color:#0284c7;">(${contributionPct}%)</span></div>
+                                <div class="v-bar-val-top" style="bottom: calc(${Math.max(hTarget, 2)}% + 6px); color:#0284c7;">${fmtTHB(c.rev)}<br><span style="font-size:9px; color:#64748b;">(${contributionPct}%)</span></div>
                                 <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)} | สัดส่วน: ${contributionPct}%"></div>
                             </div>
                         </div>
