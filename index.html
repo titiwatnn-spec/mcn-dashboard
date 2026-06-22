@@ -3,122 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Strategic Performance Dashboard</title>
+    <title>S1 MUSIC - MCN Exclusive Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Sarabun', sans-serif; color: #0f172a; }
+        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
         .container { padding: 24px; max-width: 1400px; margin: 0 auto; }
-        .card { background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
-        h2, h3 { margin: 0; font-weight: 700; }
-        h2 { color: #0284c7; font-size: 20px; }
-        h3 { color: #334155; font-size: 15px; margin-bottom: 16px; }
+        .card { background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        
+        /* Header Style */
+        .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 16px; padding: 30px 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-card h2 { margin: 0; font-weight: 700; color: #38bdf8; font-size: 24px; letter-spacing: 0.5px; }
+        .header-card p { color: #94a3b8; font-size: 14px; margin-top: 8px; margin-bottom: 0; }
+        
+        h3 { color: #334155; font-size: 16px; margin-bottom: 16px; font-weight: 700; }
         
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
         @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
         
-        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn { padding: 10px 20px; background: #fff; color: #334155; border: 1px solid #e2e8f0; border-radius: 30px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-        .btn.active { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 4px rgba(2,132,199,0.2); }
+        .btn-group { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .btn { padding: 12px 24px; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn:hover { background: #f1f5f9; }
+        .btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 4px 6px -1px rgba(14,165,233,0.3); }
         
-        select { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; color: #0f172a; font-size: 13px; font-weight: bold; }
+        select { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 16px; color: #0f172a; font-size: 14px; font-weight: bold; outline: none; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; white-space: nowrap; }
-        td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; }
+        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 13px; white-space: nowrap; }
+        td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 14px; white-space: nowrap; }
         
-        .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .metric-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
-        .metric-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
-        .metric-value { font-size: 24px; font-weight: 700; color: #0f172a; }
-        .metric-change { font-size: 12px; font-weight: 700; margin-top: 4px; display: inline-flex; align-items: center; }
+        /* Metric Cards (Exclusive Design) */
+        .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .metric-box { background: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .metric-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px; }
+        .metric-value { font-size: 28px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
+        .metric-change { font-size: 13px; font-weight: 700; margin-top: 8px; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; }
         
-        .panel-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .panel-split { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
         
-        .donut-container { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
-        .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; }
-        .donut-center { width: 100px; height: 100px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .donut-center .pct { font-size: 20px; font-weight: 700; color: #0f172a; }
-        .donut-center .lbl { font-size: 10px; color: #64748b; font-weight: bold; }
-        .legend-list { display: flex; flex-direction: column; gap: 10px; }
-        .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+        /* Donut Chart */
+        .donut-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
+        .donut-graphic { width: 180px; height: 180px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .donut-center { width: 120px; height: 120px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .donut-center .pct { font-size: 24px; font-weight: 700; color: #0f172a; }
+        .donut-center .lbl { font-size: 11px; color: #64748b; font-weight: bold; margin-top: 4px; }
+        .legend-list { display: flex; justify-content: center; gap: 16px; width: 100%; }
+        .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
         
-        /* สไตล์กราฟแท่งแนวตั้ง (แสดงมูลค่าเงินและสัดส่วน % กำกับหัวเสาชัดเจน) */
-        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 280px; padding-top: 50px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
-        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
+        /* Vertical Bar Chart (Exclusive Design) */
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 300px; padding-top: 60px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; gap: 12px; }
+        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 100px; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 12px; height: 220px; width: 100%; justify-content: center; position: relative; }
         
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 28px; }
-        .v-bar-val-top { position: absolute; top: -45px; font-size: 9px; font-weight: bold; white-space: nowrap; color: #334155; text-align: center; line-height: 1.3; }
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 32px; }
         
-        .v-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; cursor: pointer; }
-        .v-bar:hover::after { content: attr(data-tooltip); position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
+        /* Label ตัวเลขและ % บนหัวกราฟ */
+        .v-bar-val-top { position: absolute; top: -50px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.4; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; z-index: 5; }
+        .v-bar-val-top.target { border-color: #bae6fd; background: #f0f9ff; }
         
-        .v-bar-base { background-color: #cbd5e1; }
-        .v-bar-target { background-color: #38bdf8; }
-        .v-bar-label { font-size: 11px; font-weight: bold; color: #475569; margin-top: 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+        .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; position: relative; cursor: pointer; }
+        .v-bar-base { background-color: #cbd5e1; opacity: 0.7; }
+        .v-bar-target { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 6px rgba(2,132,199,0.2); }
+        .v-bar-label { font-size: 12px; font-weight: 700; color: #475569; margin-top: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
-        .slide-preview-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; }
-        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 12px; font-family: monospace; font-size: 12px; color: #334155; resize: vertical; box-sizing: border-box; }
-        .btn-copy { background: #16a34a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
-        .btn-copy:hover { background: #15803d; }
-        .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
-        .badge-asset { background: #f0fdf4; color: #166534; }
-        .btn-del { background: none; color: #ef4444; border: none; cursor: pointer; font-weight: bold; margin-left: 4px; padding: 0; }
+        .slide-preview-box { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; padding: 16px; font-family: 'Sarabun', monospace; font-size: 13px; color: #e2e8f0; resize: vertical; box-sizing: border-box; outline: none; line-height: 1.5; }
+        .btn-copy { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: background 0.2s; }
+        .btn-copy:hover { background: #059669; }
+        
+        .badge { display: inline-flex; align-items: center; background: #334155; color: #e2e8f0; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-right: 8px; margin-bottom: 8px; border: 1px solid #475569; }
+        .badge-asset { background: #064e3b; color: #d1fae5; border-color: #047857; }
+        .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: bold; margin-left: 8px; padding: 0; font-size: 14px; }
         .hidden { display: none; }
-        .up { color: #16a34a; font-weight: bold; } .down { color: #ef4444; font-weight: bold; } .neutral { color: #64748b; }
+        
+        /* สีกำกับการเติบโต */
+        .up { color: #10b981; background: #d1fae5; } 
+        .down { color: #ef4444; background: #fee2e2; } 
+        .neutral { color: #64748b; background: #f1f5f9; }
+        
+        /* Text Colors */
+        .text-base { color: #64748b; }
+        .text-target { color: #0284c7; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="card" style="border-left: 6px solid #0284c7;">
-            <h2>📊 S1 MUSIC — ระบบจัดการสถิติและวิเคราะห์โครงสร้างเครือข่าย MCN</h2>
-            <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">[ระบบพร้อมรันข้อมูล] อัปโหลดไฟล์ CSV รายงานประจำงวดเพื่อเริ่มต้นแดชบอร์ด</small>
-            </div>
+        <div class="header-card">
+            <h2>📈 S1 MUSIC - MCN Exclusive Dashboard</h2>
+            <p id="badge-container">ระบบพร้อมประมวลผล โปรดอัปโหลดไฟล์รายงาน .csv ด้านล่าง</p>
         </div>
 
         <div class="grid-inputs">
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น Apr.csv, May.csv)</label>
-                <input type="file" id="channel-upload" accept=".csv" />
+                <label style="font-weight:700; font-size:13px; color:#0f172a; display:block; margin-bottom:12px;">📁 1. อัปโหลดรายงานรายช่องทาง (Channel CSV)</label>
+                <input type="file" id="channel-upload" accept=".csv" style="width: 100%; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 8px;" />
             </div>
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">💎 เลือกไฟล์สรุปชิ้นงานลิขสิทธิ์ Asset (เช่น Apr asset.csv)</label>
-                <input type="file" id="asset-upload" accept=".csv" />
+                <label style="font-weight:700; font-size:13px; color:#0f172a; display:block; margin-bottom:12px;">💎 2. อัปโหลดรายงานชิ้นงานเพลง (Asset CSV)</label>
+                <input type="file" id="asset-upload" accept=".csv" style="width: 100%; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 8px;" />
             </div>
         </div>
-        <br>
 
         <div class="btn-group">
-            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางรายงานรายช่องทาง</button>
-            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางรายงานระดับลิขสิทธิ์ Asset</button>
-            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 MCN Executive Dashboard (หน้าเดียวจบ)</button>
+            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางรายช่องทาง</button>
+            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางชิ้นงาน Asset</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 MCN Exclusive Dashboard</button>
         </div>
 
         <div class="card" id="view-overview">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
                 <select id="channel-base-select" onchange="renderChannelTable()"></select>
-                <span style="color:#cbd5e1;">➔</span>
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบ:</span>
+                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
                 <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>ชื่อช่องทางพาร์ทเนอร์</th>
+                            <th>ชื่อช่องพาร์ทเนอร์</th>
                             <th style="text-align:right;">รายได้สุทธิ (THB)</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
-                            <th style="text-align:right;">ปริมาณการเข้าชมรวม</th>
+                            <th style="text-align:right;">ปริมาณวิวรวม</th>
                             <th style="text-align:right;">RPM (THB)</th>
-                            <th style="text-align:right;">Playback CPM (THB)</th>
+                            <th style="text-align:right;">Avg. CPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายช่องทางเพื่อเริ่มแสดงตารางข้อมูล</td></tr>
+                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -126,25 +140,25 @@
 
         <div class="card hidden" id="view-assets">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
                 <select id="asset-base-select" onchange="renderAssetTable()"></select>
-                <span style="color:#cbd5e1;">➔</span>
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบ:</span>
+                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
                 <select id="asset-target-select" onchange="renderAssetTable()"></select>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>ชื่อ Asset ชิ้นงานลิขสิทธิ์เพลง</th>
-                            <th style="text-align:right;">รายได้รวมชิ้นงาน</th>
+                            <th>ชื่อผลงานลิขสิทธิ์ (Asset)</th>
+                            <th style="text-align:right;">รายได้รวม (THB)</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
                             <th style="text-align:right;">ยอดวิวสะสม</th>
                             <th style="text-align:right;">RPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายลิขสิทธิ์ Asset เพื่อเริ่มแสดงตารางข้อมูล</td></tr>
+                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -152,23 +166,23 @@
 
         <div class="hidden" id="view-analysis">
             <div class="metric-row">
-                <div class="metric-box" style="border-top: 4px solid #38bdf8;">
-                    <div class="metric-title">รายได้รวมเครือข่ายสุทธิ (Net Revenue)</div>
+                <div class="metric-box" style="border-left: 6px solid #0ea5e9;">
+                    <div class="metric-title">รายได้สุทธิเครือข่าย (Net Revenue)</div>
                     <div class="metric-value" id="m-total-rev">฿0.00</div>
                     <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
-                <div class="metric-box" style="border-top: 4px solid #4ade80;">
+                <div class="metric-box" style="border-left: 6px solid #10b981;">
                     <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-avg-cpm" style="font-weight: 700; color: #0369a1;">Avg. CPM: ฿0.00</div>
+                    <div class="metric-change neutral" id="m-avg-cpm" style="background: #f0fdf4; color: #047857;">Avg. CPM: ฿0.00</div>
                 </div>
-                <div class="metric-box" style="border-top: 4px solid #a78bfa;">
+                <div class="metric-box" style="border-left: 6px solid #8b5cf6;">
                     <div class="metric-title">รายได้ YouTube Premium</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนพอร์ตโฟลิโอ: --</div>
+                    <div class="metric-change neutral" id="m-premium-ratio" style="background: #f5f3ff; color: #6d28d9;">สัดส่วนพอร์ต: --</div>
                 </div>
-                <div class="metric-box" style="border-top: 4px solid #fb923c;">
-                    <div class="metric-title">ยอดวิวสะสมรวมเครือข่าย (Total Views)</div>
+                <div class="metric-box" style="border-left: 6px solid #f59e0b;">
+                    <div class="metric-title">ยอดวิวสะสมรวม (Total Views)</div>
                     <div class="metric-value" id="m-total-views">0</div>
                     <div class="metric-change" id="m-total-views-change">MoM: --</div>
                 </div>
@@ -176,37 +190,38 @@
 
             <div class="panel-split">
                 <div class="card" style="margin-bottom: 0;">
-                    <h3>🟢 สัดส่วนส่วนผสมรายได้ประจำงวดเครือข่าย (Revenue Composition)</h3>
+                    <h3>สัดส่วนรายได้เครือข่าย (Revenue Composition)</h3>
                     <div class="donut-container">
-                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#38bdf8 0% 100%);">
+                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#0ea5e9 0% 100%);">
                             <div class="donut-center">
                                 <span class="pct" id="donut-pct-val">0%</span>
-                                <span class="lbl">รายได้ฝั่ง Ads</span>
+                                <span class="lbl">รายได้จากโฆษณา</span>
                             </div>
                         </div>
                         <div class="legend-list">
-                            <div><span class="legend-dot" style="background-color: #38bdf8;"></span><span style="font-size:12px; font-weight:700;">รายได้โฆษณาปกติ (Ads)</span></div>
-                            <div><span class="legend-dot" style="background-color: #a78bfa;"></span><span style="font-size:12px; font-weight:700;">รายได้สิทธิ์พรีเมียม (Premium)</span></div>
+                            <div><span class="legend-dot" style="background-color: #0ea5e9;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้จากโฆษณา</span></div>
+                            <div><span class="legend-dot" style="background-color: #8b5cf6;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้ YouTube Premium</span></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card" style="margin-bottom: 0;">
-                    <h3>📊 เปรียบเทียบผลประกอบการ 5 อันดับแรกประจำเครือข่าย (Top 5 Strategic Partners)</h3>
-                    <div class="v-chart-area" id="v-bar-chart-render"></div>
-                    <div style="display:flex; justify-content:center; gap:16px; font-size:11px; font-weight:bold; margin-top:12px;">
-                        <div><span style="display:inline-block; width:10px; height:10px; background:#cbd5e1; border-radius:2px; margin-right:4px;"></span>รายได้งวดฐาน</div>
-                        <div><span style="display:inline-block; width:10px; height:10px; background:#38bdf8; border-radius:2px; margin-right:4px;"></span>รายได้งวดปัจจุบัน</div>
+                    <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
+                    <div class="v-chart-area" id="v-bar-chart-render">
+                        </div>
+                    <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
+                        <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
+                        <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">งวดปัจจุบัน</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="card" style="margin-top: 24px;">
-                <h3>📋 ข้อความสรุปเนื้อหา (Prompt)</h3>
+                <h3>💬 ข้อความสรุปเนื้อหา (Prompt) สำหรับสร้าง Presentation</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly></textarea>
-                    <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <small style="color:#64748b; font-weight:bold;">✨ ระบบแยกสัดส่วน Ads/Premium และแมปปิ้งดึง Asset รายเพลงให้อัตโนมัติ</small>
+                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อประมวลผลข้อความ Prompt สำหรับ NotebookLM...</textarea>
+                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:#94a3b8; font-size:13px;">💡 นำข้อความนี้ไปวางใน NotebookLM เพื่อให้ AI สร้างสไลด์วิเคราะห์แบบมืออาชีพได้ทันที</span>
                         <button class="btn-copy" id="final-copy-btn">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
                     </div>
                 </div>
@@ -223,16 +238,19 @@
         
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
-            let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
-            let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
+            let baseText = prevLabel ? `<span style="font-size:11px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:11px; color:#cbd5e1;">ฐาน:</span> --`;
+            let targetText = curLabel ? `<span style="font-size:11px; color:#64748b;">ปัจจุบัน:</span> <b style="color:#0f172a;">${formatter(curVal)}</b>` : `<b style="color:#0f172a;">${formatter(curVal)}</b>`;
             let indicatorText = '';
+            
             if (prevVal === undefined || prevVal === null || prevVal === 0) {
-                indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
+                indicatorText = `<span style="font-size:11px; font-weight:bold; color:#94a3b8;">--</span>`;
             } else {
                 const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
+                if (parseFloat(diff) > 0) indicatorText = `<span style="font-size:11px; font-weight:bold; color:#10b981;">▲ +${diff}%</span>`;
+                else if (parseFloat(diff) < 0) indicatorText = `<span style="font-size:11px; font-weight:bold; color:#ef4444;">▼ ${diff}%</span>`;
+                else indicatorText = `<span style="font-size:11px; font-weight:bold; color:#64748b;">0.0%</span>`;
             }
-            return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
+            return `<div style="margin-bottom:2px;">${baseText}</div><div>${targetText} &nbsp;${indicatorText}</div>`;
         }
 
         function parseCSV(text) {
@@ -241,8 +259,8 @@
                 let row = ['']; let insideQuote = false;
                 for (let i = 0; i < line.length; i++) {
                     let c = line[i];
-                    if (c === '"') { letQuote = !letQuote; } 
-                    else if (c === ',' && !letQuote) { row.push(''); } 
+                    if (c === '"') { insideQuote = !insideQuote; } 
+                    else if (c === ',' && !insideQuote) { row.push(''); } 
                     else { row[row.length - 1] += c; }
                 }
                 return row.map(v => v.trim());
@@ -276,9 +294,9 @@
                 if (rows.length < 2) return;
                 
                 const headers = rows[0].map(h => h.toLowerCase().trim());
+                
                 const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
                 const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
-                
                 let revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
                 let premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
                 let viewsIdx = headers.findIndex(h => h.includes('views'));
@@ -288,10 +306,11 @@
                 const processedData = [];
                 for(let i = 1; i < rows.length; i++) {
                     let r = rows[i];
-                    if(!r[currentIdx] || r[currentIdx].toLowerCase() === 'total' || r[currentIdx] === '') continue;
+                    // ⚠️ แก้บั๊กตรงนี้! ใช้ตัวแปร idIdx ที่ถูกต้อง ทำให้สคริปต์สแกนเจอข้อมูลและไม่หยุดชะงัก
+                    if(idIdx === -1 || !r[idIdx] || r[idIdx].toLowerCase() === 'total' || r[idIdx] === '') continue;
                     
                     processedData.push({
-                        id: r[currentIdx].toLowerCase().trim(),
+                        id: r[idIdx].toLowerCase().trim(),
                         name: r[nameIdx] || 'Unknown',
                         rev: parseFloat(r[revIdx]?.replace(/[^0-9.-]/g, "")) || 0,
                         premium: parseFloat(r[premiumIdx]?.replace(/[^0-9.-]/g, "")) || 0,
@@ -311,9 +330,9 @@
             const chBase = document.getElementById('channel-base-select'); const chTarget = document.getElementById('channel-target-select'); const chLabels = Object.keys(store.channels);
             const astBase = document.getElementById('asset-base-select'); const astTarget = document.getElementById('asset-target-select'); const astLabels = Object.keys(store.assets);
 
-            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">${l} (ช่อง) <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`; });
-            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">${l} (Asset) <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`; });
-            if(chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<small style="color: #64748b;">ยังไม่มีชุดข้อมูลในระบบ โปรดอัปโหลดไฟล์ CSV ด้านล่าง</small>';
+            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">📺 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`; });
+            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">🎵 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`; });
+            if(chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<span style="color:#64748b;">รอรับไฟล์ CSV...</span>';
 
             updateSelectOptions(chBase, chLabels); updateSelectOptions(chTarget, chLabels); updateSelectOptions(astBase, astLabels); updateSelectOptions(astTarget, astLabels);
 
@@ -327,7 +346,7 @@
         }
 
         function updateSelectOptions(selectElement, labels) {
-            const currentVal = selectElement.value; selectElement.innerHTML = `<option value="">เลือกเดือน</option>`;
+            const currentVal = selectElement.value; selectElement.innerHTML = `<option value="">-- เลือกงวด --</option>`;
             labels.forEach(l => { selectElement.innerHTML += `<option value="${l}">${l}</option>`; });
             if (labels.includes(currentVal)) selectElement.value = currentVal;
         }
@@ -336,23 +355,23 @@
 
         function renderChannelTable() {
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value; const tbody = document.getElementById('channel-table-body');
-            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:24px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>`; return; }
+            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>`; return; }
             const curData = store.channels[target]; const prevData = base ? store.channels[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(c => {
                 let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
-                tbody.innerHTML += `<tr><td><b>${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
         function renderAssetTable() {
             const base = document.getElementById('asset-base-select').value; const target = document.getElementById('asset-target-select').value; const tbody = document.getElementById('asset-table-body');
-            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:24px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>`; return; }
+            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>`; return; }
             const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(a => {
                 let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
-                tbody.innerHTML += `<tr><td><b>${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
@@ -368,7 +387,7 @@
             const donutPctVal = document.getElementById('donut-pct-val');
 
             if (!target || !store.channels[target]) {
-                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสรุปสถิติหน้าผู้บริหาร...";
+                aiTextBox.value = "ระบบรอรับไฟล์ข้อมูล CSV...";
                 return;
             }
 
@@ -377,6 +396,7 @@
             const assets = store.assets[astTarget] || [];
             const prevAssets = store.assets[astBase] || [];
 
+            // คำนวณภาพรวม
             let totalRevCur = curChannels.reduce((sum, x) => sum + x.rev, 0);
             let totalRevPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.rev, 0) : 0;
             let premiumCur = curChannels.reduce((sum, x) => sum + x.premium, 0);
@@ -384,6 +404,7 @@
             let viewsCur = curChannels.reduce((sum, x) => sum + x.views, 0);
             let viewsPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.views, 0) : 0;
             
+            // คำนวณ Avg CPM
             let avgCpm = 0;
             if (curChannels.length > 0) {
                 let sumCpm = curChannels.reduce((sum, x) => sum + x.cpm, 0);
@@ -392,28 +413,31 @@
 
             document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
             document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
+            document.getElementById('m-avg-cpm').innerText = `Avg. CPM: ${fmtTHB(avgCpm)}`;
             document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
             document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
 
+            // อัปเดต % เติบโต
             let momRevDiff = 0;
             if(totalRevPrev > 0) {
                 momRevDiff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
-                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) > 0 ? `<span class="up">▲ +${momRevDiff}% (MoM)</span>` : `<span class="down">▼ ${momRevDiff}% (MoM)</span>`;
-            } else { document.getElementById('m-total-rev-change').innerText = 'MoM: --'; }
+                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) > 0 ? `<span class="up">▲ +${momRevDiff}% MoM</span>` : `<span class="down">▼ ${momRevDiff}% MoM</span>`;
+            } else { document.getElementById('m-total-rev-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
 
             let momViewDiff = 0;
             if(viewsPrev > 0) {
                 momViewDiff = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
-                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) > 0 ? `<span class="up">▲ +${momViewDiff}% (MoM)</span>` : `<span class="down">▼ ${momViewDiff}% (MoM)</span>`;
-            } else { document.getElementById('m-total-views-change').innerText = 'MoM: --'; }
+                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) > 0 ? `<span class="up">▲ +${momViewDiff}% MoM</span>` : `<span class="down">▼ ${momViewDiff}% MoM</span>`;
+            } else { document.getElementById('m-total-views-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
 
             let premiumRatio = totalRevCur > 0 ? ((premiumCur / totalRevCur) * 100).toFixed(1) : "0.0";
             let adsRatio = (100 - parseFloat(premiumRatio)).toFixed(1);
-            document.getElementById('m-premium-ratio').innerText = `สัดส่วนในพอร์ต: ${premiumRatio}%`;
+            document.getElementById('m-premium-ratio').innerText = `สัดส่วนพอร์ต: ${premiumRatio}%`;
 
-            donutRender.style.background = `conic-gradient(#38bdf8 0% ${adsRatio}%, #a78bfa ${adsRatio}% 100%)`;
+            donutRender.style.background = `conic-gradient(#0ea5e9 0% ${adsRatio}%, #8b5cf6 ${adsRatio}% 100%)`;
             donutPctVal.innerText = `${adsRatio}%`;
 
+            // กราฟแท่ง Top 5
             const top5 = [...curChannels].sort((a,b) => b.rev - a.rev).slice(0, 5);
             let maxRevenueFound = 1;
             top5.forEach(c => {
@@ -429,29 +453,29 @@
                 let hTarget = ((c.rev / maxRevenueFound) * 100).toFixed(1);
                 
                 let barMoM = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
-                let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
+                let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
                 
-                // คำนวณ % สัดส่วน Contribution ของแต่ละ Partner เทียบกับยอดรวมปัจจุบันของเครือข่าย
                 let contributionPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
 
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <span class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%;">${fmtTHB(p?.rev||0)}</span>
+                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHB(p?.rev||0)}</div>
                                 <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
-                                <span class="v-bar-val-top" style="bottom: ${Math.max(hTarget, 5)}%; font-weight:bold; color:#0284c7;">${fmtTHB(c.rev)}<br><span style="font-size:8px; color:#64748b;">(${contributionPct}%)</span></span>
+                                <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHB(c.rev)}<br><span style="color:#0284c7;">(${contributionPct}%)</span></div>
                                 <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)} | สัดส่วน: ${contributionPct}%"></div>
                             </div>
                         </div>
-                        <div style="font-size:10px; margin-top:4px;">${barDiffSymbol}</div>
+                        <div style="font-size:10px; margin-top:8px;">${barDiffSymbol}</div>
                         <div class="v-bar-label" title="${c.name}">${c.name}</div>
                     </div>
                 `;
             });
 
+            // สร้าง Prompt Text
             let topGrower = { name: '--', pct: -9999 };
             let topStable = [];
             if (prevChannels) {
@@ -465,21 +489,20 @@
                 });
             }
 
-            // 🤖 ส่วนสรุปข้อความ (Prompt) แบบจำลองโครงสร้างสไลด์
-            let aiText = `## ข้อความสรุปเนื้อหา (Prompt) สำหรับการนำเสนอผู้บริหาร (Executive Summary Prompt)\n`;
-            aiText += `รายงานวิเคราะห์ข้อมูลเชิงสถิติเปรียบเทียบประจำงวด: เดือน ${base || 'งวดฐาน'} และเดือน ${target}\n\n`;
+            let aiText = `## ข้อความสรุปเนื้อหา (Prompt) สำหรับ Executive Presentation\n`;
+            aiText += `รายงานข้อมูลเปรียบเทียบ: ${base || 'งวดฐาน'} เทียบกับ ${target}\n\n`;
             
-            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Health Dashboard)\n`;
-            aiText += `- **รายได้สุทธิเครือข่ายรวมประจำรอบ:** ${fmtTHB(totalRevCur)} (อัตราการเติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace(' (MoM)', '')})\n`;
-            aiText += `- **รายได้จากโฆษณา (Ad Revenue):** ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ | Average CPM: ${fmtTHB(avgCpm)})\n`;
-            aiText += `- **รายได้ YouTube Premium:** ${fmtTHB(premiumCur)} (${premiumRatio}% ของพอร์ตรายรับ)\n`;
-            aiText += `- **ปริมาณการเข้าชมสะสมรวม:** ${fmtNum(viewsCur)} ครั้ง (ความผันผวนของยอดวิว: ${document.getElementById('m-total-views-change').innerText.replace(' (MoM)', '')})\n\n`;
+            aiText += `### SLIDE 1: ภาพรวมผลประกอบการของเครือข่าย MCN\n`;
+            aiText += `- **รายได้สุทธิเครือข่ายรวม:** ${fmtTHB(totalRevCur)} (เติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace('MoM', '').trim()})\n`;
+            aiText += `- **รายได้จากโฆษณา (Ad Revenue):** ${fmtTHB(adsCur)} (สัดส่วน ${adsRatio}% | Average CPM: ${fmtTHB(avgCpm)})\n`;
+            aiText += `- **รายได้ YouTube Premium:** ${fmtTHB(premiumCur)} (สัดส่วน ${premiumRatio}%)\n`;
+            aiText += `- **ปริมาณการเข้าชมสะสม (Total Views):** ${fmtNum(viewsCur)} ครั้ง\n\n`;
             
-            aiText += `### SLIDE 2: ดัชนีศักยภาพการเติบโตของพันธมิตรและสัดส่วนผู้ใช้กลุ่มคุณภาพ (Network Growth Momentum & Subscriber Segments)\n`;
-            aiText += `- **ช่องทางพันธมิตรที่มีสถิติดึงรายรับเติบโตสูงสุด (Top Performer Growth):** ค่าย [ ${topGrower.name} ] ขับเคลื่อนเม็ดเงินเติบโตขึ้นแรง +${topGrower.pct.toFixed(1)}%\n`;
-            aiText += `- **เสถียรภาพกลุ่มพาร์ทเนอร์หลัก (Stable Revenue Channels):** ภาพรวมสัดส่วนรายรับมีความมั่นคงสูง โดยมีช่องทางสถานีตัวอย่างที่สามารถรักษายอดจำหน่ายได้ในเกณฑ์สม่ำเสมอ เช่น ${topStable.map(x => `[ ${x.name} ]`).join(', ')}\n\n`;
+            aiText += `### SLIDE 2: Insight สัดส่วนผู้บริโภคคุณภาพ และศักยภาพแพลตฟอร์ม\n`;
+            aiText += `- **ความภักดีของผู้ชมและกำลังซื้อ (Premium Subscriber Loyalty):** เครือข่ายสามารถสร้างรายได้จากผู้ใช้ Premium ได้ถึง ${premiumRatio}% สะท้อนให้เห็นว่าผู้ฟังมีความผูกพันและเลือกใช้แพลตฟอร์มแบบไม่มีโฆษณาคั่น ซึ่งเป็นฐานรายได้ที่มีคุณภาพสูงและยั่งยืน\n`;
+            aiText += `- **ช่องทางที่มีอัตราการเติบโตโดดเด่น (Top Growth Catalyst):** ค่าย [ ${topGrower.name} ] เป็นตัวผลักดันสำคัญในงวดนี้ โดยมีอัตราการเติบโตเพิ่มขึ้นถึง +${topGrower.pct.toFixed(1)}% ช่วยดันยอดรวมเครือข่ายอย่างมีนัยสำคัญ\n\n`;
             
-            aiText += `### SLIDE 3: โครงสร้างประเภทรายรับรายสถานีและอันดับชิ้นงานลิขสิทธิ์เพลง (Revenue Composition & Top Assets)\n`;
+            aiText += `### SLIDE 3: โครงสร้างรายได้ Top 5 Strategic Partners และ Top Assets\n`;
             top5.forEach((c, idx) => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
                 let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/c.rev)*100).toFixed(1) : "0.0";
@@ -487,15 +510,15 @@
                 let itemAds = c.rev - c.premium;
                 let contrPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
                 
-                aiText += `${idx + 1}. **ช่องทางพันธมิตร: ${c.name} (สัดส่วนขับเคลื่อน ${contrPct}%)**\n`;
-                aiText += `   - รายได้สุทธิรวมงวดนี้: ${fmtTHB(c.rev)} (แนวโน้มอัตราเติบโต MoM: ${c_pct_str})\n`;
-                aiText += `   - [ส่วนผสมรายรับ] ➔ รายได้จากโฆษณา: ${fmtTHB(itemAds)} | รายได้จากพรีเมียม: ${fmtTHB(c.premium)}\n`;
+                aiText += `${idx + 1}. **พาร์ทเนอร์: ${c.name}** (Contribution: ${contrPct}% ของเครือข่าย)\n`;
+                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (MoM: ${c_pct_str})\n`;
+                aiText += `   - [ประเภทรายได้] รายได้โฆษณา: ${fmtTHB(itemAds)} | รายได้ Premium: ${fmtTHB(c.premium)}\n`;
                 
                 let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
                 let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
                 
                 if (matchedAssets.length > 0) {
-                    aiText += `   - [Asset ลิขสิทธิ์ผลงานเพลงขับเคลื่อนรายรับสูงสุด]\n`;
+                    aiText += `   - [Top Assets ชิ้นงานสร้างรายได้หลัก]\n`;
                     matchedAssets.forEach(ast => {
                         let prevAst = prevAssets.find(x => x.id === ast.id);
                         let astPctStr = '--';
@@ -503,31 +526,29 @@
                             let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
                             astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
                         }
-                        aiText += `     • ${ast.name} ➔ รายรับรอบปัจจุบัน: ${fmtTHB(ast.rev)} (สรุปผลต่าง MoM: ${astPctStr})\n`;
+                        aiText += `     • ${ast.name} (รายได้: ${fmtTHB(ast.rev)} | MoM: ${astPctStr})\n`;
                     });
-                } else {
-                    aiText += `   - [Asset ลิขสิทธิ์เพลง] ไม่พบข้อมูลผลงานอ้างอิงตรงกับชื่อช่องในระบบรอบนี้\n`;
                 }
                 aiText += `\n`;
             });
             
-            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์สำหรับทีมบริหารประจำงวดหน้า (Strategic Action Items)\n`;
-            aiText += `1. รักษาสมดุลรายได้ของช่องดาวรุ่งด้วยการเปรียบเทียบค่าสถิติความคุ้มค่าโฆษณา (RPM) เพื่อยึดหัวหาดรายรับลิขสิทธิ์รวม\n`;
-            aiText += `2. ใช้โครงสร้างการกระจายตัวของเงินโฆษณาปกติปะทะพรีเมียมในการปรับเงื่อนไขสัญญาส่วนแบ่งเงินปันผลการซื้อสิทธิ์เพลงใหม่ในอนาคต`;
+            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์ (Strategic Action Items)\n`;
+            aiText += `1. นำข้อมูล Average CPM ไปวางแผนร่วมกับทีมการตลาด เพื่อกระตุ้นแคมเปญให้ตรงกับช่วงเวลาที่อัตราโฆษณาสูงขึ้น\n`;
+            aiText += `2. ต่อยอดการสนับสนุนพาร์ทเนอร์ที่มีฐานคนฟัง Premium เพื่อสร้าง Exclusive Content ที่ดึงดูดผู้ใช้งานคุณภาพในระยะยาว`;
 
             aiTextBox.value = aiText;
         }
 
         document.getElementById('final-copy-btn').addEventListener('click', function() {
             const textarea = document.getElementById('ai-summary-text');
-            if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
-                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกข้อความ Prompt");
+            if (!textarea || textarea.value.includes("รอข้อมูล")) {
+                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกครับ");
                 return;
             }
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกข้อความสรุปเนื้อหา (Prompt) เรียบร้อยครับ นำไปสั่งงาน AI ต่อได้ทันที!");
+            alert("📋 คัดลอก Prompt สำหรับสร้าง Presentation เรียบร้อยครับ!");
         });
     </script>
 </body>
