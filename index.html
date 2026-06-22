@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Deep Analysis Dashboard</title>
+    <title>S1 MUSIC - MCN Intelligent Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -33,9 +33,7 @@
         .up { color: #16a34a; }
         .down { color: #dc2626; }
         .neutral { color: #94a3b8; }
-        
-        .asset-breakdown-row { background-color: #f8fafc; font-size: 12px; color: #475569; padding-left: 20px; border-left: 3px solid #0284c7; }
-        textarea { width: 100%; height: 320px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
+        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -62,8 +60,7 @@
         <div class="btn-group">
             <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่อง</button>
             <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset</button>
-            <button class="btn" id="tab-deep" onclick="switchTab('deep')">🔍 เจาะลึก Asset รายช่องทาง (Cross-MoM)</button>
-            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 บทสรุปสไลด์โชว์วิเคราะห์ AI</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 บทสรุปทำสไลด์วิเคราะห์ด้วย AI</button>
         </div>
 
         <div class="card">
@@ -77,27 +74,9 @@
                 <div class="table-container"><table><thead><tr><th>ชื่อ Asset ผลงานเพลง</th><th style="text-align:right;">รายได้ชิ้นงาน (THB)</th><th style="text-align:right;">Premium รายได้ (THB)</th><th style="text-align:right;">ยอดวิว (Views)</th><th style="text-align:right;">RPM (THB)</th></tr></thead><tbody id="asset-table-body"></tbody></table></div>
             </div>
 
-            <div id="view-deep" class="hidden">
-                <div style="margin-bottom: 16px; background:#f0fdf4; padding:10px; border-radius:6px; font-size:12px; color:#166534; font-weight:bold;">💡 ระบบดึงความเชื่อมโยงโดยการสแกนหาข้อความชื่อศิลปินหรือค่ายเพลงร่วมกันระหว่างข้อมูลช่องและชื่อ Asset โดยอัตโนมัติ</div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ช่องทางพันธมิตร และโครงสร้างเพลงย่อยภายใต้ช่อง</th>
-                                <th style="text-align:right;">รายได้สุทธิรวมงวดนี้</th>
-                                <th style="text-align:right;">แนวโน้มการเติบโต MoM</th>
-                            </tr>
-                        </thead>
-                        <tbody id="deep-table-body">
-                            <tr><td colSpan="3" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] โปรดอัปโหลดทั้งข้อมูลช่องและข้อมูล Asset เพื่อเริ่มการแมปปิ้งข้ามตาราง</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <div id="view-analysis" class="hidden">
                 <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
-                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลด้านล่างนี้คำนวณและประมวลข้อความสดตามดาต้าจริงระดับบริหารแล้ว สามารถกดปุ่มคัดลอกไปทำสไลด์ต่อได้ทันที</p>
+                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลนี้ได้ทำการ Auto-Mapping ผูกรายได้ค่ายเพลงเข้ากับ Asset รายชิ้นให้สดตาม Source ไฟล์จริงเรียบร้อยแล้วครับ</p>
                 <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...</textarea>
                 <button class="btn-copy" id="final-copy-btn">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
             </div>
@@ -143,15 +122,11 @@
             activeTab = tabName;
             document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
             document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
-            document.getElementById('tab-deep').classList.toggle('active', tabName === 'deep');
             document.getElementById('tab-analysis').classList.toggle('active', tabName === 'analysis');
             
             document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
             document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
-            document.getElementById('view-deep').classList.toggle('hidden', tabName !== 'deep');
             document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
-            
-            if (tabName === 'deep') renderDeepTable();
             if (tabName === 'analysis') generateBarChartAndSummary();
         }
 
@@ -248,68 +223,12 @@
             });
         }
 
-        function renderDeepTable() {
-            const chTarget = document.getElementById('channel-target-select').value;
-            const chBase = document.getElementById('channel-base-select').value;
+        // 🛠️ อัปเดตลอจิกวิเคราะห์ข้อความใหม่: ยัดตารางแจกแจง Asset ย่อยฝังลงสไลด์ของแต่ละช่องให้แบบไดนามิก!
+        function generateBarChartAndSummary() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
             const astTarget = document.getElementById('asset-target-select').value;
             const astBase = document.getElementById('asset-base-select').value;
-            const tbody = document.getElementById('deep-table-body');
-
-            if (!chTarget || !store.channels[chTarget] || !astTarget || !store.assets[astTarget]) {
-                tbody.innerHTML = `<tr><td colSpan="3" align="center" style="padding:24px; color:#64748b;">[ระบบคัดแยกข้ามตารางว่าง] โปรดอัปโหลดรายงานรายช่อง และรายงานระดับ Asset ประจำงวดเดือนให้ครบถ้วนก่อนสแกนคีย์ความเชื่อมโยง</td></tr>`;
-                return;
-            }
-
-            const channels = store.channels[chTarget];
-            const prevChannels = chBase ? store.channels[chBase] : null;
-            const assets = store.assets[astTarget];
-            const prevAssets = astBase ? store.assets[astBase] : null;
-
-            tbody.innerHTML = '';
-
-            channels.forEach(ch => {
-                let prevCh = prevChannels ? prevChannels.find(x => x.id === ch.id) : null;
-                let chDiffText = '--';
-                if(prevCh && prevCh.rev > 0) {
-                    let diff = (((ch.rev - prevCh.rev) / prevCh.rev) * 100).toFixed(1);
-                    chDiffText = parseFloat(diff) > 0 ? `<span class="up">▲ +${diff}%</span>` : `<span class="down">▼ ${diff}%</span>`;
-                }
-
-                let cleanKey = ch.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
-                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey));
-
-                tbody.innerHTML += `
-                    <tr style="background-color: #f1f5f9; font-weight: bold;">
-                        <td>📺 ช่อง: ${ch.name}</td>
-                        <td align="right">${fmtTHB(ch.rev)}</td>
-                        <td align="right">${chDiffText}</td>
-                    </tr>
-                `;
-
-                if(matchedAssets.length === 0) {
-                    tbody.innerHTML += `<tr><td colSpan="3" class="asset-breakdown-row" style="color:#94a3b8; font-style:italic;">ไม่พบ Asset เพลงที่แมตช์คำสำคัญผ่านรายงานรอบนี้</td></tr>`;
-                } else {
-                    matchedAssets.sort((a,b) => b.rev - a.rev).forEach(ast => {
-                        let prevAst = prevAssets ? prevAssets.find(x => x.id === ast.id) : null;
-                        let astDiffText = '--';
-                        if(prevAst && prevAst.rev > 0) {
-                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
-                            astDiffText = parseFloat(d) > 0 ? `<span class="up">▲ +${d}%</span>` : `<span class="down">▼ ${d}%</span>`;
-                        }
-                        tbody.innerHTML += `
-                            <tr>
-                                <td class="asset-breakdown-row">🎵 ${ast.name}</td>
-                                <td align="right" style="font-size:12px; color:#475569;">${fmtTHB(ast.rev)}</td>
-                                <td align="right" style="font-size:12px;">${astDiffText}</td>
-                            </tr>
-                        `;
-                    });
-                }
-            });
-        }
-
-        function generateBarChartAndSummary() {
-            const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
             const aiTextBox = document.getElementById('ai-summary-text');
             
             if (!target || !store.channels[target]) {
@@ -317,7 +236,10 @@
                 return;
             }
             
-            const curData = store.channels[target]; const prevData = base ? store.channels[base] : null;
+            const curData = store.channels[target];
+            const prevData = base ? store.channels[base] : null;
+            const assets = store.assets[astTarget] || [];
+            const prevAssets = store.assets[astBase] || [];
 
             let mcnTotalCur = curData.reduce((s, x) => s + x.rev, 0);
             let mcnTotalPrev = prevData ? prevData.reduce((s, x) => s + x.rev, 0) : 0;
@@ -330,7 +252,9 @@
             let totalGrowthStr = parseFloat(totalGrowth) >= 0 ? `+${totalGrowth}%` : `${totalGrowth}%`;
             let totalViewsGrowthStr = parseFloat(totalViewsGrowth) >= 0 ? `+${totalViewsGrowth}%` : `${totalViewsGrowth}%`;
 
-            let topGrower = { name: '--', pct: -9999 }; let topDropper = { name: '--', pct: 9999 };
+            let topGrower = { name: '--', pct: -9999 };
+            let topDropper = { name: '--', pct: 9999 };
+            
             if (prevData) {
                 curData.forEach(c => {
                     let p = prevData.find(x => x.id === c.id);
@@ -348,19 +272,43 @@
             aiText += `- **รายได้สุทธิรวมในเครือข่าย (Total Net Revenue):** ${fmtTHB(mcnTotalCur)}\n`;
             aiText += `- **อัตราการเติบโตของรายได้รวม (MoM Revenue Growth):** ${totalGrowthStr}\n`;
             aiText += `- **ปริมาณการเข้าชมสะสมรวม (Total Views Performance):** ${fmtNum(mcnTotalViewsCur)} ครั้ง (อัตราการเปลี่ยนแปลงเชิงบวก: ${totalViewsGrowthStr})\n\n`;
+            
             aiText += `### SLIDE 2: การวิเคราะห์ช่องทางที่มีผลงานโดดเด่นและช่องทางเฝ้าระวัง (Network Key Focus Areas)\n`;
             aiText += `- **ช่องทางที่มีอัตราการเติบโตสูงสุด (Top Performer):** ช่อง [ ${topGrower.name} ] อัตราการเติบโตเพิ่มขึ้นอย่างมีนัยสำคัญ +${topGrower.pct.toFixed(1)}%\n`;
             aiText += `- **ช่องทางที่มีอัตราการลดลงของรายได้ที่ต้องตรวจสอบ (Critical Attention Needed):** ช่อง [ ${topDropper.name} ] อัตราการดำเนินงานลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
-            aiText += `### SLIDE 3: อันดับช่องทางพันธมิตรที่สร้างมูลค่าสูงสุด 5 อันดับแรก (Top 5 Strategic Network Partners)\n`;
+            
+            aiText += `### SLIDE 3: โครงสร้างรายได้ของพันธมิตรย่อยและ Asset ที่ขับเคลื่อนการเติบโต (Strategic Partners & Asset Breakdown)\n`;
+            aiText += `เจาะลึก 5 อันดับแรกที่ทำเงินสูงสุดประจำเครือข่าย พร้อมจำแนกรายชื่อเพลง (Asset) หลักภายใต้ช่องทางการดูแล:\n\n`;
             
             const top5 = [...curData].sort((a,b) => b.rev - a.rev).slice(0, 5);
             top5.forEach((c, idx) => {
                 let p = prevData ? prevData.find(x => x.id === c.id) : null;
                 let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
                 let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
-                aiText += `${idx + 1}. **${c.name}** | รายได้งวดปัจจุบัน: ${fmtTHB(c.rev)} (อัตราการเติบโต MoM: ${c_pct_str})\n`;
+                
+                aiText += `${idx + 1}. **ช่องทาง ${c.name}** | รายได้งวดนี้: ${fmtTHB(c.rev)} (สถิติ MoM: ${c_pct_str})\n`;
+                
+                // ลอจิก Auto-Mapping ค้นหารายเพลงย่อยมาเขียนบรรยายใต้หัวข้อช่องทางทันที!
+                let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
+                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 3); // ดึงตัวเด็ดๆ มาโชว์ 3 เพลง
+                
+                if (matchedAssets.length > 0) {
+                    matchedAssets.forEach(ast => {
+                        let prevAst = prevAssets.find(x => x.id === ast.id);
+                        let astPctStr = '--';
+                        if (prevAst && prevAst.rev > 0) {
+                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
+                            astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
+                        }
+                        aiText += `   - [Asset] ${ast.name} ➔ รายรับงวดนี้: ${fmtTHB(ast.rev)} (MoM: ${astPctStr})\n`;
+                    });
+                } else {
+                    aiText += `   - [Asset] ไม่พบข้อมูลเพลงที่แมตช์คำสำคัญผ่านรายงานรอบนี้\n`;
+                }
+                aiText += `\n`;
             });
-            aiText += `\n### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์และแผนดำเนินงาน (Strategic & Actionable Recommendations)\n`;
+            
+            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์และแผนดำเนินงาน (Strategic & Actionable Recommendations)\n`;
             aiText += `1. **การรักษามาตรฐานรายได้ (Revenue Retention):** จัดทำรายงานวิเคราะห์สถิติและการเปรียบเทียบค่า RPM รายเดือนแก่ช่องทางกลุ่ม Top Growers เพื่อรักษาเสถียรภาพและมาตรฐานการสร้างรายได้โฆษณาลิขสิทธิ์\n`;
             aiText += `2. **การบริหารจัดการความเสี่ยง (Risk Management):** ดำเนินการตรวจสอบเชิงลึกและร่วมประชุมกับช่องทางที่มีผลประกอบการลดลง เพื่อประเมินสาเหตุระหว่างการลดลงของปริมาณการเข้าชม (Views) หรือความผันผวนของราคาโฆษณาในตลาด (CPM/RPM)\n`;
             aiText += `3. **การพัฒนาเชิงกลยุทธ์ (Strategic Development):** ใช้โครงสร้างการวิเคราะห์ข้อมูลนี้ เป็นเกณฑ์อ้างอิงในการปรับปรุงนโยบายส่วนแบ่งรายได้ (Revenue Sharing) และการบริหารจัดการสิทธิ์ในผลงานเพลงใหม่ของเครือ S1 MUSIC ในอนาคต`;
