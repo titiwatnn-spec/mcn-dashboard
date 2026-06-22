@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Executive Dashboard</title>
+    <title>S1 MUSIC - MCN Strategic Performance Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -43,13 +43,13 @@
         .legend-list { display: flex; flex-direction: column; gap: 10px; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
         
-        /* สไตล์พล็อตแท่งแนวตั้ง (เพิ่มเลเบลตัวเลขสเกลด้านบน) */
-        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 240px; padding-top: 30px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
+        /* สไตล์พล็อตแท่งแนวตั้ง (แสดงมูลค่าเงินและสัดส่วนกำกับหัวเสา) */
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 260px; padding-top: 40px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
-        .v-bar-combo { display: flex; align-items: flex-end; gap: 6px; height: 200px; width: 100%; justify-content: center; position: relative; }
+        .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 210px; width: 100%; justify-content: center; position: relative; }
         
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 22px; }
-        .v-bar-val-top { position: absolute; top: -25px; font-size: 9px; font-weight: bold; white-space: nowrap; color: #475569; }
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 24px; }
+        .v-bar-val-top { position: absolute; top: -35px; font-size: 9px; font-weight: bold; white-space: nowrap; color: #334155; text-align: center; line-height: 1.2; }
         
         .v-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; cursor: pointer; }
         .v-bar:hover::after { content: attr(data-tooltip); position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
@@ -75,7 +75,7 @@
         <div class="card" style="border-left: 6px solid #0284c7;">
             <h2>📊 S1 MUSIC — ระบบจัดการสถิติและวิเคราะห์โครงสร้างเครือข่าย MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">[ระบบเวอร์ชันอัปเกรด 2026] เลือกอัปโหลดไฟล์สรุปรายงาน (.csv) เพื่อเริ่มต้นแดชบอร์ด</small>
+                <small style="color: #64748b;">[ระบบเวอร์ชันอัปเกรด 2026] เลือกอัปโหลดไฟล์สรุปรายงาน (.csv) เพื่อรันแดชบอร์ด</small>
             </div>
         </div>
 
@@ -158,12 +158,12 @@
                     <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
                 <div class="metric-box" style="border-top: 4px solid #4ade80;">
-                    <div class="metric-title">โครงสร้างรายได้โฆษณาปกติ (Ads Revenue)</div>
+                    <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
-                    <div class="metric-change neutral" style="font-weight: normal;">คำนวณหักส่วนพรีเมียมออกสด</div>
+                    <div class="metric-change neutral" id="m-avg-cpm" style="font-weight: 700; color: #0369a1;">Avg. CPM: ฿0.00</div>
                 </div>
                 <div class="metric-box" style="border-top: 4px solid #a78bfa;">
-                    <div class="metric-title">ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (Premium Revenue)</div>
+                    <div class="metric-title">รายได้ YouTube Premium</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
                     <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนพอร์ตโฟลิโอ: --</div>
                 </div>
@@ -202,12 +202,12 @@
             </div>
 
             <div class="card" style="margin-top: 24px;">
-                <h3>📋 โครงร่างรายงานเนื้อหาสำหรับส่งต่อ NotebookLM</h3>
+                <h3>📋 ข้อความสรุปเนื้อหา (Prompt) สำหรับประมวลผลสไลด์</h3>
                 <div class="slide-preview-box">
                     <textarea id="ai-summary-text" readonly></textarea>
                     <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <small style="color:#64748b; font-weight:bold;">✨ ระบบสแกนเจาะลึกโครงสร้าง Ads/Premium และดึง Asset รายเพลงฝังในสไลด์ที่ 3 ทันที</small>
-                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาโครงสรุปไปวางใน NotebookLM</button>
+                        <small style="color:#64748b; font-weight:bold;">✨ ระบบแจกแจงโครงสร้าง Ads/Premium และดึง Asset รายเพลงฝังในสไลด์ที่ 3 ทันที</small>
+                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาข้อความสรุป (Prompt)</button>
                     </div>
                 </div>
             </div>
@@ -356,7 +356,6 @@
             });
         }
 
-        // 🧠 🛠️ ฟังก์ชันประมวลผลแดชบอร์ดผู้บริหารอัจฉริยะแบบหน้าเดียวจบ
         function generateExecutiveReport() {
             const base = document.getElementById('channel-base-select').value;
             const target = document.getElementById('channel-target-select').value;
@@ -384,13 +383,20 @@
             let adsCur = totalRevCur - premiumCur;
             let viewsCur = curChannels.reduce((sum, x) => sum + x.views, 0);
             let viewsPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.views, 0) : 0;
+            
+            // คำนวณหาค่าเฉลี่ย Average CPM (จากไฟล์จริง ค่า CPM จะแสดงเรตเฉลี่ยต่อพันการเล่น)
+            let avgCpm = 0;
+            if (curChannels.length > 0) {
+                let sumCpm = curChannels.reduce((sum, x) => sum + x.cpm, 0);
+                avgCpm = sumCpm / curChannels.length;
+            }
 
             document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
             document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
+            document.getElementById('m-avg-cpm').innerText = `Avg. CPM: ${fmtTHB(avgCpm)}`;
             document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
             document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
 
-            // คำนวณร้อยละแนวโน้มความผันผวน MoM
             let momRevDiff = 0;
             if(totalRevPrev > 0) {
                 momRevDiff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
@@ -418,7 +424,7 @@
                 if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
-            // 📊 พล็อตกราฟแท่งแนวตั้ง (เพิ่มมูลค่าเงินกำกับหัวเสา + สัญลักษณ์แสดงอัตราเติบโต)
+            // 📊 พล็อตกราฟแท่งแนวตั้ง (เพิ่มตัวเลขแสดงผลต่าง MoM บนหัวแท่งกราฟ)
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
@@ -432,11 +438,11 @@
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <span class="v-bar-val-top" style="bottom: ${hBase}%;">${fmtTHB(p?.rev||0)}</span>
+                                <span class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%;">${fmtTHB(p?.rev||0)}</span>
                                 <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
-                                <span class="v-bar-val-top" style="bottom: ${hTarget}%; font-weight:bold; color:#0284c7;">${fmtTHB(c.rev)}</span>
+                                <span class="v-bar-val-top" style="bottom: ${Math.max(hTarget, 5)}%; font-weight:bold; color:#0284c7;">${fmtTHB(c.rev)}</span>
                                 <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)}"></div>
                             </div>
                         </div>
@@ -447,31 +453,31 @@
             });
 
             let topGrower = { name: '--', pct: -9999 };
-            let topDropper = { name: '--', pct: 9999 };
+            let topStable = [];
             if (prevChannels) {
                 curChannels.forEach(c => {
                     let p = prevChannels.find(x => x.id === c.id);
                     if (p && p.rev > 1000) {
                         let change = ((c.rev - p.rev) / p.rev) * 100;
                         if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
-                        if (change < topDropper.pct) { topDropper = { name: c.name, pct: change }; }
+                        if (Math.abs(change) <= 5) { topStable.push({ name: c.name, val: c.rev }); }
                     }
                 });
             }
 
-            // 🤖 สรุปโครงร่างรายงานนำเสนอ
-            let aiText = `## รายงานสรุปผลการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Summary)\n`;
-            aiText += `รายงานวิเคราะห์สถิติข้ามงวดประจำรอบบัญชี: เดือน ${base || 'งวดฐาน'} เปรียบเทียบกับเดือน ${target}\n\n`;
+            // 🤖 ข้อความสรุปเนื้อหา (Prompt) สำหรับนำไปใช้ต่อ
+            let aiText = `## ข้อความสรุปเนื้อหาการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Prompt)\n`;
+            aiText += `ชุดข้อมูลวิเคราะห์สถิติข้ามงวดประจำรอบบัญชี: เดือน ${base || 'งวดฐาน'} เปรียบเทียบกับงวดเดือน ${target}\n\n`;
             
             aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Health Dashboard)\n`;
             aiText += `- **รายได้สุทธิเครือข่ายรวมประจำรอบ:** ${fmtTHB(totalRevCur)} (อัตราการเติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace(' (MoM)', '')})\n`;
-            aiText += `- **โครงสร้างรายได้ปกติฝั่งโฆษณา:** ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ)\n`;
+            aiText += `- **โครงสร้างรายได้ปกติฝั่งโฆษณา:** ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ | Avg. CPM: ${fmtTHB(avgCpm)})\n`;
             aiText += `- **ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (YouTube Premium):** ${fmtTHB(premiumCur)} (${premiumRatio}% ของพอร์ตรายรับ)\n`;
             aiText += `- **ปริมาณการเข้าชมสะสมรวม:** ${fmtNum(viewsCur)} ครั้ง (ความผันผวนของยอดวิว: ${document.getElementById('m-total-views-change').innerText.replace(' (MoM)', '')})\n\n`;
             
-            aiText += `### SLIDE 2: การวิเคราะห์โครงสร้างความภักดีของผู้บริโภคและสัดส่วนผู้ใช้กลุ่มคุณภาพ (Consumer Loyalty & Platform Index)\n`;
-            aiText += `- **รายงานดัชนีกลุ่มผู้บริโภคกำลังซื้อสูง (Premium Subscription Base Index):** สัดส่วนรายรับจากผู้ใช้งานแบบเสียค่าสมาชิก (Premium) เคลื่อนตัวอยู่ที่ระดับ ${premiumRatio}% ของโครงสร้างรายได้รวม ซึ่งสะท้อนถึงกลุ่มฐานแฟนคลับที่มีความหนาแน่นและพฤติกรรมการเปิดฟังคอนเทนต์ระยะยาว\n`;
-            aiText += `- **ประสิทธิภาพการสร้างรายได้ต่อหน่วยการรับชม (Network Monetization Efficiency):** อัตราส่วนรายรับโฆษณาปกติ (Ad-Supported) เทียบกับปริมาณการเข้าชม แสดงให้เห็นถึงความนิยมในกลุ่มผู้ฟังทั่วไปที่ยังคงเป็นท่อน้ำเลี้ยงหลัก คิดเป็นสัดส่วน ${adsRatio}% ของการขับเคลื่อนเครือข่าย MCN ทั้งหมด\n\n`;
+            aiText += `### SLIDE 2: ดัชนีศักยภาพการเติบโตของพันธมิตรและสัดส่วนผู้ใช้กลุ่มคุณภาพ (Network Growth Momentum & Subscriber Segments)\n`;
+            aiText += `- **ช่องทางพันธมิตรที่มีสถิติดึงรายรับเติบโตสูงสุด (Top Performer Growth):** ค่าย [ ${topGrower.name} ] ดีดตัวบวกขึ้นแรง +${topGrower.pct.toFixed(1)}%\n`;
+            aiText += `- **เสถียรภาพการสร้างรายได้ของพันธมิตรกลุ่มมาตรฐาน (Stable Revenue Performers):** อัตราการดำเนินงานของพาร์ทเนอร์ในเครือข่ายส่วนใหญ่สามารถรักษามาตรฐานการสร้างรายรับได้อย่างมั่นคง โดยมีแชนแนลหลักอาทิเช่น ${topStable.map(x => `[ ${x.name} ]`).join(', ')} ที่รักษาระดับการเติบโตอยู่ในเกณฑ์เสถียรภาพ\n\n`;
             
             aiText += `### SLIDE 3: โครงสร้างประเภทรายรับรายสถานีและอันดับชิ้นงานลิขสิทธิ์เพลง (Revenue Composition & Top Assets)\n`;
             top5.forEach((c, idx) => {
@@ -482,7 +488,7 @@
                 
                 aiText += `${idx + 1}. **ช่องทางพันธมิตร: ${c.name}**\n`;
                 aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (สัดส่วนเหวี่ยงตัว MoM: ${c_pct_str})\n`;
-                aiText += `   - [ประเภทรายได้] ➔ รายรับจาก Ads โฆษณา: ${fmtTHB(itemAds)} | รายรับจาก Premium: ${fmtTHB(c.premium)}\n`;
+                aiText += `   - [ประเภทรายได้] ➔ รายรับจากโฆษณา: ${fmtTHB(itemAds)} | รายรับจาก Premium: ${fmtTHB(c.premium)}\n`;
                 
                 let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
                 let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
@@ -514,13 +520,13 @@
         document.getElementById('final-copy-btn').addEventListener('click', function() {
             const textarea = document.getElementById('ai-summary-text');
             if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
-                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกสคริปต์สไลด์ครับ");
+                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกข้อความสรุปครับ");
                 return;
             }
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกโครงร่างรายงานสรุปสไลด์เวอร์ชันวิเคราะห์โครงสร้างรายได้สำเร็จแล้ว! สามารถนำไปกด วาง (Ctrl+V) สั่งงานใน NotebookLM ต่อได้ทันทีเลยครับ");
+            alert("📋 คัดลอกข้อความสรุปเนื้อหา (Prompt) สำหรับนำไปใช้งานเรียบร้อยแล้วครับ!");
         });
     </script>
 </body>
