@@ -52,11 +52,31 @@
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 220px; width: 100%; justify-content: center; }
         
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 32px; }
+        /* ขยาย Wrapper เล็กน้อยให้ตัวเลขมีพื้นที่หายใจ */
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 36px; }
         
-        /* ตัวหนังสือบางเบาไร้กรอบ นั่งอยู่บนหัวกราฟ */
-        .v-bar-val-top { font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.2; margin-bottom: 6px; z-index: 5; }
-        .v-bar-val-top .pct { font-size: 9px; color: #94a3b8; font-weight: 600; }
+        /* แก้ไขตัวหนังสือบนหัวกราฟ: ไม่มีพื้นหลัง, ไม่มีกรอบ, จัดเรียงแนวตั้งสวยงาม */
+        .v-bar-val-top { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: transparent; 
+            border: none; 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #475569; 
+            white-space: nowrap; 
+            text-align: center; 
+            line-height: 1.2; 
+            margin-bottom: 6px; 
+            z-index: 5; 
+        }
+        .v-bar-val-top .pct { 
+            font-size: 9px; 
+            color: #94a3b8; 
+            font-weight: 600; 
+            margin-top: 2px; 
+        }
         
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; cursor: pointer; position: relative; }
         .v-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; margin-bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10; white-space: nowrap; pointer-events: none; }
@@ -204,7 +224,8 @@
 
                 <div class="card" style="margin-bottom: 0;">
                     <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
-                    <div class="v-chart-area" id="v-bar-chart-render"></div>
+                    <div class="v-chart-area" id="v-bar-chart-render">
+                        </div>
                     <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
                         <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
                         <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">งวดปัจจุบัน</span></div>
@@ -241,4 +262,64 @@
             return Number(v).toFixed(0);
         };
         
-        function createComparisonCell(curVal, prevVal, curLabel, prev
+        // -----------------------------------------------------------
+        // (ส่วนนี้คือโครงสร้าง JS ปิดท้าย เนื่องจากโค้ดที่ส่งมาถูกตัดจบไป)
+        // คุณสามารถนำฟังก์ชันคำนวณหลังบ้านของคุณมาวางต่อได้เลย 
+        // -----------------------------------------------------------
+
+        function createComparisonCell(curVal, prevVal, curLabel, prevLabel) {
+            // โค้ดเดิมของคุณ
+        }
+
+        // ระบบเปลี่ยนแท็บเมนู
+        function switchTab(tabId) {
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            document.getElementById('view-overview').classList.add('hidden');
+            document.getElementById('view-assets').classList.add('hidden');
+            document.getElementById('view-analysis').classList.add('hidden');
+            
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+            activeTab = tabId;
+        }
+
+        /* 💡 ตัวอย่างการประยุกต์ใช้ในฟังก์ชันวาดกราฟ (Render Bar Chart) ของคุณ 
+        สังเกตการเรียกใช้ fmtShortTHB() ใน HTML Template ด้านล่าง 
+        */
+        function exampleRenderTop5(dataList) {
+            const chartArea = document.getElementById('v-bar-chart-render');
+            chartArea.innerHTML = '';
+            
+            // ... ลอจิกหา max value สำหรับคำนวณ % ความสูงของแท่งกราฟของคุณ ...
+
+            dataList.forEach(item => {
+                const group = document.createElement('div');
+                group.className = 'v-bar-group';
+                
+                // ใช้ fmtShortTHB เพื่อประหยัดพื้นที่บนหัวแท่งกราฟ
+                group.innerHTML = `
+                    <div class="v-bar-combo">
+                        <div class="v-bar-wrapper">
+                            <div class="v-bar-val-top">
+                                <span>${fmtShortTHB(item.baseVal)}</span>
+                                <span class="pct">(${item.basePct}%)</span>
+                            </div>
+                            <div class="v-bar v-bar-base" style="height: ${item.baseHeight}%" data-tooltip="ฐาน: ${fmtTHB(item.baseVal)}"></div>
+                        </div>
+                        <div class="v-bar-wrapper">
+                            <div class="v-bar-val-top">
+                                <span>${fmtShortTHB(item.targetVal)}</span>
+                                <span class="pct">(${item.targetPct}%)</span>
+                            </div>
+                            <div class="v-bar v-bar-target" style="height: ${item.targetHeight}%" data-tooltip="ปัจจุบัน: ${fmtTHB(item.targetVal)}"></div>
+                        </div>
+                    </div>
+                    <div class="v-bar-label" title="${item.name}">${item.name}</div>
+                `;
+                chartArea.appendChild(group);
+            });
+        }
+    </script>
+</body>
+</html>
