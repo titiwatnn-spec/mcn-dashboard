@@ -16,16 +16,17 @@
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
         @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
         
-        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn { padding: 10px 20px; background: #fff; color: #334155; border: 1px solid #e2e8f0; border-radius: 30px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
         .btn.active { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 4px rgba(2,132,199,0.2); }
         
         select { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; color: #0f172a; font-size: 13px; font-weight: bold; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; }
+        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; white-space: nowrap; }
         td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; }
         
+        /* Layout หน้าแดชบอร์ดผู้บริหาร */
         .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .metric-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
         .metric-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
@@ -35,18 +36,20 @@
         .panel-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
         
+        /* ดีไซน์กราฟกลมโดนัทแบบมินิมอล */
         .donut-container { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
-        .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+        .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; }
         .donut-center { width: 100px; height: 100px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .donut-center .pct { font-size: 20px; font-weight: 700; color: #0f172a; }
         .donut-center .lbl { font-size: 10px; color: #64748b; font-weight: bold; }
         .legend-list { display: flex; flex-direction: column; gap: 10px; }
-        .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+        .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
         
+        /* ดีไซน์กราฟแท่งแนวตั้ง Top 5 */
         .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 220px; padding-top: 20px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 4px; height: 180px; width: 100%; justify-content: center; }
-        .v-bar { width: 20px; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; }
+        .v-bar { width: 20px; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; cursor: pointer; }
         .v-bar:hover::after { content: attr(data-val); position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
         .v-bar-base { background-color: #cbd5e1; }
         .v-bar-target { background-color: #38bdf8; }
@@ -67,51 +70,52 @@
 
     <div class="container">
         <div class="card" style="border-left: 6px solid #0284c7;">
-            <h2>📊 S1 MUSIC — ระบบจัดการสถิติและวิเคราะห์โครงสร้างเครือข่าย MCN</h2>
+            <h2>📊 S1 MUSIC — ระบบวิเคราะห์และจัดการสถิติพาร์ทเนอร์ในเครือข่าย MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">[ระบบพร้อมรันข้อมูล] โปรดเลือกอัปโหลดไฟล์รายงาน .csv ด้านล่างนี้เพื่อเริ่มต้นการคำนวณ</small>
+                <small style="color: #64748b;">[ระบบพร้อมใช้งาน] โปรดคลิกเลือกไฟล์รายงานประจำงวด (.csv) ด้านล่างนี้เพื่อเริ่มต้นการประมวลผล</small>
             </div>
         </div>
 
         <div class="grid-inputs">
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">📁 อัปโหลดรายงานสถิติรายช่องทาง (เช่น Apr.csv, May.csv)</label>
+                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น Apr.csv, May.csv)</label>
                 <input type="file" id="channel-upload" accept=".csv" />
             </div>
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">💎 อัปโหลดรายงานสัญญาสิทธิ์ระดับ Asset เพลง (เช่น Apr asset.csv)</label>
+                <label style="font-weight:700; font-size:12px; color:#0284c7; display:block; margin-bottom:10px;">💎 เลือกไฟล์สรุปชิ้นงานลิขสิทธิ์ Asset (เช่น Apr asset.csv)</label>
                 <input type="file" id="asset-upload" accept=".csv" />
             </div>
         </div>
         <br>
 
         <div class="btn-group">
-            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 สถิติตารางรายช่องทาง</button>
-            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 สถิติตารางระดับลิขสิทธิ์ Asset</button>
-            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 ห้องพรีเซนต์ผู้บริหาร (Executive Modern Grid)</button>
+            <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางรายงานรายช่องทาง</button>
+            <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางรายงานระดับลิขสิทธิ์ Asset</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 MCN Executive Dashboard (หน้าเดียวจบ)</button>
         </div>
 
         <div class="card" id="view-overview">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบข้อมูลช่อง:</span>
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
                 <select id="channel-base-select" onchange="renderChannelTable()"></select>
                 <span style="color:#cbd5e1;">➔</span>
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบ:</span>
                 <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>ชื่อสถานี / ช่องพาร์ทเนอร์</th>
-                            <th style="text-align:right;">รายได้พาร์ทเนอร์สุทธิ</th>
-                            <th style="text-align:right;">ส่วนแบ่ง YouTube Premium</th>
-                            <th style="text-align:right;">ปริมาณการรับชมรวม</th>
+                            <th>ชื่อช่องทางพาร์ทเนอร์</th>
+                            <th style="text-align:right;">รายได้สุทธิ (THB)</th>
+                            <th style="text-align:right;">รายได้ YouTube Premium</th>
+                            <th style="text-align:right;">ปริมาณการเข้าชมรวม</th>
                             <th style="text-align:right;">RPM (THB)</th>
                             <th style="text-align:right;">Playback CPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>
+                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายช่องทางเพื่อเริ่มแสดงตารางข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -119,16 +123,17 @@
 
         <div class="card hidden" id="view-assets">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบชิ้นงานเพลง:</span>
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
                 <select id="asset-base-select" onchange="renderAssetTable()"></select>
                 <span style="color:#cbd5e1;">➔</span>
+                <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบ:</span>
                 <select id="asset-target-select" onchange="renderAssetTable()"></select>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>ชื่อ Asset ผลงานลิขสิทธิ์เพลง</th>
+                            <th>ชื่อ Asset ชิ้นงานลิขสิทธิ์เพลง</th>
                             <th style="text-align:right;">รายได้รวมชิ้นงาน</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
                             <th style="text-align:right;">ยอดวิวสะสม</th>
@@ -136,7 +141,7 @@
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>
+                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพื่อเริ่มแสดงตารางข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -145,22 +150,22 @@
         <div id="view-analysis" class="hidden">
             <div class="metric-row">
                 <div class="metric-box" style="border-top: 4px solid #38bdf8;">
-                    <div class="metric-title">รายได้สุทธิเครือข่ายรวม (Net Revenue)</div>
+                    <div class="metric-title">รายได้รวมเครือข่ายสุทธิ (Net Revenue)</div>
                     <div class="metric-value" id="m-total-rev">฿0.00</div>
                     <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
                 <div class="metric-box" style="border-top: 4px solid #4ade80;">
                     <div class="metric-title">โครงสร้างรายได้โฆษณาปกติ (Ads Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
-                    <div class="metric-change neutral" style="font-weight: normal;">คำนวณหักลบค่าพรีเมียมออกแล้ว</div>
+                    <div class="metric-change neutral" style="font-weight: normal;">หักส่วนแบ่งค่าพรีเมียมเรียบร้อย</div>
                 </div>
                 <div class="metric-box" style="border-top: 4px solid #a78bfa;">
-                    <div class="metric-title">ท่อน้ำเลี้ยงส่วนพรีเมียม (YouTube Premium)</div>
+                    <div class="metric-title">ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (Premium Revenue)</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนในพอร์ต: --</div>
+                    <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนพอร์ตโฟลิโอ: --</div>
                 </div>
                 <div class="metric-box" style="border-top: 4px solid #fb923c;">
-                    <div class="metric-title">สถิติปริมาณการเข้าชมรวม (Total views)</div>
+                    <div class="metric-title">ยอดวิวสะสมรวมเครือข่าย (Total Views)</div>
                     <div class="metric-value" id="m-total-views">0</div>
                     <div class="metric-change" id="m-total-views-change">MoM: --</div>
                 </div>
@@ -194,12 +199,12 @@
             </div>
 
             <div class="card">
-                <h3>📋 เอกสารโครงร่างรายงานสรุปสไลด์ (Executive Slide Outline Content)</h3>
+                <h3>📋 โครงร่างรายงานเนื้อหาสำหรับส่งต่อ NotebookLM</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...</textarea>
+                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อคำนวณและสร้างสคริปต์สไลด์ความเชื่อมโยงระดับบริหาร...</textarea>
                     <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <small style="color:#64748b; font-weight:bold;">✨ คลิกปุ่มเพื่อนำข้อมูลดิบไปสั่งจัดโครงร่างหน้าพรีเซนต์ใน NotebookLM ได้ทันที</small>
-                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาสรุปโครงสร้างสไลด์</button>
+                        <small style="color:#64748b; font-weight:bold;">✨ ระบบ Auto-Mapping ผูกข้อมูลราย Ads และลิสต์เพลงย่อยให้อัตโนมัติในแถวสไลด์ที่ 3</small>
+                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาโครงสรุปไปวางใน NotebookLM</button>
                     </div>
                 </div>
             </div>
@@ -213,18 +218,18 @@
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        function parseCSV(text) {
-            let lines = text.split(/\r\n|\n/);
-            return lines.filter(line => line.trim() !== '').map(line => {
-                let row = ['']; let insideQuote = false;
-                for (let i = 0; i < line.length; i++) {
-                    let c = line[i];
-                    if (c === '"') { insideQuote = !insideQuote; } 
-                    else if (c === ',' && !insideQuote) { row.push(''); } 
-                    else { row[row.length - 1] += c; }
-                }
-                return row.map(v => v.trim());
-            });
+        function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
+            const formatter = isCurrency ? fmtTHB : fmtNum;
+            let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
+            let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
+            let indicatorText = '';
+            if (prevVal === undefined || prevVal === null || prevVal === 0) {
+                indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
+            } else {
+                const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
+                indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
+            }
+            return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
         }
 
         function switchTab(tabName) {
