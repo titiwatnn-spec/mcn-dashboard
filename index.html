@@ -52,31 +52,12 @@
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 220px; width: 100%; justify-content: center; }
         
-        /* ขยาย Wrapper เล็กน้อยให้ตัวเลขมีพื้นที่หายใจ */
+        /* ขยาย Wrapper ให้ตัวเลขมีพื้นที่หายใจ */
         .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 36px; }
         
-        /* แก้ไขตัวหนังสือบนหัวกราฟ: ไม่มีพื้นหลัง, ไม่มีกรอบ, จัดเรียงแนวตั้งสวยงาม */
-        .v-bar-val-top { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            background: transparent; 
-            border: none; 
-            font-size: 11px; 
-            font-weight: 700; 
-            color: #475569; 
-            white-space: nowrap; 
-            text-align: center; 
-            line-height: 1.2; 
-            margin-bottom: 6px; 
-            z-index: 5; 
-        }
-        .v-bar-val-top .pct { 
-            font-size: 9px; 
-            color: #94a3b8; 
-            font-weight: 600; 
-            margin-top: 2px; 
-        }
+        /* ตัวหนังสือบางเบาไร้กรอบ นั่งอยู่บนหัวกราฟ */
+        .v-bar-val-top { display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap; text-align: center; line-height: 1.2; margin-bottom: 6px; z-index: 5; }
+        .v-bar-val-top .pct { font-size: 9px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
         
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; cursor: pointer; position: relative; }
         .v-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; margin-bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10; white-space: nowrap; pointer-events: none; }
@@ -90,15 +71,7 @@
         .btn-copy { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: background 0.2s; }
         .btn-copy:hover { background: #059669; }
         
-        .badge { display: inline-flex; align-items: center; background: #334155; color: #e2e8f0; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-right: 8px; margin-bottom: 8px; border: 1px solid #475569; }
-        .badge-asset { background: #064e3b; color: #d1fae5; border-color: #047857; }
-        .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: bold; margin-left: 8px; padding: 0; font-size: 14px; }
         .hidden { display: none; }
-        
-        .up { color: #10b981; background: #d1fae5; } 
-        .down { color: #ef4444; background: #fee2e2; } 
-        .neutral { color: #64748b; background: #f1f5f9; }
-        
         .text-base { color: #64748b; }
         .text-target { color: #0284c7; }
     </style>
@@ -130,11 +103,7 @@
 
         <div class="card" id="view-overview">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
-                <select id="channel-base-select" onchange="renderChannelTable()"></select>
-                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
-                <select id="channel-target-select" onchange="renderChannelTable()"></select>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนเปรียบเทียบ (สำหรับแสดงผลจำลอง):</span>
             </div>
             <div class="table-container">
                 <table>
@@ -144,38 +113,26 @@
                             <th style="text-align:right;">รายได้สุทธิ (THB)</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
                             <th style="text-align:right;">ปริมาณวิวรวม</th>
-                            <th style="text-align:right;">RPM (THB)</th>
-                            <th style="text-align:right;">Avg. CPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="4" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="card hidden" id="view-assets">
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
-                <select id="asset-base-select" onchange="renderAssetTable()"></select>
-                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
-                <select id="asset-target-select" onchange="renderAssetTable()"></select>
-            </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>ชื่อผลงานลิขสิทธิ์ (Asset)</th>
                             <th style="text-align:right;">รายได้รวม (THB)</th>
-                            <th style="text-align:right;">รายได้ YouTube Premium</th>
-                            <th style="text-align:right;">ยอดวิวสะสม</th>
-                            <th style="text-align:right;">RPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="2" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">ฟีเจอร์รอการอัปโหลดไฟล์ Asset</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -186,22 +143,19 @@
                 <div class="metric-box" style="border-left: 6px solid #0ea5e9;">
                     <div class="metric-title">รายได้สุทธิเครือข่าย (Net Revenue)</div>
                     <div class="metric-value" id="m-total-rev">฿0.00</div>
-                    <div class="metric-change" id="m-total-rev-change">MoM: --</div>
+                    <div class="metric-change" id="m-total-rev-change">แสดงผลจากข้อมูลอัปโหลด</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #10b981;">
                     <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-avg-cpm" style="background: #f0fdf4; color: #047857;">Avg. CPM: ฿0.00</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #8b5cf6;">
                     <div class="metric-title">รายได้ YouTube Premium</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-premium-ratio" style="background: #f5f3ff; color: #6d28d9;">สัดส่วนพอร์ต: --</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #f59e0b;">
                     <div class="metric-title">ยอดวิวสะสมรวม (Total Views)</div>
                     <div class="metric-value" id="m-total-views">0</div>
-                    <div class="metric-change" id="m-total-views-change">MoM: --</div>
                 </div>
             </div>
 
@@ -225,7 +179,8 @@
                 <div class="card" style="margin-bottom: 0;">
                     <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
                     <div class="v-chart-area" id="v-bar-chart-render">
-                        </div>
+                        <div style="color:#94a3b8; font-size:14px; text-align:center; width:100%; margin-bottom:50px;">รอการประมวลผลข้อมูล...</div>
+                    </div>
                     <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
                         <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
                         <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">งวดปัจจุบัน</span></div>
@@ -236,42 +191,26 @@
             <div class="card" style="margin-top: 24px;">
                 <h3>💬 ข้อความสรุปเนื้อหา (Prompt) สำหรับสร้าง Presentation</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อประมวลผลข้อความ Prompt สำหรับ NotebookLM...</textarea>
-                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="color:#94a3b8; font-size:13px;">💡 นำข้อความนี้ไปวางใน NotebookLM เพื่อให้ AI สร้างสไลด์วิเคราะห์แบบมืออาชีพได้ทันที</span>
-                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
-                    </div>
+                    <textarea id="ai-summary-text" readonly>ระบบพร้อมทำงาน เมื่อมีข้อมูลจะสร้าง Prompt ให้อัตโนมัติ...</textarea>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let store = { channels: {}, assets: {} };
-        let activeTab = 'overview';
-
-        // รูปแบบเงินเต็ม
+        // ฟังก์ชัน Format ตัวเลข
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        // 🌟 รูปแบบเงินแบบสั้น (Short Format) ตัดทอนเหลือ K (หลักพัน/แสน) และ M (หลักล้าน)
+        // 🌟 ฟังก์ชันย่อตัวเลขสำหรับใช้บนหัวกราฟเพื่อประหยัดพื้นที่
         const fmtShortTHB = (v) => {
             if (v >= 1000000) return (v / 1000000).toFixed(2) + "M";
             if (v >= 100000) return (v / 1000).toFixed(0) + "k";
             if (v >= 1000) return (v / 1000).toFixed(1) + "k";
             return Number(v).toFixed(0);
         };
-        
-        // -----------------------------------------------------------
-        // (ส่วนนี้คือโครงสร้าง JS ปิดท้าย เนื่องจากโค้ดที่ส่งมาถูกตัดจบไป)
-        // คุณสามารถนำฟังก์ชันคำนวณหลังบ้านของคุณมาวางต่อได้เลย 
-        // -----------------------------------------------------------
 
-        function createComparisonCell(curVal, prevVal, curLabel, prevLabel) {
-            // โค้ดเดิมของคุณ
-        }
-
-        // ระบบเปลี่ยนแท็บเมนู
+        // ระบบเปลี่ยนหน้าต่าง (Tabs)
         function switchTab(tabId) {
             document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
@@ -281,23 +220,87 @@
             document.getElementById('view-analysis').classList.add('hidden');
             
             document.getElementById('view-' + tabId).classList.remove('hidden');
-            activeTab = tabId;
         }
 
-        /* 💡 ตัวอย่างการประยุกต์ใช้ในฟังก์ชันวาดกราฟ (Render Bar Chart) ของคุณ 
-        สังเกตการเรียกใช้ fmtShortTHB() ใน HTML Template ด้านล่าง 
-        */
-        function exampleRenderTop5(dataList) {
+        // --- ส่วนจำลองการอ่านไฟล์ CSV เบื้องต้น เพื่อประกอบร่างหน้า Dashboard ---
+        document.getElementById('channel-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const text = event.target.result;
+                const rows = text.split('\n').filter(row => row.trim() !== '');
+                
+                // สมมติว่าดึงข้อมูลรายช่องทางมาสร้างตาราง
+                let tableHTML = '';
+                let totalNet = 0; let totalPremium = 0; let totalViews = 0;
+
+                // ข้าม Header แถวแรก
+                for(let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].split(',');
+                    if (cols.length < 4) continue; // ตรวจสอบความถูกต้องไฟล์
+                    
+                    const channelName = cols[0] || 'Unknown';
+                    const netRev = parseFloat(cols[1]) || 0;
+                    const premiumRev = parseFloat(cols[2]) || 0;
+                    const views = parseInt(cols[3]) || 0;
+
+                    totalNet += netRev;
+                    totalPremium += premiumRev;
+                    totalViews += views;
+
+                    tableHTML += `<tr>
+                        <td>${channelName}</td>
+                        <td style="text-align:right;">${fmtTHB(netRev)}</td>
+                        <td style="text-align:right;">${fmtTHB(premiumRev)}</td>
+                        <td style="text-align:right;">${fmtNum(views)}</td>
+                    </tr>`;
+                }
+
+                document.getElementById('channel-table-body').innerHTML = tableHTML || '<tr><td colspan="4" align="center">ไม่พบข้อมูล</td></tr>';
+                
+                // อัปเดต Dashboard
+                document.getElementById('m-total-rev').textContent = fmtTHB(totalNet);
+                document.getElementById('m-ads-rev').textContent = fmtTHB(totalNet - totalPremium); // จำลอง Ad Revenue
+                document.getElementById('m-premium-rev').textContent = fmtTHB(totalPremium);
+                document.getElementById('m-total-views').textContent = fmtNum(totalViews);
+                
+                // สร้างข้อมูลกราฟจำลอง (Mock Data) สำหรับนำไปทดสอบการแสดงผลกราฟแท่ง
+                const mockChartData = [
+                    { name: 'Channel A', baseVal: totalNet * 0.20, basePct: 20, targetVal: totalNet * 0.25, targetPct: 25 },
+                    { name: 'Channel B', baseVal: totalNet * 0.15, basePct: 15, targetVal: totalNet * 0.18, targetPct: 18 },
+                    { name: 'Channel C', baseVal: totalNet * 0.10, basePct: 10, targetVal: totalNet * 0.12, targetPct: 12 },
+                    { name: 'Channel D', baseVal: totalNet * 0.08, basePct: 8,  targetVal: totalNet * 0.09, targetPct: 9 },
+                    { name: 'Channel E', baseVal: totalNet * 0.05, basePct: 5,  targetVal: totalNet * 0.04, targetPct: 4 }
+                ];
+
+                renderTop5Chart(mockChartData);
+                document.getElementById('badge-container').innerHTML = '<span style="color:#10b981;">✅ ประมวลผลสำเร็จ ไปที่แท็บ MCN Dashboard ได้เลย</span>';
+            };
+            reader.readAsText(file);
+        });
+
+        // 🌟 ฟังก์ชันวาดกราฟแท่ง (ประยุกต์โค้ดดีไซน์ใหม่)
+        function renderTop5Chart(dataList) {
             const chartArea = document.getElementById('v-bar-chart-render');
             chartArea.innerHTML = '';
             
-            // ... ลอจิกหา max value สำหรับคำนวณ % ความสูงของแท่งกราฟของคุณ ...
+            // หาค่าสูงสุดเพื่อกำหนดสัดส่วนความสูงของแท่งกราฟ (%)
+            let maxVal = 0;
+            dataList.forEach(item => {
+                if (item.baseVal > maxVal) maxVal = item.baseVal;
+                if (item.targetVal > maxVal) maxVal = item.targetVal;
+            });
 
             dataList.forEach(item => {
+                const baseHeight = maxVal > 0 ? (item.baseVal / maxVal) * 100 : 0;
+                const targetHeight = maxVal > 0 ? (item.targetVal / maxVal) * 100 : 0;
+
                 const group = document.createElement('div');
                 group.className = 'v-bar-group';
                 
-                // ใช้ fmtShortTHB เพื่อประหยัดพื้นที่บนหัวแท่งกราฟ
+                // ใช้ fmtShortTHB บนหัวแท่งเพื่อประหยัดพื้นที่ และใช้ Flex จัดเรียงแนวตั้งแบบคลีนๆ
                 group.innerHTML = `
                     <div class="v-bar-combo">
                         <div class="v-bar-wrapper">
@@ -305,14 +308,14 @@
                                 <span>${fmtShortTHB(item.baseVal)}</span>
                                 <span class="pct">(${item.basePct}%)</span>
                             </div>
-                            <div class="v-bar v-bar-base" style="height: ${item.baseHeight}%" data-tooltip="ฐาน: ${fmtTHB(item.baseVal)}"></div>
+                            <div class="v-bar v-bar-base" style="height: ${baseHeight}%" data-tooltip="ฐาน: ${fmtTHB(item.baseVal)}"></div>
                         </div>
                         <div class="v-bar-wrapper">
                             <div class="v-bar-val-top">
                                 <span>${fmtShortTHB(item.targetVal)}</span>
                                 <span class="pct">(${item.targetPct}%)</span>
                             </div>
-                            <div class="v-bar v-bar-target" style="height: ${item.targetHeight}%" data-tooltip="ปัจจุบัน: ${fmtTHB(item.targetVal)}"></div>
+                            <div class="v-bar v-bar-target" style="height: ${targetHeight}%" data-tooltip="ปัจจุบัน: ${fmtTHB(item.targetVal)}"></div>
                         </div>
                     </div>
                     <div class="v-bar-label" title="${item.name}">${item.name}</div>
