@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S1 MUSIC - MCN Dashboard (Executive Presentation Edition)</title>
+    <title>S1 MUSIC - MCN Deep Analysis Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
@@ -25,7 +25,6 @@
         table { width: 100%; border-collapse: collapse; }
         th { padding: 12px 12px; text-align: left; color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0; background-color: #f1f5f9; font-size: 11px; white-space: nowrap; }
         td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; white-space: nowrap; vertical-align: top; }
-        .input-file-label { font-weight: bold; font-size: 12px; color: #0284c7; display: block; margin-bottom: 8px; }
         .hidden { display: none; }
         
         .cell-base-val { font-size: 10px; color: #94a3b8; margin-bottom: 1px; font-weight: normal; }
@@ -35,17 +34,7 @@
         .down { color: #dc2626; }
         .neutral { color: #94a3b8; }
         
-        .chart-row { margin-bottom: 16px; }
-        .chart-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #334155; }
-        .bar-container { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; }
-        .bar-wrapper { display: flex; align-items: center; gap: 8px; }
-        .bar { height: 16px; border-radius: 4px; min-width: 3px; }
-        .bar-base { background: #94a3b8; }
-        .bar-target { background: #0284c7; }
-        .bar-value { font-size: 11px; font-weight: bold; color: #475569; }
-        .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-box { width: 14px; height: 14px; border-radius: 3px; }
+        .asset-breakdown-row { background-color: #f8fafc; font-size: 12px; color: #475569; padding-left: 20px; border-left: 3px solid #0284c7; }
         textarea { width: 100%; height: 320px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
@@ -61,11 +50,11 @@
 
         <div class="grid">
             <div class="card">
-                <label class="input-file-label">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น APR.csv, MAY.csv)</label>
+                <label style="font-weight:bold; font-size:12px; color:#0284c7; display:block; margin-bottom:8px;">📁 เลือกไฟล์สรุปรายช่องทาง (เช่น APR.csv, MAY.csv)</label>
                 <input type="file" id="channel-upload" accept=".csv" />
             </div>
             <div class="card">
-                <label class="input-file-label">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง (เช่น APR ASSET.csv)</label>
+                <label style="font-weight:bold; font-size:12px; color:#0284c7; display:block; margin-bottom:8px;">💎 เลือกไฟล์สรุปรายชิ้นงานลิขสิทธิ์ Asset เพลง (เช่น APR ASSET.csv)</label>
                 <input type="file" id="asset-upload" accept=".csv" />
             </div>
         </div>
@@ -73,71 +62,42 @@
         <div class="btn-group">
             <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางข้อมูลรายช่อง</button>
             <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางข้อมูลราย Asset</button>
-            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 กราฟแท่งเปรียบเทียบ & บทสรุปทำสไลด์ด้วย AI</button>
+            <button class="btn" id="tab-deep" onclick="switchTab('deep')">🔍 เจาะลึก Asset รายช่องทาง (Cross-MoM)</button>
+            <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">📊 บทสรุปสไลด์โชว์วิเคราะห์ AI</button>
         </div>
 
         <div class="card">
             <div id="view-overview">
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
-                    <span style="font-size: 12px; font-weight: bold;">เลือกช่วงเวลาเปรียบเทียบรายช่อง:</span>
-                    <select id="channel-base-select" onchange="renderChannelTable()"><option value="">เลือกเดือนฐาน</option></select>
-                    <span>➔</span>
-                    <select id="channel-target-select" onchange="renderChannelTable()"><option value="">เลือกเดือนเปรียบเทียบ</option></select>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="text-align: left;">ชื่อช่องพาร์ทเนอร์</th>
-                                <th style="text-align: right;">รายได้สุทธิ (THB)</th>
-                                <th style="text-align: right;">Premium รายได้ (THB)</th>
-                                <th style="text-align: right;">ยอดวิวรวม (Views)</th>
-                                <th style="text-align: right;">RPM (THB)</th>
-                                <th style="text-align: right;">Playback CPM (THB)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="channel-table-body">
-                            <tr><td colSpan="6" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV รายช่องเพื่อเริ่มแสดงผล</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;"><span style="font-size:12px; font-weight:bold;">เลือกช่วงเวลาเปรียบเทียบรายช่อง:</span><select id="channel-base-select" onchange="renderChannelTable()"></select><span>➔</span><select id="channel-target-select" onchange="renderChannelTable()"></select></div>
+                <div class="table-container"><table><thead><tr><th>ชื่อช่องพาร์ทเนอร์</th><th style="text-align:right;">รายได้สุทธิ (THB)</th><th style="text-align:right;">Premium รายได้ (THB)</th><th style="text-align:right;">ยอดวิวรวม (Views)</th><th style="text-align:right;">RPM (THB)</th><th style="text-align:right;">Playback CPM (THB)</th></tr></thead><tbody id="channel-table-body"></tbody></table></div>
             </div>
 
             <div id="view-assets" class="hidden">
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;">
-                    <span style="font-size: 12px; font-weight: bold;">เลือกช่วงเวลาเปรียบเทียบราย Asset:</span>
-                    <select id="asset-base-select" onchange="renderAssetTable()"><option value="">เลือกเดือนฐาน</option></select>
-                    <span>➔</span>
-                    <select id="asset-target-select" onchange="renderAssetTable()"><option value="">เลือกเดือนเปรียบเทียบ</option></select>
-                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px;"><span style="font-size:12px; font-weight:bold;">เลือกช่วงเวลาเปรียบเทียบราย Asset:</span><select id="asset-base-select" onchange="renderAssetTable()"></select><span>➔</span><select id="asset-target-select" onchange="renderAssetTable()"></select></div>
+                <div class="table-container"><table><thead><tr><th>ชื่อ Asset ผลงานเพลง</th><th style="text-align:right;">รายได้ชิ้นงาน (THB)</th><th style="text-align:right;">Premium รายได้ (THB)</th><th style="text-align:right;">ยอดวิว (Views)</th><th style="text-align:right;">RPM (THB)</th></tr></thead><tbody id="asset-table-body"></tbody></table></div>
+            </div>
+
+            <div id="view-deep" class="hidden">
+                <div style="margin-bottom: 16px; background:#f0fdf4; padding:10px; border-radius:6px; font-size:12px; color:#166534; font-weight:bold;">💡 ระบบดึงความเชื่อมโยงโดยการสแกนหาข้อความชื่อศิลปินหรือค่ายเพลงร่วมกันระหว่างข้อมูลช่องและชื่อ Asset โดยอัตโนมัติ</div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th style="text-align: left;">ชื่อ Asset ผลงานเพลง</th>
-                                <th style="text-align: right;">รายได้ชิ้นงาน (THB)</th>
-                                <th style="text-align: right;">Premium รายได้ (THB)</th>
-                                <th style="text-align: right;">ยอดวิว (Views)</th>
-                                <th style="text-align: right;">RPM (THB)</th>
+                                <th>ช่องทางพันธมิตร และโครงสร้างเพลงย่อยภายใต้ช่อง</th>
+                                <th style="text-align:right;">รายได้สุทธิรวมงวดนี้</th>
+                                <th style="text-align:right;">แนวโน้มการเติบโต MoM</th>
                             </tr>
                         </thead>
-                        <tbody id="asset-table-body">
-                            <tr><td colSpan="5" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] กรุณาอัปโหลดไฟล์ CSV ราย Asset เพื่อเริ่มแสดงผล</td></tr>
+                        <tbody id="deep-table-body">
+                            <tr><td colSpan="3" align="center" style="padding:24px; color:#64748b;">[ระบบว่าง] โปรดอัปโหลดทั้งข้อมูลช่องและข้อมูล Asset เพื่อเริ่มการแมปปิ้งข้ามตาราง</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <div id="view-analysis" class="hidden">
-                <div class="chart-legend">
-                    <div class="legend-item"><div class="legend-box bar-base"></div> <span id="legend-base-label">รายได้งวดฐาน</span></div>
-                    <div class="legend-item"><div class="legend-box bar-target"></div> <span id="legend-target-label">รายได้งวดปัจจุบัน</span></div>
-                </div>
-                <h3 style="color:#334155; font-size:14px; margin-bottom:15px;">📈 กราฟแท่งแนวนอนเปรียบเทียบรายได้พาร์ทเนอร์ Top 10 ช่อง (เรียงตามรายรับสูงสุด)</h3>
-                <div id="bar-chart-container" style="margin-bottom: 35px;"></div>
-                <hr style="border:0; border-top:1px solid #e2e8f0; margin-bottom:25px;" />
                 <h3 style="color:#16a34a; font-size:14px; margin-bottom:8px;">🤖 โครงร่างสไลด์และบทวิเคราะห์พาร์ทเนอร์สำหรับ NotebookLM</h3>
-                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลด้านล่างนี้ได้รับการคำนวณ Insight แบบออโต้แล้ว สามารถกดปุ่มเพื่อคัดลอกเนื้อหาไปทำสไลด์พรีเซนต์ต่อได้ทันที</p>
+                <p style="color:#64748b; font-size:12px; margin-top:0; margin-bottom:12px;">กล่องข้อมูลด้านล่างนี้คำนวณและประมวลข้อความสดตามดาต้าจริงระดับบริหารแล้ว สามารถกดปุ่มคัดลอกไปทำสไลด์ต่อได้ทันที</p>
                 <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...</textarea>
                 <button class="btn-copy" id="final-copy-btn">📋 คัดลอกสคริปต์สไลด์สำหรับ NotebookLM</button>
             </div>
@@ -155,13 +115,11 @@
             const formatter = isCurrency ? fmtTHB : fmtNum;
             let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
             let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
-            
             let indicatorText = '';
             if (prevVal === undefined || prevVal === null || prevVal === 0) {
                 indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
             } else {
                 const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                // แสดงเฉพาะ ลูกศร และ % สลับสีเขียวแดง คลีนตาตามบรีฟ
                 indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
             }
             return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
@@ -185,10 +143,15 @@
             activeTab = tabName;
             document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
             document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
+            document.getElementById('tab-deep').classList.toggle('active', tabName === 'deep');
             document.getElementById('tab-analysis').classList.toggle('active', tabName === 'analysis');
+            
             document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
             document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
+            document.getElementById('view-deep').classList.toggle('hidden', tabName !== 'deep');
             document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
+            
+            if (tabName === 'deep') renderDeepTable();
             if (tabName === 'analysis') generateBarChartAndSummary();
         }
 
@@ -253,7 +216,6 @@
             if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
             renderChannelTable(); renderAssetTable();
-            if (activeTab === 'analysis') generateBarChartAndSummary();
         }
 
         function updateSelectOptions(selectElement, labels) {
@@ -286,28 +248,76 @@
             });
         }
 
+        function renderDeepTable() {
+            const chTarget = document.getElementById('channel-target-select').value;
+            const chBase = document.getElementById('channel-base-select').value;
+            const astTarget = document.getElementById('asset-target-select').value;
+            const astBase = document.getElementById('asset-base-select').value;
+            const tbody = document.getElementById('deep-table-body');
+
+            if (!chTarget || !store.channels[chTarget] || !astTarget || !store.assets[astTarget]) {
+                tbody.innerHTML = `<tr><td colSpan="3" align="center" style="padding:24px; color:#64748b;">[ระบบคัดแยกข้ามตารางว่าง] โปรดอัปโหลดรายงานรายช่อง และรายงานระดับ Asset ประจำงวดเดือนให้ครบถ้วนก่อนสแกนคีย์ความเชื่อมโยง</td></tr>`;
+                return;
+            }
+
+            const channels = store.channels[chTarget];
+            const prevChannels = chBase ? store.channels[chBase] : null;
+            const assets = store.assets[astTarget];
+            const prevAssets = astBase ? store.assets[astBase] : null;
+
+            tbody.innerHTML = '';
+
+            channels.forEach(ch => {
+                let prevCh = prevChannels ? prevChannels.find(x => x.id === ch.id) : null;
+                let chDiffText = '--';
+                if(prevCh && prevCh.rev > 0) {
+                    let diff = (((ch.rev - prevCh.rev) / prevCh.rev) * 100).toFixed(1);
+                    chDiffText = parseFloat(diff) > 0 ? `<span class="up">▲ +${diff}%</span>` : `<span class="down">▼ ${diff}%</span>`;
+                }
+
+                let cleanKey = ch.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
+                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey));
+
+                tbody.innerHTML += `
+                    <tr style="background-color: #f1f5f9; font-weight: bold;">
+                        <td>📺 ช่อง: ${ch.name}</td>
+                        <td align="right">${fmtTHB(ch.rev)}</td>
+                        <td align="right">${chDiffText}</td>
+                    </tr>
+                `;
+
+                if(matchedAssets.length === 0) {
+                    tbody.innerHTML += `<tr><td colSpan="3" class="asset-breakdown-row" style="color:#94a3b8; font-style:italic;">ไม่พบ Asset เพลงที่แมตช์คำสำคัญผ่านรายงานรอบนี้</td></tr>`;
+                } else {
+                    matchedAssets.sort((a,b) => b.rev - a.rev).forEach(ast => {
+                        let prevAst = prevAssets ? prevAssets.find(x => x.id === ast.id) : null;
+                        let astDiffText = '--';
+                        if(prevAst && prevAst.rev > 0) {
+                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
+                            astDiffText = parseFloat(d) > 0 ? `<span class="up">▲ +${d}%</span>` : `<span class="down">▼ ${d}%</span>`;
+                        }
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="asset-breakdown-row">🎵 ${ast.name}</td>
+                                <td align="right" style="font-size:12px; color:#475569;">${fmtTHB(ast.rev)}</td>
+                                <td align="right" style="font-size:12px;">${astDiffText}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        }
+
         function generateBarChartAndSummary() {
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value;
-            const container = document.getElementById('bar-chart-container'); const aiTextBox = document.getElementById('ai-summary-text');
+            const aiTextBox = document.getElementById('ai-summary-text');
             
-            document.getElementById('legend-base-label').innerText = base ? `รายได้งวดฐาน (${base})` : "รายได้งวดฐาน";
-            document.getElementById('legend-target-label').innerText = target ? `รายได้งวดปัจจุบัน (${target})` : "รายได้งวดปัจจุบัน";
-
             if (!target || !store.channels[target]) {
-                container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">[ระบบว่าง] โปรดอัปโหลดไฟล์รายงานเพื่อเริ่มคำนวณพล็อตข้อมูลสไลด์</p>`;
-                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Markdown...";
+                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...";
                 return;
             }
             
             const curData = store.channels[target]; const prevData = base ? store.channels[base] : null;
-            const top10 = [...curData].sort((a, b) => b.rev - a.rev).slice(0, 10);
-            let maxRev = 1; top10.forEach(c => { if (c.rev > maxRev) maxRev = c.rev; });
-            
-            container.innerHTML = '';
-            top10.forEach(c => {
-                let p = prevData ? prevData.find(x => x.id === c.id) : null;
-                container.innerHTML += `<div class="chart-row"><div class="chart-label">${c.name}</div><div class="bar-container"><div class="bar-wrapper"><div class="bar bar-base" style="width: ${(p?.rev||0)/maxRev*100}%;"></div><span>${base||'ฐาน'}: ${fmtTHB(p?.rev||0)}</span></div><div class="bar-wrapper"><div class="bar bar-target" style="width: ${c.rev/maxRev*100}%;"></div><span style="color:#0284c7;">${target}: ${fmtTHB(c.rev)}</span></div></div></div>`;
-            });
 
             let mcnTotalCur = curData.reduce((s, x) => s + x.rev, 0);
             let mcnTotalPrev = prevData ? prevData.reduce((s, x) => s + x.rev, 0) : 0;
@@ -342,7 +352,9 @@
             aiText += `- **ช่องทางที่มีอัตราการเติบโตสูงสุด (Top Performer):** ช่อง [ ${topGrower.name} ] อัตราการเติบโตเพิ่มขึ้นอย่างมีนัยสำคัญ +${topGrower.pct.toFixed(1)}%\n`;
             aiText += `- **ช่องทางที่มีอัตราการลดลงของรายได้ที่ต้องตรวจสอบ (Critical Attention Needed):** ช่อง [ ${topDropper.name} ] อัตราการดำเนินงานลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
             aiText += `### SLIDE 3: อันดับช่องทางพันธมิตรที่สร้างมูลค่าสูงสุด 5 อันดับแรก (Top 5 Strategic Network Partners)\n`;
-            top10.slice(0, 5).forEach((c, idx) => {
+            
+            const top5 = [...curData].sort((a,b) => b.rev - a.rev).slice(0, 5);
+            top5.forEach((c, idx) => {
                 let p = prevData ? prevData.find(x => x.id === c.id) : null;
                 let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
                 let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
