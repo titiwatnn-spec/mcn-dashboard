@@ -26,7 +26,6 @@
         th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; white-space: nowrap; }
         td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; }
         
-        /* Layout หน้าแดชบอร์ดผู้บริหาร */
         .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .metric-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
         .metric-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
@@ -36,7 +35,6 @@
         .panel-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
         
-        /* ดีไซน์กราฟกลมโดนัทแบบมินิมอล */
         .donut-container { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
         .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; }
         .donut-center { width: 100px; height: 100px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -45,7 +43,6 @@
         .legend-list { display: flex; flex-direction: column; gap: 10px; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
         
-        /* ดีไซน์กราฟแท่งแนวตั้ง Top 5 */
         .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 220px; padding-top: 20px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 4px; height: 180px; width: 100%; justify-content: center; }
@@ -72,7 +69,7 @@
         <div class="card" style="border-left: 6px solid #0284c7;">
             <h2>📊 S1 MUSIC — ระบบวิเคราะห์และจัดการสถิติพาร์ทเนอร์ในเครือข่าย MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">[ระบบพร้อมใช้งาน] โปรดคลิกเลือกไฟล์รายงานประจำงวด (.csv) ด้านล่างนี้เพื่อเริ่มต้นการประมวลผล</small>
+                <small style="color: #64748b;">[ระบบพร้อมใช้งาน] โปรดเลือกอัปโหลดไฟล์รายงานประจำงวด (.csv) ด้านล่างนี้เพื่อเริ่มต้นการประมวลผล</small>
             </div>
         </div>
 
@@ -147,7 +144,7 @@
             </div>
         </div>
 
-        <div id="view-analysis" class="hidden">
+        <div class="hidden" id="view-analysis">
             <div class="metric-row">
                 <div class="metric-box" style="border-top: 4px solid #38bdf8;">
                     <div class="metric-title">รายได้รวมเครือข่ายสุทธิ (Net Revenue)</div>
@@ -198,7 +195,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" style="margin-top: 24px;">
                 <h3>📋 โครงร่างรายงานเนื้อหาสำหรับส่งต่อ NotebookLM</h3>
                 <div class="slide-preview-box">
                     <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อคำนวณและสร้างสคริปต์สไลด์ความเชื่อมโยงระดับบริหาร...</textarea>
@@ -232,6 +229,20 @@
             return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
         }
 
+        function parseCSV(text) {
+            let lines = text.split(/\r\n|\n/);
+            return lines.filter(line => line.trim() !== '').map(line => {
+                let row = ['']; let insideQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    let c = line[i];
+                    if (c === '"') { insideQuote = !insideQuote; } 
+                    else if (c === ',' && !insideQuote) { row.push(''); } 
+                    else { row[row.length - 1] += c; }
+                }
+                return row.map(v => v.trim());
+            });
+        }
+
         function switchTab(tabName) {
             activeTab = tabName;
             document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
@@ -258,15 +269,16 @@
                 const rows = parseCSV(evt.target.result);
                 if (rows.length < 2) return;
                 
+                // ตรวจหาหัวคอลัมน์โดยแปลงเป็นตัวพิมพ์เล็กทั้งหมดเพื่อป้องกันชื่อคอลัมน์พิมพ์ใหญ่-เล็กเหวี่ยงตัว
                 const headers = rows[0].map(h => h.toLowerCase().trim());
                 const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
                 const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
                 
-                let revIdx = headers.findIndex(h => h === 'estimated partner revenue (thb)' || h === 'estimated partner revenue');
-                let premiumIdx = headers.findIndex(h => h === 'youtube premium partner revenue (thb)' || h === 'youtube premium partner revenue');
+                let revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
+                let premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
                 let viewsIdx = headers.findIndex(h => h === 'views');
-                let rpmIdx = headers.findIndex(h => h === 'rpm (thb)' || h === 'rpm');
-                let cpmIdx = headers.findIndex(h => h.includes('playback-based cpm') || h === 'cpm (thb)');
+                let rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                let cpmIdx = headers.findIndex(h => h.includes('cpm') || h.includes('playback-based'));
 
                 const processedData = [];
                 for(let i = 1; i < rows.length; i++) {
@@ -477,18 +489,6 @@
 
             aiTextBox.value = aiText;
         }
-
-        document.getElementById('final-copy-btn').addEventListener('click', function() {
-            const textarea = document.getElementById('ai-summary-text');
-            if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
-                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกสคริปต์สไลด์ครับ");
-                return;
-            }
-            textarea.select();
-            textarea.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกโครงร่างรายงานสรุปสไลด์เวอร์ชันวิเคราะห์โครงสร้างรายได้สำเร็จแล้ว! สามารถนำไปกด วาง (Ctrl+V) สั่งงานใน NotebookLM ต่อได้ทันทีเลยครับ");
-        });
     </script>
 </body>
 </html>
