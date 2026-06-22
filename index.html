@@ -34,18 +34,18 @@
         .down { color: #dc2626; }
         .neutral { color: #94a3b8; }
         
-        /* สไตล์กราฟแท่งที่ดึงคืนมา */
+        /* สไตล์กราฟแท่งเปรียบเทียบ */
         .chart-row { margin-bottom: 16px; }
         .chart-label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #334155; }
         .bar-container { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; }
-        .bar-wrapper { display: flex; align-items: center; gap: 8px; }
+        .bar-wrapper { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; color: #475569; }
         .bar { height: 16px; border-radius: 4px; min-width: 3px; }
         .bar-base { background: #94a3b8; }
         .bar-target { background: #0284c7; }
         .chart-legend { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; font-weight: bold; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-box { width: 14px; height: 14px; border-radius: 3px; }
-        textarea { width: 100%; height: 400px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
+        textarea { width: 100%; height: 380px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px; font-family: monospace; font-size: 13px; color: #334155; resize: vertical; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -212,6 +212,8 @@
             if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
             renderChannelTable(); renderAssetTable();
+            // 🛠️ ย้ายฟังก์ชันสร้างกราฟและบทสรุปมาดักวาดไว้ทันทีตรงนี้ ไม่ต้องรอสลับแท็บเพื่อเลี่ยงบั๊กกราฟหาย
+            generateBarChartAndSummary();
         }
 
         function updateSelectOptions(selectElement, labels) {
@@ -239,133 +241,4 @@
             const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(a => {
-                let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
-                tbody.innerHTML += `<tr><td><b>${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #fbfdfb;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
-            });
-        }
-
-        function generateBarChartAndSummary() {
-            const base = document.getElementById('channel-base-select').value;
-            const target = document.getElementById('channel-target-select').value;
-            const astTarget = document.getElementById('asset-target-select').value;
-            const astBase = document.getElementById('asset-base-select').value;
-            const container = document.getElementById('bar-chart-container');
-            const aiTextBox = document.getElementById('ai-summary-text');
-            
-            document.getElementById('legend-base-label').innerText = base ? `รายได้งวดฐาน (${base})` : "รายได้งวดฐาน";
-            document.getElementById('legend-target-label').innerText = target ? `รายได้งวดปัจจุบัน (${target})` : "รายได้งวดปัจจุบัน";
-
-            if (!target || !store.channels[target]) {
-                container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; padding:20px;">[ระบบว่าง] โปรดอัปโหลดไฟล์รายงานเพื่อเริ่มคำนวณกราฟเปรียบเทียบ</p>`;
-                aiTextBox.value = "ระบบกำลังรอข้อมูลไฟล์ CSV เพื่อคำนวณและสร้างบทวิเคราะห์สไลด์แบบ Corporate...";
-                return;
-            }
-            
-            const curData = store.channels[target];
-            const prevData = base ? store.channels[base] : null;
-            const assets = store.assets[astTarget] || [];
-            const prevAssets = store.assets[astBase] || [];
-
-            // 📊 1. คำนวณรันบาร์กราฟ Top 10 กลับมาประจำตำแหน่ง
-            const top10 = [...curData].sort((a, b) => b.rev - a.rev).slice(0, 10);
-            let maxRev = 1; top10.forEach(c => { if (c.rev > maxRev) maxRev = c.rev; });
-            container.innerHTML = '';
-            top10.forEach(c => {
-                let p = prevData ? prevData.find(x => x.id === c.id) : null;
-                container.innerHTML += `<div class="chart-row"><div class="chart-label">${c.name}</div><div class="bar-container"><div class="bar-wrapper"><div class="bar bar-base" style="width: ${(p?.rev||0)/maxRev*100}%;"></div><span>${base||'ฐาน'}: ${fmtTHB(p?.rev||0)}</span></div><div class="bar-wrapper"><div class="bar bar-target" style="width: ${c.rev/maxRev*100}%;"></div><span style="color:#0284c7;">${target}: ${fmtTHB(c.rev)}</span></div></div></div>`;
-            });
-
-            // 📈 2. ประมวลลอจิกคณิตศาสตร์ ข้อความบรรยายส่งต่อ NotebookLM
-            let mcnTotalCur = curData.reduce((s, x) => s + x.rev, 0);
-            let mcnTotalPrev = prevData ? prevData.reduce((s, x) => s + x.rev, 0) : 0;
-            let mcnTotalViewsCur = curData.reduce((s, x) => s + x.views, 0);
-            let mcnTotalViewsPrev = prevData ? prevData.reduce((s, x) => s + x.views, 0) : 0;
-            
-            let totalGrowth = prevData && mcnTotalPrev > 0 ? (((mcnTotalCur - mcnTotalPrev)/mcnTotalPrev)*100).toFixed(1) : "0.0";
-            let totalViewsGrowth = prevData && mcnTotalViewsPrev > 0 ? (((mcnTotalViewsCur - mcnTotalViewsPrev)/mcnTotalViewsPrev)*100).toFixed(1) : "0.0";
-            
-            let totalGrowthStr = parseFloat(totalGrowth) >= 0 ? `+${totalGrowth}%` : `${totalGrowth}%`;
-            let totalViewsGrowthStr = parseFloat(totalViewsGrowth) >= 0 ? `+${totalViewsGrowth}%` : `${totalViewsGrowth}%`;
-
-            let topGrower = { name: '--', pct: -9999 };
-            let topDropper = { name: '--', pct: 9999 };
-            
-            if (prevData) {
-                curData.forEach(c => {
-                    let p = prevData.find(x => x.id === c.id);
-                    if (p && p.rev > 1000) {
-                        let change = ((c.rev - p.rev) / p.rev) * 100;
-                        if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
-                        if (change < topDropper.pct) { topDropper = { name: c.name, pct: change }; }
-                    }
-                });
-            }
-
-            let aiText = `## รายงานสรุปผลการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Summary)\n`;
-            aiText += `รายงานผลการวิเคราะห์และเปรียบเทียบสถิติประจำงวด: ประจำเดือน ${base || 'งวดฐาน'} และเดือน ${target}\n\n`;
-            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Performance Dashboard)\n`;
-            aiText += `- **รายได้สุทธิรวมในเครือข่าย (Total Net Revenue):** ${fmtTHB(mcnTotalCur)}\n`;
-            aiText += `- **อัตราการเติบโตของรายได้รวม (MoM Revenue Growth):** ${totalGrowthStr}\n`;
-            aiText += `- **ปริมาณการเข้าชมสะสมรวม (Total Views Performance):** ${fmtNum(mcnTotalViewsCur)} ครั้ง (อัตราการเปลี่ยนแปลงเชิงบวก: ${totalViewsGrowthStr})\n\n`;
-            
-            aiText += `### SLIDE 2: การวิเคราะห์ช่องทางที่มีผลงานโดดเด่นและช่องทางเฝ้าระวัง (Network Key Focus Areas)\n`;
-            aiText += `- **ช่องทางที่มีอัตราการเติบโตสูงสุด (Top Performer):** ช่อง [ ${topGrower.name} ] อัตราการเติบโตเพิ่มขึ้นอย่างมีนัยสำคัญ +${topGrower.pct.toFixed(1)}%\n`;
-            aiText += `- **ช่องทางที่มีอัตราการลดลงของรายได้ที่ต้องตรวจสอบ (Critical Attention Needed):** ช่อง [ ${topDropper.name} ] อัตราการดำเนินงานลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
-            
-            aiText += `### SLIDE 3: โครงสร้างประเภทรายได้รายค่ายและอันดับชิ้นงานลิขสิทธิ์ (Revenue Composition & Top Assets)\n`;
-            aiText += `แจกแจงส่วนผสมรายได้โฆษณา (Ads) / พรีเมียม (Premium) และระบุชิ้นงาน Asset ที่ทำเงินสูงสุดประจำค่าย:\n\n`;
-            
-            const top5 = [...curData].sort((a,b) => b.rev - a.rev).slice(0, 5);
-            top5.forEach((c, idx) => {
-                let p = prevData ? prevData.find(x => x.id === c.id) : null;
-                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
-                let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
-                
-                let adsRevenue = c.rev - c.premium;
-                
-                aiText += `${idx + 1}. **ช่องทาง: ${c.name}**\n`;
-                aiText += `   - รายได้สุทธิประจำงวด: ${fmtTHB(c.rev)} (สถิติ MoM: ${c_pct_str})\n`;
-                aiText += `   - [โครงสร้างรายได้] ➔ รายได้จากโฆษณาปกติ (Ads Revenue): ${fmtTHB(adsRevenue)} | รายได้จากพรีเมียม (YouTube Premium): ${fmtTHB(c.premium)}\n`;
-                
-                let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
-                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2); 
-                
-                if (matchedAssets.length > 0) {
-                    aiText += `   - [Asset ลิขสิทธิ์หลักที่สร้างรายรับ]\n`;
-                    matchedAssets.forEach(ast => {
-                        let prevAst = prevAssets.find(x => x.id === ast.id);
-                        let astPctStr = '--';
-                        if (prevAst && prevAst.rev > 0) {
-                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
-                            astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
-                        }
-                        aiText += `     • ${ast.name} ➔ ${fmtTHB(ast.rev)} (MoM: ${astPctStr})\n`;
-                    });
-                } else {
-                    aiText += `   - [Asset ลิขสิทธิ์หลักที่สร้างรายรับ] ไม่พบข้อมูลชิ้นงานเพลงที่แมตช์คำสำคัญผ่านรายงานรอบนี้\n`;
-                }
-                aiText += `\n`;
-            });
-            
-            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์และแผนดำเนินงาน (Strategic & Actionable Recommendations)\n`;
-            aiText += `1. **การรักษามาตรฐานรายได้ (Revenue Retention):** จัดทำรายงานวิเคราะห์สถิติและการเปรียบเทียบค่า RPM รายเดือนแก่ช่องทางกลุ่ม Top Growers เพื่อรักษาเสถียรภาพและมาตรฐานการสร้างรายได้โฆษณาลิขสิทธิ์\n`;
-            aiText += `2. **การบริหารจัดการความเสี่ยง (Risk Management):** ดำเนินการตรวจสอบเชิงลึกและร่วมประชุมกับช่องทางที่มีผลประกอบการลดลง เพื่อประเมินสาเหตุระหว่างการลดลงของปริมาณการเข้าชม (Views) หรือความผันผวนของราคาโฆษณาในตลาด (CPM/RPM)\n`;
-            aiText += `3. **การพัฒนาเชิงกลยุทธ์ (Strategic Development):** ใช้โครงสร้างการวิเคราะห์ข้อมูลนี้ เป็นเกณฑ์อ้างอิงในการปรับปรุงนโยบายส่วนแบ่งรายได้ (Revenue Sharing) และการบริหารจัดการสิทธิ์ในผลงานเพลงใหม่ของเครือ S1 MUSIC ในอนาคต`;
-
-            aiTextBox.value = aiText;
-        }
-
-        document.getElementById('final-copy-btn').addEventListener('click', function() {
-            const textarea = document.getElementById('ai-summary-text');
-            if (!textarea || textarea.value.includes("ระบบกำลังรอข้อมูล")) {
-                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกสคริปต์สไลด์ครับ");
-                return;
-            }
-            textarea.select();
-            textarea.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอกโครงร่างรายงานสรุปสไลด์เวอร์ชันวิเคราะห์โครงสร้างรายได้สำเร็จแล้ว! สามารถนำไปกด วาง (Ctrl+V) สั่งงานใน NotebookLM ต่อได้ทันทีเลยครับ");
-        });
-    </script>
-</body>
-</html>
+                let prevItem =
