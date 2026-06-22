@@ -26,7 +26,6 @@
         th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 12px; white-space: nowrap; }
         td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 13px; white-space: nowrap; }
         
-        /* สไตล์หน้าแดชบอร์ดตัวชี้วัด */
         .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .metric-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; }
         .metric-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
@@ -36,7 +35,6 @@
         .panel-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
         
-        /* กราฟวงกลมโดนัทประเมินพอร์ต */
         .donut-container { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
         .donut-graphic { width: 150px; height: 150px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; }
         .donut-center { width: 100px; height: 100px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -45,25 +43,30 @@
         .legend-list { display: flex; flex-direction: column; gap: 10px; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
         
-        /* กราฟแท่งคู่แนวตั้ง Top 5 ค่ายย่อย */
-        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 220px; padding-top: 20px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
+        /* สไตล์พล็อตแท่งแนวตั้ง (เพิ่มเลเบลตัวเลขสเกลด้านบน) */
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 240px; padding-top: 30px; border-bottom: 2px solid #e2e8f0; gap: 10px; }
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 90px; }
-        .v-bar-combo { display: flex; align-items: flex-end; gap: 4px; height: 180px; width: 100%; justify-content: center; }
-        .v-bar { width: 20px; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; cursor: pointer; }
-        .v-bar:hover::after { content: attr(data-val); position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
+        .v-bar-combo { display: flex; align-items: flex-end; gap: 6px; height: 200px; width: 100%; justify-content: center; position: relative; }
+        
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 22px; }
+        .v-bar-val-top { position: absolute; top: -25px; font-size: 9px; font-weight: bold; white-space: nowrap; color: #475569; }
+        
+        .v-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; position: relative; cursor: pointer; }
+        .v-bar:hover::after { content: attr(data-tooltip); position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
+        
         .v-bar-base { background-color: #cbd5e1; }
         .v-bar-target { background-color: #38bdf8; }
         .v-bar-label { font-size: 11px; font-weight: bold; color: #475569; margin-top: 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
         .slide-preview-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; }
-        textarea { width: 100%; height: 320px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 12px; font-family: monospace; font-size: 12px; color: #334155; resize: vertical; box-sizing: border-box; }
+        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 12px; font-family: monospace; font-size: 12px; color: #334155; resize: vertical; box-sizing: border-box; }
         .btn-copy { background: #16a34a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
         .btn-copy:hover { background: #15803d; }
         .badge { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
         .badge-asset { background: #f0fdf4; color: #166534; }
         .btn-del { background: none; color: #ef4444; border: none; cursor: pointer; font-weight: bold; margin-left: 4px; padding: 0; }
         .hidden { display: none; }
-        .up { color: #16a34a; } .down { color: #ef4444; } .neutral { color: #64748b; }
+        .up { color: #16a34a; font-weight: bold; } .down { color: #ef4444; font-weight: bold; } .neutral { color: #64748b; }
     </style>
 </head>
 <body>
@@ -72,7 +75,7 @@
         <div class="card" style="border-left: 6px solid #0284c7;">
             <h2>📊 S1 MUSIC — ระบบจัดการสถิติและวิเคราะห์โครงสร้างเครือข่าย MCN</h2>
             <div style="margin-top: 12px;" id="badge-container">
-                <small style="color: #64748b;">[ระบบเสถียรสูงสุด] โปรดเลือกอัปโหลดรายงานประจำงวด (.csv) ด้านล่างนี้เพื่อเริ่มต้นการคำนวณ</small>
+                <small style="color: #64748b;">[ระบบเวอร์ชันอัปเกรด 2026] เลือกอัปโหลดไฟล์สรุปรายงาน (.csv) เพื่อเริ่มต้นแดชบอร์ด</small>
             </div>
         </div>
 
@@ -115,7 +118,7 @@
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายช่องทางเพื่อเริ่มแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="6" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายช่องทางเพื่อเริ่มแสดงตารางข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -141,13 +144,13 @@
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายลิขสิทธิ์ Asset เพื่อเริ่มแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="5" align="center" style="padding:32px; color:#94a3b8;">กรุณาอัปโหลดไฟล์สรุปรายลิขสิทธิ์ Asset เพื่อเริ่มแสดงตารางข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div id="view-analysis" class="hidden">
+        <div class="hidden" id="view-analysis">
             <div class="metric-row">
                 <div class="metric-box" style="border-top: 4px solid #38bdf8;">
                     <div class="metric-title">รายได้รวมเครือข่ายสุทธิ (Net Revenue)</div>
@@ -201,9 +204,9 @@
             <div class="card" style="margin-top: 24px;">
                 <h3>📋 โครงร่างรายงานเนื้อหาสำหรับส่งต่อ NotebookLM</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อประมวลผลสไลด์สถิติและแมปปิ้งโครงสร้างรายได้เชิงลึก...</textarea>
+                    <textarea id="ai-summary-text" readonly></textarea>
                     <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <small style="color:#64748b; font-weight:bold;">✨ ระบบตัดตัวคำศิลปินและดึงชื่อเพลงย่อยที่โตผิดปกติให้แบบไดนามิกอัตโนมัติในสไลด์แถวที่ 3</small>
+                        <small style="color:#64748b; font-weight:bold;">✨ ระบบสแกนเจาะลึกโครงสร้าง Ads/Premium และดึง Asset รายเพลงฝังในสไลด์ที่ 3 ทันที</small>
                         <button class="btn-copy" id="final-copy-btn">📋 คัดลอกเนื้อหาโครงสรุปไปวางใน NotebookLM</button>
                     </div>
                 </div>
@@ -272,7 +275,6 @@
                 const rows = parseCSV(evt.target.result);
                 if (rows.length < 2) return;
                 
-                // 🛠️ [ซ่อมจุดบกพร่องถาวร] ตรวจจับคำสำคัญในคอลัมน์โดยไม่สนใจว่าจะมีคำว่า (THB) หรือตัวพิมพ์ใหญ่ผสมหรือไม่
                 const headers = rows[0].map(h => h.toLowerCase().trim());
                 const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
                 const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
@@ -354,6 +356,7 @@
             });
         }
 
+        // 🧠 🛠️ ฟังก์ชันประมวลผลแดชบอร์ดผู้บริหารอัจฉริยะแบบหน้าเดียวจบ
         function generateExecutiveReport() {
             const base = document.getElementById('channel-base-select').value;
             const target = document.getElementById('channel-target-select').value;
@@ -387,14 +390,17 @@
             document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
             document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
 
+            // คำนวณร้อยละแนวโน้มความผันผวน MoM
+            let momRevDiff = 0;
             if(totalRevPrev > 0) {
-                let diff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
-                document.getElementById('m-total-rev-change').innerHTML = parseFloat(diff) > 0 ? `<span class="up">▲ +${diff}% (MoM)</span>` : `<span class="down">▼ ${diff}% (MoM)</span>`;
+                momRevDiff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
+                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) > 0 ? `<span class="up">▲ +${momRevDiff}% (MoM)</span>` : `<span class="down">▼ ${momRevDiff}% (MoM)</span>`;
             } else { document.getElementById('m-total-rev-change').innerText = 'MoM: --'; }
 
+            let momViewDiff = 0;
             if(viewsPrev > 0) {
-                let diffViews = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
-                document.getElementById('m-total-views-change').innerHTML = parseFloat(diffViews) > 0 ? `<span class="up">▲ +${diffViews}% (MoM)</span>` : `<span class="down">▼ ${diffViews}% (MoM)</span>`;
+                momViewDiff = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
+                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) > 0 ? `<span class="up">▲ +${momViewDiff}% (MoM)</span>` : `<span class="down">▼ ${momViewDiff}% (MoM)</span>`;
             } else { document.getElementById('m-total-views-change').innerText = 'MoM: --'; }
 
             let premiumRatio = totalRevCur > 0 ? ((premiumCur / totalRevCur) * 100).toFixed(1) : "0.0";
@@ -412,18 +418,29 @@
                 if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
+            // 📊 พล็อตกราฟแท่งแนวตั้ง (เพิ่มมูลค่าเงินกำกับหัวเสา + สัญลักษณ์แสดงอัตราเติบโต)
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
                 let hBase = p ? ((p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
                 let hTarget = ((c.rev / maxRevenueFound) * 100).toFixed(1);
+                
+                let barMoM = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
+                let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
 
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
-                            <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-val="${fmtTHB(p?.rev||0)}"></div>
-                            <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-val="${fmtTHB(c.rev)}"></div>
+                            <div class="v-bar-wrapper">
+                                <span class="v-bar-val-top" style="bottom: ${hBase}%;">${fmtTHB(p?.rev||0)}</span>
+                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
+                            </div>
+                            <div class="v-bar-wrapper">
+                                <span class="v-bar-val-top" style="bottom: ${hTarget}%; font-weight:bold; color:#0284c7;">${fmtTHB(c.rev)}</span>
+                                <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)}"></div>
+                            </div>
                         </div>
+                        <div style="font-size:10px; margin-top:4px;">${barDiffSymbol}</div>
                         <div class="v-bar-label" title="${c.name}">${c.name}</div>
                     </div>
                 `;
@@ -442,34 +459,36 @@
                 });
             }
 
+            // 🤖 สรุปโครงร่างรายงานนำเสนอ
             let aiText = `## รายงานสรุปผลการดำเนินงานเครือข่ายพันธมิตร MCN (S1 MUSIC Executive Summary)\n`;
-            aiText += `รายงานวิเคราะห์สถิติข้ามงวดประจำรอบบัญชี: เดือน ${base || 'ฐาน'} เปรียบเทียบกับงวดเงินปันผล ${target}\n\n`;
-            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Health Dashboard)\n`;
-            aiText += `- **รายได้สุทธิเครือข่ายรวมประจำรอบ (Total Net Revenue):** ${fmtTHB(totalRevCur)} (อัตราการเติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace(' (MoM)', '')})\n`;
-            aiText += `- **โครงสร้างรายได้ปกติฝั่งโฆษณา (Ad-Supported Revenue):** ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ)\n`;
-            aiText += `- **ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (YouTube Premium Partner Revenue):** ${fmtTHB(premiumCur)} (${premiumRatio}% ของพอร์ตรายรับ)\n`;
-            aiText += `- **ปริมาณการเข้าชมสะสมรวม (Total Views Index):** ${fmtNum(viewsCur)} ครั้ง (ความผันผวนของยอดวิว: ${document.getElementById('m-total-views-change').innerText.replace(' (MoM)', '')})\n\n`;
+            aiText += `รายงานวิเคราะห์สถิติข้ามงวดประจำรอบบัญชี: เดือน ${base || 'งวดฐาน'} เปรียบเทียบกับเดือน ${target}\n\n`;
             
-            aiText += `### SLIDE 2: การวิเคราะห์ช่องทางดาวรุ่งสูงสุด และช่องทางสัญญาณเฝ้าระวัง (Network Key Focus Areas)\n`;
-            aiText += `- **ช่องทางพันธมิตรที่มีสถิติดึงเงินเติบโตสูงสุด (Top Performer):** ค่าย [ ${topGrower.name} ] ดีดตัวบวกขึ้นแรง +${topGrower.pct.toFixed(1)}%\n`;
-            aiText += `- **ช่องทางที่มีส่วนต่างรายรับถดถอยที่ต้องส่งทีมตรวจสอบ (Critical Attention Needed):** ค่าย [ ${topDropper.name} ] ดิ่งตัวลดลง ${topDropper.pct.toFixed(1)}%\n\n`;
+            aiText += `### SLIDE 1: ภาพรวมผลประกอบการและการเติบโตของเครือข่าย (MCN Overall Health Dashboard)\n`;
+            aiText += `- **รายได้สุทธิเครือข่ายรวมประจำรอบ:** ${fmtTHB(totalRevCur)} (อัตราการเติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace(' (MoM)', '')})\n`;
+            aiText += `- **โครงสร้างรายได้ปกติฝั่งโฆษณา:** ${fmtTHB(adsCur)} (${adsRatio}% ของพอร์ตรายรับ)\n`;
+            aiText += `- **ท่อน้ำเลี้ยงสิทธิ์พรีเมียม (YouTube Premium):** ${fmtTHB(premiumCur)} (${premiumRatio}% ของพอร์ตรายรับ)\n`;
+            aiText += `- **ปริมาณการเข้าชมสะสมรวม:** ${fmtNum(viewsCur)} ครั้ง (ความผันผวนของยอดวิว: ${document.getElementById('m-total-views-change').innerText.replace(' (MoM)', '')})\n\n`;
+            
+            aiText += `### SLIDE 2: การวิเคราะห์โครงสร้างความภักดีของผู้บริโภคและสัดส่วนผู้ใช้กลุ่มคุณภาพ (Consumer Loyalty & Platform Index)\n`;
+            aiText += `- **รายงานดัชนีกลุ่มผู้บริโภคกำลังซื้อสูง (Premium Subscription Base Index):** สัดส่วนรายรับจากผู้ใช้งานแบบเสียค่าสมาชิก (Premium) เคลื่อนตัวอยู่ที่ระดับ ${premiumRatio}% ของโครงสร้างรายได้รวม ซึ่งสะท้อนถึงกลุ่มฐานแฟนคลับที่มีความหนาแน่นและพฤติกรรมการเปิดฟังคอนเทนต์ระยะยาว\n`;
+            aiText += `- **ประสิทธิภาพการสร้างรายได้ต่อหน่วยการรับชม (Network Monetization Efficiency):** อัตราส่วนรายรับโฆษณาปกติ (Ad-Supported) เทียบกับปริมาณการเข้าชม แสดงให้เห็นถึงความนิยมในกลุ่มผู้ฟังทั่วไปที่ยังคงเป็นท่อน้ำเลี้ยงหลัก คิดเป็นสัดส่วน ${adsRatio}% ของการขับเคลื่อนเครือข่าย MCN ทั้งหมด\n\n`;
             
             aiText += `### SLIDE 3: โครงสร้างประเภทรายรับรายสถานีและอันดับชิ้นงานลิขสิทธิ์เพลง (Revenue Composition & Top Assets)\n`;
             top5.forEach((c, idx) => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/c.rev)*100).toFixed(1) : "0.0";
                 let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
                 let itemAds = c.rev - c.premium;
                 
                 aiText += `${idx + 1}. **ช่องทางพันธมิตร: ${c.name}**\n`;
-                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (แนวโน้มอัตราเติบโต MoM: ${c_pct_str})\n`;
-                aiText += `   - [ส่วนผสมรายได้] ➔ มูลค่าจาก Ads โฆษณา: ${fmtTHB(itemAds)} | มูลค่าจาก Premium สิทธิ์คนดู: ${fmtTHB(c.premium)}\n`;
+                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (สัดส่วนเหวี่ยงตัว MoM: ${c_pct_str})\n`;
+                aiText += `   - [ประเภทรายได้] ➔ รายรับจาก Ads โฆษณา: ${fmtTHB(itemAds)} | รายรับจาก Premium: ${fmtTHB(c.premium)}\n`;
                 
                 let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
                 let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
                 
                 if (matchedAssets.length > 0) {
-                    aiText += `   - [Asset ลิขสิทธิ์ย่อยอันดับสูงสุดภายใต้ช่องทาง]\n`;
+                    aiText += `   - [Asset ลิขสิทธิ์ย่อยอันดับสูงสุดภายใต้สังกัด]\n`;
                     matchedAssets.forEach(ast => {
                         let prevAst = prevAssets.find(x => x.id === ast.id);
                         let astPctStr = '--';
@@ -477,7 +496,7 @@
                             let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
                             astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
                         }
-                        aiText += `     • ${ast.name} ➔ รายรับรอบนี้: ${fmtTHB(ast.rev)} (สรุป MoM: ${astPctStr})\n`;
+                        aiText += `     • ${ast.name} ➔ รายรับรอบนี้: ${fmtTHB(ast.rev)} (สถิติ MoM: ${astPctStr})\n`;
                     });
                 } else {
                     aiText += `   - [Asset ลิขสิทธิ์ย่อย] ไม่พบข้อมูลผลงานเพลงสอดคล้องกับชื่อช่องผ่านระบบ Auto-Mapping รอบนี้\n`;
@@ -487,8 +506,7 @@
             
             aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์สำหรับทีมบริหารประจำงวดหน้า (Strategic Action Items)\n`;
             aiText += `1. รักษาสมดุลรายได้ของช่องดาวรุ่งด้วยการเปรียบเทียบค่าสถิติความคุ้มค่าโฆษณา (RPM) เพื่อยึดหัวหาดรายรับลิขสิทธิ์รวม\n`;
-            aiText += `2. ส่งทีมงานนัดประชุมด่วนกับช่องทางกลุ่มเฝ้าระวัง เพื่อคัดแยกความผิดปกติระหว่างปริมาณการเข้าชมตก (Views Drop) หรือราคาโฆษณาในตลาดโดนกดดัน\n`;
-            aiText += `3. ใช้โครงสร้างการกระจายตัวของเงินโฆษณาปกติปะทะพรีเมียมในการปรับเงื่อนไขสัญญาส่วนแบ่งเงินปันผลการซื้อสิทธิ์เพลงใหม่ในอนาคต`;
+            aiText += `2. ใช้โครงสร้างการกระจายตัวของเงินโฆษณาปกติปะทะพรีเมียมในการปรับเงื่อนไขสัญญาส่วนแบ่งเงินปันผลการซื้อสิทธิ์เพลงใหม่ในอนาคต`;
 
             aiTextBox.value = aiText;
         }
@@ -501,7 +519,7 @@
             }
             textarea.select();
             textarea.setSelectionRange(0, 99999);
-            navigator.clipboard.setText ? navigator.clipboard.setText(textarea.value) : navigator.clipboard.writeText(textarea.value);
+            navigator.clipboard.writeText(textarea.value);
             alert("📋 คัดลอกโครงร่างรายงานสรุปสไลด์เวอร์ชันวิเคราะห์โครงสร้างรายได้สำเร็จแล้ว! สามารถนำไปกด วาง (Ctrl+V) สั่งงานใน NotebookLM ต่อได้ทันทีเลยครับ");
         });
     </script>
