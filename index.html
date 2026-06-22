@@ -10,8 +10,9 @@
         .container { padding: 24px; max-width: 1400px; margin: 0 auto; }
         .card { background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 24px; }
         
-        .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 16px; padding: 30px 24px; margin-bottom: 24px; }
-        .header-card h2 { margin: 0; font-weight: 700; color: #38bdf8; font-size: 24px; }
+        /* Header Style */
+        .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 16px; padding: 30px 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-card h2 { margin: 0; font-weight: 700; color: #38bdf8; font-size: 24px; letter-spacing: 0.5px; }
         .header-card p { color: #94a3b8; font-size: 14px; margin-top: 8px; margin-bottom: 0; }
         
         h3 { color: #334155; font-size: 16px; margin-bottom: 16px; font-weight: 700; }
@@ -20,7 +21,7 @@
         @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
         
         .btn-group { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-        .btn { padding: 12px 24px; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .btn { padding: 12px 24px; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .btn:hover { background: #f1f5f9; }
         .btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 4px 6px -1px rgba(14,165,233,0.3); }
         
@@ -30,8 +31,9 @@
         th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 13px; white-space: nowrap; }
         td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 14px; white-space: nowrap; }
         
+        /* Metric Cards */
         .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .metric-box { background: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; position: relative; }
+        .metric-box { background: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         .metric-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px; }
         .metric-value { font-size: 28px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
         .metric-change { font-size: 13px; font-weight: 700; margin-top: 8px; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; }
@@ -39,6 +41,7 @@
         .panel-split { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
         
+        /* Donut Chart */
         .donut-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
         .donut-graphic { width: 180px; height: 180px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         .donut-center { width: 120px; height: 120px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -47,23 +50,22 @@
         .legend-list { display: flex; justify-content: center; gap: 16px; width: 100%; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
         
-        /* สไตล์กราฟแท่งแบบมินิมอล (Flexbox) */
-        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 280px; padding-top: 40px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; gap: 16px; }
-        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
-        .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 220px; width: 100%; justify-content: center; }
+        /* Vertical Bar Chart (ดีไซน์ตัวเลขคลีน ไร้กรอบ) */
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 300px; padding-top: 60px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; gap: 12px; }
+        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 100px; }
+        .v-bar-combo { display: flex; align-items: flex-end; gap: 12px; height: 220px; width: 100%; justify-content: center; position: relative; }
         
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 32px; }
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 32px; }
         
-        /* ตัวหนังสือบางเบาไร้กรอบ นั่งอยู่บนหัวกราฟ */
-        .v-bar-val-top { font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.2; margin-bottom: 6px; z-index: 5; }
-        .v-bar-val-top .pct { font-size: 9px; color: #94a3b8; font-weight: 600; }
+        /* ปรับสไตล์ตัวเลขบนหัวกราฟให้บางเบา ไร้กรอบพื้นหลัง */
+        .v-bar-val-top { position: absolute; font-size: 10px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.2; z-index: 5; }
         
-        .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; cursor: pointer; position: relative; }
-        .v-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; margin-bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10; white-space: nowrap; pointer-events: none; }
+        .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; position: relative; cursor: pointer; }
+        .v-bar:hover::after { content: attr(data-tooltip); position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; white-space: nowrap; }
         
         .v-bar-base { background-color: #cbd5e1; opacity: 0.7; }
         .v-bar-target { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 6px rgba(2,132,199,0.2); }
-        .v-bar-label { font-size: 11px; font-weight: 700; color: #475569; margin-top: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px; }
+        .v-bar-label { font-size: 12px; font-weight: 700; color: #475569; margin-top: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
         .slide-preview-box { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
         textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; padding: 16px; font-family: 'Sarabun', monospace; font-size: 13px; color: #e2e8f0; resize: vertical; box-sizing: border-box; outline: none; line-height: 1.5; }
@@ -75,6 +77,7 @@
         .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: bold; margin-left: 8px; padding: 0; font-size: 14px; }
         .hidden { display: none; }
         
+        /* สีกำกับการเติบโต */
         .up { color: #10b981; background: #d1fae5; } 
         .down { color: #ef4444; background: #fee2e2; } 
         .neutral { color: #64748b; background: #f1f5f9; }
@@ -232,13 +235,6 @@
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        // รูปแบบเงินแบบสั้น (Short Format) ตัวเลขบนกราฟจะได้ไม่ล้น
-        const fmtShortTHB = (v) => {
-            if (v >= 1000000) return (v / 1000000).toFixed(2) + "M";
-            if (v >= 1000) return (v / 1000).toFixed(1) + "k";
-            return Number(v).toFixed(0);
-        };
-        
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
             let baseText = prevLabel ? `<span style="font-size:11px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:11px; color:#cbd5e1;">ฐาน:</span> --`;
@@ -286,7 +282,6 @@
         document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
         document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
 
-        // 🔧 อัปเกรดระบบอ่านไฟล์ (ยืดหยุ่น รองรับคอลัมน์หลายรูปแบบ + แจ้งเตือนเมื่อผิดพลาด)
         function handleFileUpload(e, type) {
             const file = e.target.files[0];
             if (!file) return;
@@ -294,68 +289,36 @@
             
             const reader = new FileReader();
             reader.onload = function(evt) {
-                try {
-                    const rows = parseCSV(evt.target.result);
-                    if (rows.length < 2) {
-                        alert("⚠️ ไม่พบข้อมูลในไฟล์ หรือไฟล์อาจว่างเปล่าครับ");
-                        return;
-                    }
+                const rows = parseCSV(evt.target.result);
+                if (rows.length < 2) return;
+                
+                const headers = rows[0].map(h => h.toLowerCase().trim());
+                
+                const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
+                const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
+                let revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
+                let premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
+                let viewsIdx = headers.findIndex(h => h.includes('views'));
+                let rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                let cpmIdx = headers.findIndex(h => h.includes('cpm') || h.includes('playback-based'));
 
-                    // 1. หาแถวที่เป็น Header จริงๆ เผื่อว่าไฟล์มีชื่อรายงานบรรทัดแรก
-                    let hIdx = 0;
-                    for(let i=0; i<Math.min(5, rows.length); i++) {
-                        let rowStr = rows[i].join('').toLowerCase();
-                        if(rowStr.includes('views') || rowStr.includes('revenue') || rowStr.includes('channel') || rowStr.includes('asset') || rowStr.includes('title')) {
-                            hIdx = i; break;
-                        }
-                    }
+                const processedData = [];
+                for(let i = 1; i < rows.length; i++) {
+                    let r = rows[i];
+                    if(idIdx === -1 || !r[idIdx] || r[idIdx].toLowerCase() === 'total' || r[idIdx] === '') continue;
                     
-                    const headers = rows[hIdx].map(h => h.toLowerCase().trim());
-                    
-                    // 2. ค้นหา Index แบบ Fuzzy ยืดหยุ่นได้ (กันคอลัมน์ชื่อไม่ตรง)
-                    const getIdx = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
-                    
-                    const idIdx = getIdx(['channel', 'asset', 'id', 'content']);
-                    const nameIdx = getIdx(['title', 'name', 'channel', 'asset']);
-                    const revIdx = getIdx(['estimated partner revenue', 'partner revenue', 'รายได้', 'revenue']);
-                    const premiumIdx = getIdx(['premium partner revenue', 'youtube premium', 'พรีเมียม']);
-                    const viewsIdx = getIdx(['views', 'ยอดวิว', 'view']);
-                    const rpmIdx = getIdx(['rpm']);
-                    const cpmIdx = getIdx(['cpm']);
-
-                    if (idIdx === -1 || revIdx === -1) {
-                        alert(`⚠️ โหลดไฟล์ ${file.name} ไม่สำเร็จ!\nระบบหาคอลัมน์หลัก (เช่น Channel, Asset หรือ Revenue) ไม่เจอครับ\nโปรดตรวจสอบรูปแบบไฟล์อีกครั้ง`);
-                        return;
-                    }
-
-                    const processedData = [];
-                    for(let i = hIdx + 1; i < rows.length; i++) {
-                        let r = rows[i];
-                        if(!r || r.length < 2) continue;
-                        if(!r[idIdx] || r[idIdx].toLowerCase().includes('total') || r[idIdx] === '') continue;
-                        
-                        processedData.push({
-                            id: r[idIdx].toLowerCase().trim(),
-                            name: r[nameIdx] ? r[nameIdx] : 'Unknown',
-                            rev: parseFloat((r[revIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
-                            premium: parseFloat((r[premiumIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
-                            views: parseInt((r[viewsIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
-                            rpm: parseFloat((r[rpmIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
-                            cpm: parseFloat((r[cpmIdx]||'0').replace(/[^0-9.-]/g, "")) || 0
-                        });
-                    }
-                    
-                    if(processedData.length === 0) {
-                        alert(`⚠️ สแกนไฟล์ ${file.name} สำเร็จ แต่ไม่พบข้อมูลตัวเลขรายได้ข้างในตารางครับ`);
-                        return;
-                    }
-
-                    store[type][label] = processedData;
-                    updateDropdownsAndBadges();
-                    
-                } catch (error) {
-                    alert("❌ เกิดข้อผิดพลาดของระบบระหว่างอ่านไฟล์: " + error.message);
+                    processedData.push({
+                        id: r[idIdx].toLowerCase().trim(),
+                        name: r[nameIdx] || 'Unknown',
+                        rev: parseFloat(r[revIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        premium: parseFloat(r[premiumIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        views: parseInt(r[viewsIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        rpm: parseFloat(r[rpmIdx]?.replace(/[^0-9.-]/g, "")) || 0,
+                        cpm: parseFloat(r[cpmIdx]?.replace(/[^0-9.-]/g, "")) || 0
+                    });
                 }
+                store[type][label] = processedData;
+                updateDropdownsAndBadges();
             };
             reader.readAsText(file, "UTF-8");
         }
@@ -476,31 +439,27 @@
                 if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
-            // 📊 อัปเดตสไตล์ตัวเลขบนกราฟเป็นแบบย่อส่วน (K/M) คลีนๆ
+            // 📊 อัปเดตสไตล์ตัวเลขบนกราฟเป็นแบบบางเบา ไม่มีกล่องและเส้นขอบกวนสายตา
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                // ปรับความสูงสูงสุดที่ 80% เพื่อเผื่อที่ว่างให้ตัวเลขด้านบน
-                let hBase = p ? ((p.rev / maxRevenueFound) * 80).toFixed(1) : 0;
-                let hTarget = ((c.rev / maxRevenueFound) * 80).toFixed(1);
+                let hBase = p ? ((p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
+                let hTarget = ((c.rev / maxRevenueFound) * 100).toFixed(1);
                 
                 let barMoM = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
                 let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
                 
                 let contributionPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
-                
-                let shortBase = fmtShortTHB(p?.rev || 0);
-                let shortTarget = fmtShortTHB(c.rev);
 
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="color:#94a3b8;">${shortBase}</div>
+                                <div class="v-bar-val-top" style="bottom: calc(${Math.max(hBase, 2)}% + 6px); color:#94a3b8;">${fmtTHB(p?.rev||0)}</div>
                                 <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="color:#0284c7;">${shortTarget}<br><span class="pct">(${contributionPct}%)</span></div>
+                                <div class="v-bar-val-top" style="bottom: calc(${Math.max(hTarget, 2)}% + 6px); color:#0284c7;">${fmtTHB(c.rev)}<br><span style="font-size:9px; color:#64748b;">(${contributionPct}%)</span></div>
                                 <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)} | สัดส่วน: ${contributionPct}%"></div>
                             </div>
                         </div>
