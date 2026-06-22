@@ -52,32 +52,11 @@
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 220px; width: 100%; justify-content: center; }
         
-        /* เพิ่มพื้นที่หายใจให้แท่งกราฟ */
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 42px; }
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 32px; }
         
-        /* 🔥 แก้ไขตามสั่ง: คลีน ไร้ขอบ ไร้พื้นหลัง ซ้อนกันแนวตั้งสวยงาม ไม่ทับกัน */
-        .v-bar-val-top { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            background: transparent !important; 
-            border: none !important; 
-            box-shadow: none !important;
-            font-size: 11px; 
-            font-weight: 700; 
-            color: #475569; 
-            white-space: nowrap; 
-            text-align: center; 
-            line-height: 1.2; 
-            margin-bottom: 6px; 
-            z-index: 5; 
-        }
-        .v-bar-val-top .pct { 
-            font-size: 9px; 
-            color: #94a3b8; 
-            font-weight: 600; 
-            margin-top: 2px; 
-        }
+        /* ตัวหนังสือบางเบาไร้กรอบ นั่งอยู่บนหัวกราฟ */
+        .v-bar-val-top { font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.2; margin-bottom: 6px; z-index: 5; }
+        .v-bar-val-top .pct { font-size: 9px; color: #94a3b8; font-weight: 600; }
         
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; cursor: pointer; position: relative; }
         .v-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; margin-bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10; white-space: nowrap; pointer-events: none; }
@@ -91,10 +70,15 @@
         .btn-copy { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: background 0.2s; }
         .btn-copy:hover { background: #059669; }
         
+        .badge { display: inline-flex; align-items: center; background: #334155; color: #e2e8f0; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-right: 8px; margin-bottom: 8px; border: 1px solid #475569; }
+        .badge-asset { background: #064e3b; color: #d1fae5; border-color: #047857; }
+        .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: bold; margin-left: 8px; padding: 0; font-size: 14px; }
         .hidden { display: none; }
-        .up { color: #10b981; background: #d1fae5; padding: 2px 6px; border-radius: 4px; font-weight: bold; } 
-        .down { color: #ef4444; background: #fee2e2; padding: 2px 6px; border-radius: 4px; font-weight: bold; } 
-        .neutral { color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        
+        .up { color: #10b981; background: #d1fae5; } 
+        .down { color: #ef4444; background: #fee2e2; } 
+        .neutral { color: #64748b; background: #f1f5f9; }
+        
         .text-base { color: #64748b; }
         .text-target { color: #0284c7; }
     </style>
@@ -127,10 +111,10 @@
         <div class="card" id="view-overview">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
                 <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
-                <select id="channel-base-select" onchange="onMonthChange()"></select>
+                <select id="channel-base-select" onchange="renderChannelTable()"></select>
                 <span style="color:#cbd5e1; font-weight: bold;">➔</span>
                 <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
-                <select id="channel-target-select" onchange="onMonthChange()"></select>
+                <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
             <div class="table-container">
                 <table>
@@ -145,7 +129,7 @@
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">โปรดอัปโหลดไฟล์ Channel CSV ด้านบนเพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -171,7 +155,7 @@
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">โปรดอัปโหลดไฟล์ Asset CSV ด้านบนเพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -220,9 +204,7 @@
 
                 <div class="card" style="margin-bottom: 0;">
                     <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
-                    <div class="v-chart-area" id="v-bar-chart-render">
-                        <div style="color:#94a3b8; font-size:14px; text-align:center; width:100%; padding-bottom:40px;">กำลังรอการอัปโหลดข้อมูล...</div>
-                    </div>
+                    <div class="v-chart-area" id="v-bar-chart-render"></div>
                     <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
                         <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
                         <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">งวดปัจจุบัน</span></div>
@@ -233,10 +215,10 @@
             <div class="card" style="margin-top: 24px;">
                 <h3>💬 ข้อความสรุปเนื้อหา (Prompt) สำหรับสร้าง Presentation</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly>ระบบกำลังประมวลผลข้อมูลเพื่อดึง Insight สร้าง Prompt อัตโนมัติ...</textarea>
+                    <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อประมวลผลข้อความ Prompt สำหรับ NotebookLM...</textarea>
                     <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
                         <span style="color:#94a3b8; font-size:13px;">💡 นำข้อความนี้ไปวางใน NotebookLM เพื่อให้ AI สร้างสไลด์วิเคราะห์แบบมืออาชีพได้ทันที</span>
-                        <button class="btn-copy" id="final-copy-btn" onclick="copyPrompt()">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
+                        <button class="btn-copy" id="final-copy-btn">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
                     </div>
                 </div>
             </div>
@@ -245,340 +227,363 @@
 
     <script>
         let store = { channels: {}, assets: {} };
+        let activeTab = 'overview';
 
-        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        // 🌟 แก้ไข: ฟังก์ชันย่อตัวเลขระดับโปร (K / M) ไร้ช่องว่างประหยัดพื้นที่หัวกราฟ
+        // รูปแบบเงินแบบสั้น (Short Format) ตัวเลขบนกราฟจะได้ไม่ล้น
         const fmtShortTHB = (v) => {
-            if (v >= 1000000) return (v / 1000000).toFixed(1) + "M";
-            if (v >= 1000) return (v / 1000).toFixed(0) + "k";
+            if (v >= 1000000) return (v / 1000000).toFixed(2) + "M";
+            if (v >= 1000) return (v / 1000).toFixed(1) + "k";
             return Number(v).toFixed(0);
         };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('view-overview').classList.add('hidden');
-            document.getElementById('view-assets').classList.add('hidden');
-            document.getElementById('view-analysis').classList.add('hidden');
-            document.getElementById('view-' + tabId).classList.remove('hidden');
+        
+        function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
+            const formatter = isCurrency ? fmtTHB : fmtNum;
+            let baseText = prevLabel ? `<span style="font-size:11px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:11px; color:#cbd5e1;">ฐาน:</span> --`;
+            let targetText = curLabel ? `<span style="font-size:11px; color:#64748b;">ปัจจุบัน:</span> <b style="color:#0f172a;">${formatter(curVal)}</b>` : `<b style="color:#0f172a;">${formatter(curVal)}</b>`;
+            let indicatorText = '';
+            
+            if (prevVal === undefined || prevVal === null || prevVal === 0) {
+                indicatorText = `<span style="font-size:11px; font-weight:bold; color:#94a3b8;">--</span>`;
+            } else {
+                const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
+                if (parseFloat(diff) > 0) indicatorText = `<span style="font-size:11px; font-weight:bold; color:#10b981;">▲ +${diff}%</span>`;
+                else if (parseFloat(diff) < 0) indicatorText = `<span style="font-size:11px; font-weight:bold; color:#ef4444;">▼ ${diff}%</span>`;
+                else indicatorText = `<span style="font-size:11px; font-weight:bold; color:#64748b;">0.0%</span>`;
+            }
+            return `<div style="margin-bottom:2px;">${baseText}</div><div>${targetText} &nbsp;${indicatorText}</div>`;
         }
 
-        // ปลอดภัยและยืดหยุ่น: ตัวแยกแถวตามเครื่องหมายคำพูดคู่ (CSV Standard Parser)
-        function parseCSVText(text) {
-            let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            return lines.map(line => {
-                let matches = line.match(/(".*?"|[^",\t]+|(?<=,|^)(?==,|$))/g) || [];
-                return matches.map(clean => clean.replace(/^["']|["']$/g, '').trim());
+        function parseCSV(text) {
+            let lines = text.split(/\r\n|\n/);
+            return lines.filter(line => line.trim() !== '').map(line => {
+                let row = ['']; let insideQuote = false;
+                for (let i = 0; i < line.length; i++) {
+                    let c = line[i];
+                    if (c === '"') { insideQuote = !insideQuote; } 
+                    else if (c === ',' && !insideQuote) { row.push(''); } 
+                    else { row[row.length - 1] += c; }
+                }
+                return row.map(v => v.trim());
             });
         }
 
-        // ตัวตรวจจับคอลัมน์อัจฉริยะ (แก้ปัญหาอัปโหลดแล้วระบบเงียบเพราะหาคอลัมน์ไม่เจอ)
-        function detectColumns(headers) {
-            let h = headers.map(s => s.toLowerCase());
-            return {
-                channel: h.findIndex(s => s.includes('ช่อง') || s.includes('channel') || s.includes('partner') || s.includes('title') || s.includes('name')),
-                netRev: h.findIndex(s => (s.includes('รายได้') || s.includes('revenue') || s.includes('earning') || s.includes('net')) && !s.includes('premium')),
-                premium: h.findIndex(s => s.includes('premium')),
-                views: h.findIndex(s => s.includes('วิว') || s.includes('view') || s.includes('watch') || s.includes('ดู')),
-                month: h.findIndex(s => s.includes('เดือน') || s.includes('month') || s.includes('date') || s.includes('งวด'))
-            };
-        }
-
-        // ตัวเปรียบเทียบคำนวณและแสดงผล MoM ของตารางหลัก
-        function createComparisonCell(curVal, prevVal, isCurrency = false) {
-            if (prevVal === undefined || prevVal === null) return isCurrency ? fmtTHB(curVal) : fmtNum(curVal);
-            const diff = curVal - prevVal;
-            const pct = prevVal > 0 ? (diff / prevVal) * 100 : 0;
-            const fmt = isCurrency ? fmtTHB : fmtNum;
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
+            document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
+            document.getElementById('tab-analysis').classList.toggle('active', tabName === 'analysis');
             
-            if (diff > 0) return `<div>${fmt(curVal)}</div><span class="up">▲ +${pct.toFixed(1)}%</span>`;
-            if (diff < 0) return `<div>${fmt(curVal)}</div><span class="down">▼ ${pct.toFixed(1)}%</span>`;
-            return `<div>${fmt(curVal)}</div><span class="neutral">═ 0%</span>`;
+            document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
+            document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
+            document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
+            
+            if (tabName === 'analysis') generateExecutiveReport();
         }
 
-        // ลอจิกการอ่านและประมวลผลไฟล์หลัก (Channel CSV)
-        document.getElementById('channel-upload').addEventListener('change', function(e) {
+        document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
+        document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
+
+        // 🔧 อัปเกรดระบบอ่านไฟล์ (ยืดหยุ่น รองรับคอลัมน์หลายรูปแบบ + แจ้งเตือนเมื่อผิดพลาด)
+        function handleFileUpload(e, type) {
             const file = e.target.files[0];
             if (!file) return;
-
+            const label = file.name.replace(".csv", "").replace("Asset", "").replace("asset", "").trim().toUpperCase();
+            
             const reader = new FileReader();
             reader.onload = function(evt) {
                 try {
-                    const parsed = parseCSVText(evt.target.result);
-                    if(parsed.length < 2) return alert('ไฟล์ CSV ไม่มีข้อมูลเพียงพอ');
+                    const rows = parseCSV(evt.target.result);
+                    if (rows.length < 2) {
+                        alert("⚠️ ไม่พบข้อมูลในไฟล์ หรือไฟล์อาจว่างเปล่าครับ");
+                        return;
+                    }
+
+                    // 1. หาแถวที่เป็น Header จริงๆ เผื่อว่าไฟล์มีชื่อรายงานบรรทัดแรก
+                    let hIdx = 0;
+                    for(let i=0; i<Math.min(5, rows.length); i++) {
+                        let rowStr = rows[i].join('').toLowerCase();
+                        if(rowStr.includes('views') || rowStr.includes('revenue') || rowStr.includes('channel') || rowStr.includes('asset') || rowStr.includes('title')) {
+                            hIdx = i; break;
+                        }
+                    }
                     
-                    const cols = detectColumns(parsed[0]);
-                    // กำหนดค่า Default ดัก Error กรณีหัวตารางไม่ตรงมาตรฐาน
-                    let cIdx = cols.channel !== -1 ? cols.channel : 0;
-                    let rIdx = cols.netRev !== -1 ? cols.netRev : 1;
-                    let pIdx = cols.premium !== -1 ? cols.premium : 2;
-                    let vIdx = cols.views !== -1 ? cols.views : 3;
+                    const headers = rows[hIdx].map(h => h.toLowerCase().trim());
+                    
+                    // 2. ค้นหา Index แบบ Fuzzy ยืดหยุ่นได้ (กันคอลัมน์ชื่อไม่ตรง)
+                    const getIdx = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+                    
+                    const idIdx = getIdx(['channel', 'asset', 'id', 'content']);
+                    const nameIdx = getIdx(['title', 'name', 'channel', 'asset']);
+                    const revIdx = getIdx(['estimated partner revenue', 'partner revenue', 'รายได้', 'revenue']);
+                    const premiumIdx = getIdx(['premium partner revenue', 'youtube premium', 'พรีเมียม']);
+                    const viewsIdx = getIdx(['views', 'ยอดวิว', 'view']);
+                    const rpmIdx = getIdx(['rpm']);
+                    const cpmIdx = getIdx(['cpm']);
 
-                    let tempStore = {};
-
-                    for(let i = 1; i < parsed.length; i++) {
-                        let row = parsed[i];
-                        if(row.length <= Math.max(cIdx, rIdx)) continue;
-
-                        let name = row[cIdx];
-                        let rev = parseFloat(row[rIdx].replace(/[^0-9.-]/g, '')) || 0;
-                        let prem = pIdx !== -1 && row[pIdx] ? parseFloat(row[pIdx].replace(/[^0-9.-]/g, '')) || 0 : rev * 0.12; // fallback 12%
-                        let views = vIdx !== -1 && row[vIdx] ? parseInt(row[vIdx].replace(/[^0-9.-]/g, '')) || 0 : Math.round(rev * 3.5);
-
-                        let mName = cols.month !== -1 && row[cols.month] ? row[cols.month] : "งวดปัจจุบัน";
-
-                        if(!tempStore[mName]) tempStore[mName] = {};
-                        if(!tempStore[mName][name]) {
-                            tempStore[mName][name] = { name, netRev: 0, premiumRev: 0, views: 0 };
-                        }
-                        tempStore[mName][name].netRev += rev;
-                        tempStore[mName][name].premiumRev += prem;
-                        tempStore[mName][name].views += views;
+                    if (idIdx === -1 || revIdx === -1) {
+                        alert(`⚠️ โหลดไฟล์ ${file.name} ไม่สำเร็จ!\nระบบหาคอลัมน์หลัก (เช่น Channel, Asset หรือ Revenue) ไม่เจอครับ\nโปรดตรวจสอบรูปแบบไฟล์อีกครั้ง`);
+                        return;
                     }
 
-                    // ในกรณีมีงวดเดียว (เช่นอัปโหลดเฉพาะเดือนล่าสุด) สร้างเดือนฐานจำลองเพื่อให้กราฟพุ่งสวยงามทันที
-                    let months = Object.keys(tempStore);
-                    if(months.length === 1) {
-                        let currentMonth = months[0];
-                        let baseMonth = currentMonth + " (เดือนฐานจำลอง)";
-                        tempStore[baseMonth] = {};
-                        for(let k in tempStore[currentMonth]) {
-                            let cData = tempStore[currentMonth][k];
-                            tempStore[baseMonth][k] = {
-                                name: cData.name,
-                                netRev: cData.netRev * 0.78, // ต่ำกว่า 22% จำลองการเติบโต
-                                premiumRev: cData.premiumRev * 0.8,
-                                views: Math.round(cData.views * 0.85)
-                            };
-                        }
+                    const processedData = [];
+                    for(let i = hIdx + 1; i < rows.length; i++) {
+                        let r = rows[i];
+                        if(!r || r.length < 2) continue;
+                        if(!r[idIdx] || r[idIdx].toLowerCase().includes('total') || r[idIdx] === '') continue;
+                        
+                        processedData.push({
+                            id: r[idIdx].toLowerCase().trim(),
+                            name: r[nameIdx] ? r[nameIdx] : 'Unknown',
+                            rev: parseFloat((r[revIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
+                            premium: parseFloat((r[premiumIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
+                            views: parseInt((r[viewsIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
+                            rpm: parseFloat((r[rpmIdx]||'0').replace(/[^0-9.-]/g, "")) || 0,
+                            cpm: parseFloat((r[cpmIdx]||'0').replace(/[^0-9.-]/g, "")) || 0
+                        });
+                    }
+                    
+                    if(processedData.length === 0) {
+                        alert(`⚠️ สแกนไฟล์ ${file.name} สำเร็จ แต่ไม่พบข้อมูลตัวเลขรายได้ข้างในตารางครับ`);
+                        return;
                     }
 
-                    store.channels = tempStore;
-                    populateDropdowns();
-                    onMonthChange();
-
-                    document.getElementById('badge-container').innerHTML = `<span style="color:#10b981; font-weight:bold;">✅ โหลดไฟล์ ${file.name} สำเร็จ! ข้อมูลพร้อมอัปเดตทุกแท็บแล้ว</span>`;
-                } catch (err) {
-                    console.error(err);
-                    alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์ CSV โปรดตรวจเช็คโครงสร้างไฟล์');
+                    store[type][label] = processedData;
+                    updateDropdownsAndBadges();
+                    
+                } catch (error) {
+                    alert("❌ เกิดข้อผิดพลาดของระบบระหว่างอ่านไฟล์: " + error.message);
                 }
             };
-            reader.readAsText(file);
-        });
+            reader.readAsText(file, "UTF-8");
+        }
 
-        // ฟังก์ชันจัดการ Dropdown งวดเดือน
-        function populateDropdowns() {
-            let mList = Object.keys(store.channels);
-            let baseSelect = document.getElementById('channel-base-select');
-            let targetSelect = document.getElementById('channel-target-select');
-            
-            baseSelect.innerHTML = '';
-            targetSelect.innerHTML = '';
+        function updateDropdownsAndBadges() {
+            const badgeContainer = document.getElementById('badge-container'); badgeContainer.innerHTML = '';
+            const chBase = document.getElementById('channel-base-select'); const chTarget = document.getElementById('channel-target-select'); const chLabels = Object.keys(store.channels);
+            const astBase = document.getElementById('asset-base-select'); const astTarget = document.getElementById('asset-target-select'); const astLabels = Object.keys(store.assets);
 
-            mList.forEach((m, idx) => {
-                let opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m;
-                let opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m;
-                baseSelect.appendChild(opt1);
-                targetSelect.appendChild(opt2);
+            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">📺 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`; });
+            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">🎵 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`; });
+            if(chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<span style="color:#64748b;">รอรับไฟล์ CSV...</span>';
+
+            updateSelectOptions(chBase, chLabels); updateSelectOptions(chTarget, chLabels); updateSelectOptions(astBase, astLabels); updateSelectOptions(astTarget, astLabels);
+
+            if(chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
+            if(chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
+            if(astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
+            if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
+
+            renderChannelTable(); renderAssetTable();
+            if (activeTab === 'analysis') generateExecutiveReport();
+        }
+
+        function updateSelectOptions(selectElement, labels) {
+            const currentVal = selectElement.value; selectElement.innerHTML = `<option value="">-- เลือกงวด --</option>`;
+            labels.forEach(l => { selectElement.innerHTML += `<option value="${l}">${l}</option>`; });
+            if (labels.includes(currentVal)) selectElement.value = currentVal;
+        }
+
+        function deleteMonth(label, type) { delete store[type][label]; updateDropdownsAndBadges(); }
+
+        function renderChannelTable() {
+            const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value; const tbody = document.getElementById('channel-table-body');
+            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>`; return; }
+            const curData = store.channels[target]; const prevData = base ? store.channels[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            tbody.innerHTML = '';
+            sorted.forEach(c => {
+                let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
-
-            if(mList.length > 1) {
-                baseSelect.selectedIndex = 1; // ตั้งเดือนแรกสุดเป็นฐาน
-                targetSelect.selectedIndex = 0; // ตั้งเดือนล่าสุดเป็นปัจจุบัน
-            }
         }
 
-        // ทำงานเมื่อมีการเปลี่ยนงวดเดือนใน Dropdown
-        function onMonthChange() {
-            let baseM = document.getElementById('channel-base-select').value;
-            let targetM = document.getElementById('channel-target-select').value;
-            if(!baseM || !targetM) return;
-
-            renderChannelTable(baseM, targetM);
-            renderDashboardMetrics(baseM, targetM);
-        }
-
-        // แสดงผลตารางเปรียบเทียบในแท็บหลัก
-        function renderChannelTable(baseM, targetM) {
-            let baseData = store.channels[baseM] || {};
-            let targetData = store.channels[targetM] || {};
-
-            let allNames = Array.from(new Set([...Object.keys(baseData), ...Object.keys(targetData)]));
-            let html = '';
-
-            allNames.forEach(name => {
-                let b = baseData[name] || { netRev: 0, premiumRev: 0, views: 0 };
-                let t = targetData[name] || { netRev: 0, premiumRev: 0, views: 0 };
-
-                let tRPM = t.views > 0 ? (t.netRev / t.views) * 1000 : 0;
-                let tCPM = t.views > 0 ? tRPM * 1.45 : 0; // จำลองสัดส่วนตามมาตรฐานวงการเพลง MCN
-
-                html += `<tr>
-                    <td style="font-weight:600; color:#1e293b;">${name}</td>
-                    <td style="text-align:right;">${createComparisonCell(t.netRev, b.netRev, true)}</td>
-                    <td style="text-align:right; color: #6d28d9;">${createComparisonCell(t.premiumRev, b.premiumRev, true)}</td>
-                    <td style="text-align:right; color: #b45309;">${createComparisonCell(t.views, b.views, false)}</td>
-                    <td style="text-align:right; font-weight:bold;">${fmtTHB(tRPM)}</td>
-                    <td style="text-align:right; color:#475569;">${fmtTHB(tCPM)}</td>
-                </tr>`;
+        function renderAssetTable() {
+            const base = document.getElementById('asset-base-select').value; const target = document.getElementById('asset-target-select').value; const tbody = document.getElementById('asset-table-body');
+            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>`; return; }
+            const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
+            tbody.innerHTML = '';
+            sorted.forEach(a => {
+                let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
             });
-
-            document.getElementById('channel-table-body').innerHTML = html;
         }
 
-        // ประมวลผลและวาดส่วนกราฟและ Analytics ทั้งหมด
-        function renderDashboardMetrics(baseM, targetM) {
-            let baseData = store.channels[baseM] || {};
-            let targetData = store.channels[targetM] || {};
-
-            let bTotalNet = 0; let tTotalNet = 0;
-            let tTotalPremium = 0; let bTotalViews = 0; let tTotalViews = 0;
-
-            for(let k in baseData) { bTotalNet += baseData[k].netRev; bTotalViews += baseData[k].views; }
-            for(let k in targetData) { 
-                tTotalNet += targetData[k].netRev; 
-                tTotalPremium += targetData[k].premiumRev; 
-                tTotalViews += targetData[k].views; 
-            }
-
-            // 1. อัปเดต Metric Boxes
-            document.getElementById('m-total-rev').textContent = fmtTHB(tTotalNet);
-            let revDiffPct = bTotalNet > 0 ? ((tTotalNet - bTotalNet) / bTotalNet) * 100 : 0;
-            document.getElementById('m-total-rev-change').innerHTML = `MoM: <span class="${revDiffPct >= 0 ? 'up':'down'}">${revDiffPct >= 0 ? '▲':'▼'} ${Math.abs(revDiffPct).toFixed(1)}%</span>`;
-
-            let adRev = tTotalNet - tTotalPremium;
-            document.getElementById('m-ads-rev').textContent = fmtTHB(adRev);
-            let rpmGlobal = tTotalViews > 0 ? (tTotalNet / tTotalViews) * 1000 : 0;
-            document.getElementById('m-avg-cpm').textContent = `Avg. RPM เครือข่าย: ${fmtTHB(rpmGlobal)}`;
-
-            document.getElementById('m-premium-rev').textContent = fmtTHB(tTotalPremium);
-            let premiumPortion = tTotalNet > 0 ? (tTotalPremium / tTotalNet) * 100 : 0;
-            document.getElementById('m-premium-ratio').textContent = `สัดส่วนพอร์ต: ${premiumPortion.toFixed(1)}% ของรายได้รวม`;
-
-            document.getElementById('m-total-views').textContent = fmtNum(tTotalViews);
-            let viewDiffPct = bTotalViews > 0 ? ((tTotalViews - bTotalViews) / bTotalViews) * 100 : 0;
-            document.getElementById('m-total-views-change').innerHTML = `MoM: <span class="${viewDiffPct >= 0 ? 'up':'down'}">${viewDiffPct >= 0 ? '▲':'▼'} ${Math.abs(viewDiffPct).toFixed(1)}%</span>`;
-
-            // 2. เรนเดอร์ Donut Graphic สัดส่วนรายได้
-            let donutPercent = tTotalNet > 0 ? (adRev / tTotalNet) * 100 : 100;
-            document.getElementById('donut-pct-val').textContent = donutPercent.toFixed(0) + "%";
-            document.getElementById('donut-render').style.background = `conic-gradient(#0ea5e9 0% ${donutPercent}%, #8b5cf6 ${donutPercent}% 100%)`;
-
-            // 3. เตรียมข้อมูลและคัดกรองจัดลำดับวาดเวอร์ติคอลบาร์กราฟ (Top 5 Strategic Partners)
-            let chartList = [];
-            for(let name in targetData) {
-                let tVol = targetData[name].netRev;
-                let bVol = baseData[name] ? baseData[name].netRev : 0;
-                chartList.push({ name, targetVal: tVol, baseVal: bVol });
-            }
-            // เรียงลำดับจากรายได้ปัจจุบันสูงสุด Top 5
-            chartList.sort((a, b) => b.targetVal - a.targetVal);
-            let top5 = chartList.slice(0, 5);
-
-            // ส่งต่อวาดกราฟแท่งแนวตั้งดีไซน์ใหม่
-            renderBarChartGraphic(top5, bTotalNet, tTotalNet);
+        function generateExecutiveReport() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
+            const astTarget = document.getElementById('asset-target-select').value;
+            const astBase = document.getElementById('asset-base-select').value;
             
-            // 4. สังเคราะห์ Prompt ข้อความวิเคราะห์ขั้นสูงสำหรับ NotebookLM หรืองานพรีเซนต์
-            generateDynamicPrompt(top5, tTotalNet, tTotalPremium, revDiffPct);
-        }
+            const aiTextBox = document.getElementById('ai-summary-text');
+            const vBarChartContainer = document.getElementById('v-bar-chart-render');
+            const donutRender = document.getElementById('donut-render');
+            const donutPctVal = document.getElementById('donut-pct-val');
 
-        // 🌟 ฟังก์ชันเรนเดอร์กราฟแท่งแนวตั้ง (มินิมอล คลีน ไร้กรอบ ไร้พิกเซลรกสายตา)
-        function renderBarChartGraphic(top5Data, baseTotal, targetTotal) {
-            const chartArea = document.getElementById('v-bar-chart-render');
-            chartArea.innerHTML = '';
-
-            if(top5Data.length === 0) {
-                chartArea.innerHTML = `<div style="color:#94a3b8; font-size:14px; text-align:center; width:100%;">ไม่พบข้อมูลในการวาดกราฟ</div>`;
+            if (!target || !store.channels[target]) {
+                aiTextBox.value = "ระบบรอรับไฟล์ข้อมูล CSV...";
                 return;
             }
 
-            // หาค่าสูงสุด (Max Value) ของกลุ่มเพื่อเป็นสเกลขีดสุดความสูง (100% Height)
-            let maxPeak = 0;
-            top5Data.forEach(d => {
-                if(d.baseVal > maxPeak) maxPeak = d.baseVal;
-                if(d.targetVal > maxPeak) maxPeak = d.targetVal;
+            const curChannels = store.channels[target];
+            const prevChannels = base ? store.channels[base] : null;
+            const assets = store.assets[astTarget] || [];
+            const prevAssets = store.assets[astBase] || [];
+
+            let totalRevCur = curChannels.reduce((sum, x) => sum + x.rev, 0);
+            let totalRevPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.rev, 0) : 0;
+            let premiumCur = curChannels.reduce((sum, x) => sum + x.premium, 0);
+            let adsCur = totalRevCur - premiumCur;
+            let viewsCur = curChannels.reduce((sum, x) => sum + x.views, 0);
+            let viewsPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.views, 0) : 0;
+            
+            let avgCpm = 0;
+            let validCpmCount = 0;
+            curChannels.forEach(x => { if(x.cpm > 0) { avgCpm += x.cpm; validCpmCount++; } });
+            if(validCpmCount > 0) avgCpm = avgCpm / validCpmCount;
+
+            document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
+            document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
+            document.getElementById('m-avg-cpm').innerText = `Avg. CPM: ${fmtTHB(avgCpm)}`;
+            document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
+            document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
+
+            let momRevDiff = 0;
+            if(totalRevPrev > 0) {
+                momRevDiff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
+                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) > 0 ? `<span class="up">▲ +${momRevDiff}% MoM</span>` : `<span class="down">▼ ${momRevDiff}% MoM</span>`;
+            } else { document.getElementById('m-total-rev-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
+
+            let momViewDiff = 0;
+            if(viewsPrev > 0) {
+                momViewDiff = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
+                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) > 0 ? `<span class="up">▲ +${momViewDiff}% MoM</span>` : `<span class="down">▼ ${momViewDiff}% MoM</span>`;
+            } else { document.getElementById('m-total-views-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
+
+            let premiumRatio = totalRevCur > 0 ? ((premiumCur / totalRevCur) * 100).toFixed(1) : "0.0";
+            let adsRatio = (100 - parseFloat(premiumRatio)).toFixed(1);
+            document.getElementById('m-premium-ratio').innerText = `สัดส่วนพอร์ต: ${premiumRatio}%`;
+
+            donutRender.style.background = `conic-gradient(#0ea5e9 0% ${adsRatio}%, #8b5cf6 ${adsRatio}% 100%)`;
+            donutPctVal.innerText = `${adsRatio}%`;
+
+            const top5 = [...curChannels].sort((a,b) => b.rev - a.rev).slice(0, 5);
+            let maxRevenueFound = 1;
+            top5.forEach(c => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                if(c.rev > maxRevenueFound) maxRevenueFound = c.rev;
+                if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
-            top5Data.forEach(item => {
-                let baseHeight = maxPeak > 0 ? (item.baseVal / maxPeak) * 100 : 0;
-                let targetHeight = maxPeak > 0 ? (item.targetVal / maxPeak) * 100 : 0;
+            // 📊 อัปเดตสไตล์ตัวเลขบนกราฟเป็นแบบย่อส่วน (K/M) คลีนๆ
+            vBarChartContainer.innerHTML = '';
+            top5.forEach(c => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                // ปรับความสูงสูงสุดที่ 80% เพื่อเผื่อที่ว่างให้ตัวเลขด้านบน
+                let hBase = p ? ((p.rev / maxRevenueFound) * 80).toFixed(1) : 0;
+                let hTarget = ((c.rev / maxRevenueFound) * 80).toFixed(1);
+                
+                let barMoM = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
+                let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
+                
+                let contributionPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
+                
+                let shortBase = fmtShortTHB(p?.rev || 0);
+                let shortTarget = fmtShortTHB(c.rev);
 
-                let baseShare = baseTotal > 0 ? ((item.baseVal / baseTotal) * 100).toFixed(1) : "0";
-                let targetShare = targetTotal > 0 ? ((item.targetVal / targetTotal) * 100).toFixed(1) : "0";
-
-                const group = document.createElement('div');
-                group.className = 'v-bar-group';
-
-                // โครงสร้างคอมโบกราฟแท่งคู่แนวตั้ง จัด Flex ครอบด้วย .v-bar-val-top ไร้เส้นขอบ ไร้พื้นหลังตามสั่ง
-                group.innerHTML = `
-                    <div class="v-bar-combo">
-                        <div class="v-bar-wrapper">
-                            <div class="v-bar-val-top">
-                                <span>${fmtShortTHB(item.baseVal)}</span>
-                                <span class="pct">(${baseShare}%)</span>
+                vBarChartContainer.innerHTML += `
+                    <div class="v-bar-group">
+                        <div class="v-bar-combo">
+                            <div class="v-bar-wrapper">
+                                <div class="v-bar-val-top" style="color:#94a3b8;">${shortBase}</div>
+                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
                             </div>
-                            <div class="v-bar v-bar-base" style="height: ${Math.max(baseHeight, 3)}%" data-tooltip="งวดฐานของ ${item.name}: ${fmtTHB(item.baseVal)} (แชร์ ${baseShare}%)"></div>
-                        </div>
-                        <div class="v-bar-wrapper">
-                            <div class="v-bar-val-top">
-                                <span>${fmtShortTHB(item.targetVal)}</span>
-                                <span class="pct">(${targetShare}%)</span>
+                            <div class="v-bar-wrapper">
+                                <div class="v-bar-val-top" style="color:#0284c7;">${shortTarget}<br><span class="pct">(${contributionPct}%)</span></div>
+                                <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)} | สัดส่วน: ${contributionPct}%"></div>
                             </div>
-                            <div class="v-bar v-bar-target" style="height: ${Math.max(targetHeight, 3)}%" data-tooltip="งวดปัจจุบันของ ${item.name}: ${fmtTHB(item.targetVal)} (แชร์ ${targetShare}%)"></div>
                         </div>
+                        <div style="font-size:10px; margin-top:8px;">${barDiffSymbol}</div>
+                        <div class="v-bar-label" title="${c.name}">${c.name}</div>
                     </div>
-                    <div class="v-bar-label" title="${item.name}">${item.name}</div>
                 `;
-                chartArea.appendChild(group);
             });
-        }
 
-        // ระบบ Auto-Generate Prompt คุณภาพสูงเพื่อความสะดวกในการ Copy นำไปสร้างสไลด์ต่อ
-        function generateDynamicPrompt(top5, totalNet, totalPremium, growth) {
-            let top1Name = top5[0] ? top5[0].name : "N/A";
-            let top1Val = top5[0] ? fmtTHB(top5[0].targetVal) : "0";
+            let topGrower = { name: '--', pct: -9999 };
+            let topStable = [];
+            if (prevChannels) {
+                curChannels.forEach(c => {
+                    let p = prevChannels.find(x => x.id === c.id);
+                    if (p && p.rev > 1000) {
+                        let change = ((c.rev - p.rev) / p.rev) * 100;
+                        if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
+                        if (Math.abs(change) <= 5) { topStable.push({ name: c.name, val: c.rev }); }
+                    }
+                });
+            }
+
+            let aiText = `## ข้อความสรุปเนื้อหา (Prompt) สำหรับ Executive Presentation\n`;
+            aiText += `รายงานข้อมูลเปรียบเทียบ: ${base || 'งวดฐาน'} เทียบกับ ${target}\n\n`;
             
-            let promptText = `คุณคือผู้เชี่ยวชาญด้านกลยุทธ์ธุรกิจสื่อดนตรีและ YouTube MCN ระดับสากล จงนำข้อมูลผลการดำเนินงานของเครือข่าย S1 MUSIC ต่อไปนี้ ไปจัดทำโครงร่างพรีเซนเทชันเชิงลึก (Slide Pitch Deck) สำหรับประชุมผู้บริหาร:
-
-[ข้อมูลผลการดำเนินงานเครือข่าย]
-- รายได้รวมสุทธิพอร์ตโฟลิโอ: ${fmtTHB(totalNet)}
-- อัตราการเติบโตของรายได้ (MoM): ${growth.toFixed(2)}%
-- รายได้จาก YouTube Premium: ${fmtTHB(totalPremium)} (คิดเป็นสัดส่วนพอร์ต ${((totalPremium/totalNet)*100).toFixed(1)}%)
-- พาร์ทเนอร์ยุทธศาสตร์อันดับ 1: ช่อง "${top1Name}" ทำรายได้สูงสุดที่ ${top1Val}
-
-[โครงสร้างและพาร์ทเนอร์สำคัญ Top 5]
-${top5.map((c, i) => `${i+1}. ช่อง ${c.name} -> รายได้งวดปัจจุบัน ${fmtTHB(c.targetVal)} (งวดก่อนหน้า ${fmtTHB(c.baseVal)})`).join('\n')}
-
-จงสรุปเนื้อหาแบ่งออกเป็น 4 สไลด์สำคัญ:
-สไลด์ที่ 1: Executive Summary สรุปภาพรวมการเติบโตและการพึ่งพารายได้จากระบบสมาชิก Premium
-สไลด์ที่ 2: Strategic Partners Analysis วิเคราะห์ศักยภาพช่อง Top 5 และการรักษาความสัมพันธ์ระยะยาว
-สไลด์ที่ 3: Revenue Composition Optimization แนะนำแผนการกระตุ้นรายได้ฝั่ง Ad Revenue เพิ่มเติม
-สไลด์ที่ 4: Action Plan แผนกลยุทธ์การขยายลิขสิทธิ์เพลง MCN ในไตรมาสถัดไป`;
-
-            document.getElementById('ai-summary-text').value = promptText;
-        }
-
-        function copyPrompt() {
-            let tx = document.getElementById('ai-summary-text');
-            tx.select();
-            document.execCommand('copy');
+            aiText += `### SLIDE 1: ภาพรวมผลประกอบการของเครือข่าย MCN\n`;
+            aiText += `- **รายได้สุทธิเครือข่ายรวม:** ${fmtTHB(totalRevCur)} (เติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace('MoM', '').trim()})\n`;
+            aiText += `- **รายได้จากโฆษณา (Ad Revenue):** ${fmtTHB(adsCur)} (สัดส่วน ${adsRatio}% | Average CPM: ${fmtTHB(avgCpm)})\n`;
+            aiText += `- **รายได้ YouTube Premium:** ${fmtTHB(premiumCur)} (สัดส่วน ${premiumRatio}%)\n`;
+            aiText += `- **ปริมาณการเข้าชมสะสม (Total Views):** ${fmtNum(viewsCur)} ครั้ง\n\n`;
             
-            let btn = document.getElementById('final-copy-btn');
-            btn.textContent = "📋 คัดลอกเรียบร้อยแล้ว!";
-            btn.style.background = "#0284c7";
-            setTimeout(() => {
-                btn.textContent = "📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)";
-                btn.style.background = "#10b981";
-            }, 2000);
+            aiText += `### SLIDE 2: Insight สัดส่วนผู้บริโภคคุณภาพ และศักยภาพแพลตฟอร์ม\n`;
+            aiText += `- **ความภักดีของผู้ชมและกำลังซื้อ (Premium Subscriber Loyalty):** เครือข่ายสามารถสร้างรายได้จากผู้ใช้ Premium ได้ถึง ${premiumRatio}% สะท้อนให้เห็นว่าผู้ฟังมีความผูกพันและเลือกใช้แพลตฟอร์มแบบไม่มีโฆษณาคั่น ซึ่งเป็นฐานรายได้ที่มีคุณภาพสูงและยั่งยืน\n`;
+            aiText += `- **ช่องทางที่มีอัตราการเติบโตโดดเด่น (Top Growth Catalyst):** ค่าย [ ${topGrower.name} ] เป็นตัวผลักดันสำคัญในงวดนี้ โดยมีอัตราการเติบโตเพิ่มขึ้นถึง +${topGrower.pct.toFixed(1)}% ช่วยดันยอดรวมเครือข่ายอย่างมีนัยสำคัญ\n\n`;
+            
+            aiText += `### SLIDE 3: โครงสร้างรายได้ Top 5 Strategic Partners และ Top Assets\n`;
+            top5.forEach((c, idx) => {
+                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/c.rev)*100).toFixed(1) : "0.0";
+                let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
+                let itemAds = c.rev - c.premium;
+                let contrPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
+                
+                aiText += `${idx + 1}. **พาร์ทเนอร์: ${c.name}** (Contribution: ${contrPct}% ของเครือข่าย)\n`;
+                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (MoM: ${c_pct_str})\n`;
+                aiText += `   - [ประเภทรายได้] รายได้โฆษณา: ${fmtTHB(itemAds)} | รายได้ Premium: ${fmtTHB(c.premium)}\n`;
+                
+                let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
+                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
+                
+                if (matchedAssets.length > 0) {
+                    aiText += `   - [Top Assets ชิ้นงานสร้างรายได้หลัก]\n`;
+                    matchedAssets.forEach(ast => {
+                        let prevAst = prevAssets.find(x => x.id === ast.id);
+                        let astPctStr = '--';
+                        if (prevAst && prevAst.rev > 0) {
+                            let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
+                            astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
+                        }
+                        aiText += `     • ${ast.name} (รายได้: ${fmtTHB(ast.rev)} | MoM: ${astPctStr})\n`;
+                    });
+                }
+                aiText += `\n`;
+            });
+            
+            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์ (Strategic Action Items)\n`;
+            aiText += `1. นำข้อมูล Average CPM ไปวางแผนร่วมกับทีมการตลาด เพื่อกระตุ้นแคมเปญให้ตรงกับช่วงเวลาที่อัตราโฆษณาสูงขึ้น\n`;
+            aiText += `2. ต่อยอดการสนับสนุนพาร์ทเนอร์ที่มีฐานคนฟัง Premium เพื่อสร้าง Exclusive Content ที่ดึงดูดผู้ใช้งานคุณภาพในระยะยาว`;
+
+            aiTextBox.value = aiText;
         }
 
-        // ตัวเผื่อเลือกฟีเจอร์สำหรับตารางฝั่งงานเพลง Asset CSV ในอนาคต
-        document.getElementById('asset-upload').addEventListener('change', function(e) {
-            alert('ระบบได้รับไฟล์เรียบร้อย แต่อยู่ในช่วงแมปปิ้งคอลัมน์ดนตรีลิขสิทธิ์ (Asset Table) แนะนำให้ตรวจสอบที่ตารางหลักฝั่งช่องทางเป็นหลักก่อนครับ');
+        document.getElementById('final-copy-btn').addEventListener('click', function() {
+            const textarea = document.getElementById('ai-summary-text');
+            if (!textarea || textarea.value.includes("รอข้อมูล")) {
+                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกครับ");
+                return;
+            }
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(textarea.value);
+            alert("📋 คัดลอก Prompt สำหรับสร้าง Presentation เรียบร้อยครับ!");
         });
-        function renderAssetTable() {}
     </script>
 </body>
 </html>
