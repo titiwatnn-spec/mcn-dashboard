@@ -117,7 +117,7 @@
             </div>
         </div>
 
-        <div class="card id="view-assets" class="hidden">
+        <div class="card hidden" id="view-assets">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
                 <span style="font-size:13px; font-weight:700; color:#475569;">งวดเปรียบเทียบชิ้นงานเพลง:</span>
                 <select id="asset-base-select" onchange="renderAssetTable()"></select>
@@ -213,20 +213,6 @@
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
-            const formatter = isCurrency ? fmtTHB : fmtNum;
-            let baseText = prevLabel ? `<span style="font-size:10px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:10px; color:#cbd5e1;">ฐาน:</span> --`;
-            let targetText = curLabel ? `<span style="font-size:10px; color:#64748b;">${curLabel}:</span> <b>${formatter(curVal)}</b>` : `<b>${formatter(curVal)}</b>`;
-            let indicatorText = '';
-            if (prevVal === undefined || prevVal === null || prevVal === 0) {
-                indicatorText = `<span class="mom-indicator neutral">MoM: --</span>`;
-            } else {
-                const diff = (((curVal - prevVal) / prevVal) * 100).toFixed(1);
-                indicatorText = parseFloat(diff) > 0 ? `<span class="mom-indicator up">▲ +${diff}%</span>` : (parseFloat(diff) < 0 ? `<span class="mom-indicator down">▼ ${diff}%</span>` : `<span class="mom-indicator neutral">0.0%</span>`);
-            }
-            return `<div class="cell-base-val">${baseText}</div><div class="cell-target-val">${targetText}</div>${indicatorText}`;
-        }
-
         function parseCSV(text) {
             let lines = text.split(/\r\n|\n/);
             return lines.filter(line => line.trim() !== '').map(line => {
@@ -254,7 +240,6 @@
             if (tabName === 'analysis') generateExecutiveReport();
         }
 
-        // 🔧 [ซ่อมสายไฟจุดนี้] ผูก Event Onchange ให้ดึงไฟล์เข้าไปรันในสโตร์หลังบ้านเรียบร้อย!
         document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
         document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
 
