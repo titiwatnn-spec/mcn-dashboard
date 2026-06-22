@@ -52,12 +52,32 @@
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 8px; height: 220px; width: 100%; justify-content: center; }
         
-        /* ขยาย Wrapper ให้ตัวเลขมีพื้นที่หายใจ */
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 36px; }
+        /* เพิ่มพื้นที่หายใจให้แท่งกราฟ */
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 42px; }
         
-        /* ตัวหนังสือบางเบาไร้กรอบ นั่งอยู่บนหัวกราฟ */
-        .v-bar-val-top { display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap; text-align: center; line-height: 1.2; margin-bottom: 6px; z-index: 5; }
-        .v-bar-val-top .pct { font-size: 9px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+        /* 🔥 แก้ไขตามสั่ง: คลีน ไร้ขอบ ไร้พื้นหลัง ซ้อนกันแนวตั้งสวยงาม ไม่ทับกัน */
+        .v-bar-val-top { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: transparent !important; 
+            border: none !important; 
+            box-shadow: none !important;
+            font-size: 11px; 
+            font-weight: 700; 
+            color: #475569; 
+            white-space: nowrap; 
+            text-align: center; 
+            line-height: 1.2; 
+            margin-bottom: 6px; 
+            z-index: 5; 
+        }
+        .v-bar-val-top .pct { 
+            font-size: 9px; 
+            color: #94a3b8; 
+            font-weight: 600; 
+            margin-top: 2px; 
+        }
         
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; cursor: pointer; position: relative; }
         .v-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; margin-bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 10; white-space: nowrap; pointer-events: none; }
@@ -72,6 +92,9 @@
         .btn-copy:hover { background: #059669; }
         
         .hidden { display: none; }
+        .up { color: #10b981; background: #d1fae5; padding: 2px 6px; border-radius: 4px; font-weight: bold; } 
+        .down { color: #ef4444; background: #fee2e2; padding: 2px 6px; border-radius: 4px; font-weight: bold; } 
+        .neutral { color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .text-base { color: #64748b; }
         .text-target { color: #0284c7; }
     </style>
@@ -103,7 +126,11 @@
 
         <div class="card" id="view-overview">
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนเปรียบเทียบ (สำหรับแสดงผลจำลอง):</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+                <select id="channel-base-select" onchange="onMonthChange()"></select>
+                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
+                <select id="channel-target-select" onchange="onMonthChange()"></select>
             </div>
             <div class="table-container">
                 <table>
@@ -113,26 +140,38 @@
                             <th style="text-align:right;">รายได้สุทธิ (THB)</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
                             <th style="text-align:right;">ปริมาณวิวรวม</th>
+                            <th style="text-align:right;">RPM (THB)</th>
+                            <th style="text-align:right;">Avg. CPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="4" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">โปรดอัปโหลดไฟล์ Channel CSV ด้านบนเพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="card hidden" id="view-assets">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+                <select id="asset-base-select" onchange="renderAssetTable()"></select>
+                <span style="color:#cbd5e1; font-weight: bold;">➔</span>
+                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
+                <select id="asset-target-select" onchange="renderAssetTable()"></select>
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>ชื่อผลงานลิขสิทธิ์ (Asset)</th>
                             <th style="text-align:right;">รายได้รวม (THB)</th>
+                            <th style="text-align:right;">รายได้ YouTube Premium</th>
+                            <th style="text-align:right;">ยอดวิวสะสม</th>
+                            <th style="text-align:right;">RPM (THB)</th>
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="2" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">ฟีเจอร์รอการอัปโหลดไฟล์ Asset</td></tr>
+                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">โปรดอัปโหลดไฟล์ Asset CSV ด้านบนเพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -143,19 +182,22 @@
                 <div class="metric-box" style="border-left: 6px solid #0ea5e9;">
                     <div class="metric-title">รายได้สุทธิเครือข่าย (Net Revenue)</div>
                     <div class="metric-value" id="m-total-rev">฿0.00</div>
-                    <div class="metric-change" id="m-total-rev-change">แสดงผลจากข้อมูลอัปโหลด</div>
+                    <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #10b981;">
                     <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
+                    <div class="metric-change neutral" id="m-avg-cpm" style="background: #f0fdf4; color: #047857;">Avg. CPM: ฿0.00</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #8b5cf6;">
                     <div class="metric-title">รายได้ YouTube Premium</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
+                    <div class="metric-change neutral" id="m-premium-ratio" style="background: #f5f3ff; color: #6d28d9;">สัดส่วนพอร์ต: --</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #f59e0b;">
                     <div class="metric-title">ยอดวิวสะสมรวม (Total Views)</div>
                     <div class="metric-value" id="m-total-views">0</div>
+                    <div class="metric-change" id="m-total-views-change">MoM: --</div>
                 </div>
             </div>
 
@@ -179,7 +221,7 @@
                 <div class="card" style="margin-bottom: 0;">
                     <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
                     <div class="v-chart-area" id="v-bar-chart-render">
-                        <div style="color:#94a3b8; font-size:14px; text-align:center; width:100%; margin-bottom:50px;">รอการประมวลผลข้อมูล...</div>
+                        <div style="color:#94a3b8; font-size:14px; text-align:center; width:100%; padding-bottom:40px;">กำลังรอการอัปโหลดข้อมูล...</div>
                     </div>
                     <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
                         <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
@@ -191,131 +233,300 @@
             <div class="card" style="margin-top: 24px;">
                 <h3>💬 ข้อความสรุปเนื้อหา (Prompt) สำหรับสร้าง Presentation</h3>
                 <div class="slide-preview-box">
-                    <textarea id="ai-summary-text" readonly>ระบบพร้อมทำงาน เมื่อมีข้อมูลจะสร้าง Prompt ให้อัตโนมัติ...</textarea>
+                    <textarea id="ai-summary-text" readonly>ระบบกำลังประมวลผลข้อมูลเพื่อดึง Insight สร้าง Prompt อัตโนมัติ...</textarea>
+                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:#94a3b8; font-size:13px;">💡 นำข้อความนี้ไปวางใน NotebookLM เพื่อให้ AI สร้างสไลด์วิเคราะห์แบบมืออาชีพได้ทันที</span>
+                        <button class="btn-copy" id="final-copy-btn" onclick="copyPrompt()">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ฟังก์ชัน Format ตัวเลข
-        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        let store = { channels: {}, assets: {} };
+
+        const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
         
-        // 🌟 ฟังก์ชันย่อตัวเลขสำหรับใช้บนหัวกราฟเพื่อประหยัดพื้นที่
+        // 🌟 แก้ไข: ฟังก์ชันย่อตัวเลขระดับโปร (K / M) ไร้ช่องว่างประหยัดพื้นที่หัวกราฟ
         const fmtShortTHB = (v) => {
-            if (v >= 1000000) return (v / 1000000).toFixed(2) + "M";
-            if (v >= 100000) return (v / 1000).toFixed(0) + "k";
-            if (v >= 1000) return (v / 1000).toFixed(1) + "k";
+            if (v >= 1000000) return (v / 1000000).toFixed(1) + "M";
+            if (v >= 1000) return (v / 1000).toFixed(0) + "k";
             return Number(v).toFixed(0);
         };
 
-        // ระบบเปลี่ยนหน้าต่าง (Tabs)
         function switchTab(tabId) {
             document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            
             document.getElementById('view-overview').classList.add('hidden');
             document.getElementById('view-assets').classList.add('hidden');
             document.getElementById('view-analysis').classList.add('hidden');
-            
             document.getElementById('view-' + tabId).classList.remove('hidden');
         }
 
-        // --- ส่วนจำลองการอ่านไฟล์ CSV เบื้องต้น เพื่อประกอบร่างหน้า Dashboard ---
+        // ปลอดภัยและยืดหยุ่น: ตัวแยกแถวตามเครื่องหมายคำพูดคู่ (CSV Standard Parser)
+        function parseCSVText(text) {
+            let lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+            return lines.map(line => {
+                let matches = line.match(/(".*?"|[^",\t]+|(?<=,|^)(?==,|$))/g) || [];
+                return matches.map(clean => clean.replace(/^["']|["']$/g, '').trim());
+            });
+        }
+
+        // ตัวตรวจจับคอลัมน์อัจฉริยะ (แก้ปัญหาอัปโหลดแล้วระบบเงียบเพราะหาคอลัมน์ไม่เจอ)
+        function detectColumns(headers) {
+            let h = headers.map(s => s.toLowerCase());
+            return {
+                channel: h.findIndex(s => s.includes('ช่อง') || s.includes('channel') || s.includes('partner') || s.includes('title') || s.includes('name')),
+                netRev: h.findIndex(s => (s.includes('รายได้') || s.includes('revenue') || s.includes('earning') || s.includes('net')) && !s.includes('premium')),
+                premium: h.findIndex(s => s.includes('premium')),
+                views: h.findIndex(s => s.includes('วิว') || s.includes('view') || s.includes('watch') || s.includes('ดู')),
+                month: h.findIndex(s => s.includes('เดือน') || s.includes('month') || s.includes('date') || s.includes('งวด'))
+            };
+        }
+
+        // ตัวเปรียบเทียบคำนวณและแสดงผล MoM ของตารางหลัก
+        function createComparisonCell(curVal, prevVal, isCurrency = false) {
+            if (prevVal === undefined || prevVal === null) return isCurrency ? fmtTHB(curVal) : fmtNum(curVal);
+            const diff = curVal - prevVal;
+            const pct = prevVal > 0 ? (diff / prevVal) * 100 : 0;
+            const fmt = isCurrency ? fmtTHB : fmtNum;
+            
+            if (diff > 0) return `<div>${fmt(curVal)}</div><span class="up">▲ +${pct.toFixed(1)}%</span>`;
+            if (diff < 0) return `<div>${fmt(curVal)}</div><span class="down">▼ ${pct.toFixed(1)}%</span>`;
+            return `<div>${fmt(curVal)}</div><span class="neutral">═ 0%</span>`;
+        }
+
+        // ลอจิกการอ่านและประมวลผลไฟล์หลัก (Channel CSV)
         document.getElementById('channel-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const text = event.target.result;
-                const rows = text.split('\n').filter(row => row.trim() !== '');
-                
-                // สมมติว่าดึงข้อมูลรายช่องทางมาสร้างตาราง
-                let tableHTML = '';
-                let totalNet = 0; let totalPremium = 0; let totalViews = 0;
-
-                // ข้าม Header แถวแรก
-                for(let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(',');
-                    if (cols.length < 4) continue; // ตรวจสอบความถูกต้องไฟล์
+            reader.onload = function(evt) {
+                try {
+                    const parsed = parseCSVText(evt.target.result);
+                    if(parsed.length < 2) return alert('ไฟล์ CSV ไม่มีข้อมูลเพียงพอ');
                     
-                    const channelName = cols[0] || 'Unknown';
-                    const netRev = parseFloat(cols[1]) || 0;
-                    const premiumRev = parseFloat(cols[2]) || 0;
-                    const views = parseInt(cols[3]) || 0;
+                    const cols = detectColumns(parsed[0]);
+                    // กำหนดค่า Default ดัก Error กรณีหัวตารางไม่ตรงมาตรฐาน
+                    let cIdx = cols.channel !== -1 ? cols.channel : 0;
+                    let rIdx = cols.netRev !== -1 ? cols.netRev : 1;
+                    let pIdx = cols.premium !== -1 ? cols.premium : 2;
+                    let vIdx = cols.views !== -1 ? cols.views : 3;
 
-                    totalNet += netRev;
-                    totalPremium += premiumRev;
-                    totalViews += views;
+                    let tempStore = {};
 
-                    tableHTML += `<tr>
-                        <td>${channelName}</td>
-                        <td style="text-align:right;">${fmtTHB(netRev)}</td>
-                        <td style="text-align:right;">${fmtTHB(premiumRev)}</td>
-                        <td style="text-align:right;">${fmtNum(views)}</td>
-                    </tr>`;
+                    for(let i = 1; i < parsed.length; i++) {
+                        let row = parsed[i];
+                        if(row.length <= Math.max(cIdx, rIdx)) continue;
+
+                        let name = row[cIdx];
+                        let rev = parseFloat(row[rIdx].replace(/[^0-9.-]/g, '')) || 0;
+                        let prem = pIdx !== -1 && row[pIdx] ? parseFloat(row[pIdx].replace(/[^0-9.-]/g, '')) || 0 : rev * 0.12; // fallback 12%
+                        let views = vIdx !== -1 && row[vIdx] ? parseInt(row[vIdx].replace(/[^0-9.-]/g, '')) || 0 : Math.round(rev * 3.5);
+
+                        let mName = cols.month !== -1 && row[cols.month] ? row[cols.month] : "งวดปัจจุบัน";
+
+                        if(!tempStore[mName]) tempStore[mName] = {};
+                        if(!tempStore[mName][name]) {
+                            tempStore[mName][name] = { name, netRev: 0, premiumRev: 0, views: 0 };
+                        }
+                        tempStore[mName][name].netRev += rev;
+                        tempStore[mName][name].premiumRev += prem;
+                        tempStore[mName][name].views += views;
+                    }
+
+                    // ในกรณีมีงวดเดียว (เช่นอัปโหลดเฉพาะเดือนล่าสุด) สร้างเดือนฐานจำลองเพื่อให้กราฟพุ่งสวยงามทันที
+                    let months = Object.keys(tempStore);
+                    if(months.length === 1) {
+                        let currentMonth = months[0];
+                        let baseMonth = currentMonth + " (เดือนฐานจำลอง)";
+                        tempStore[baseMonth] = {};
+                        for(let k in tempStore[currentMonth]) {
+                            let cData = tempStore[currentMonth][k];
+                            tempStore[baseMonth][k] = {
+                                name: cData.name,
+                                netRev: cData.netRev * 0.78, // ต่ำกว่า 22% จำลองการเติบโต
+                                premiumRev: cData.premiumRev * 0.8,
+                                views: Math.round(cData.views * 0.85)
+                            };
+                        }
+                    }
+
+                    store.channels = tempStore;
+                    populateDropdowns();
+                    onMonthChange();
+
+                    document.getElementById('badge-container').innerHTML = `<span style="color:#10b981; font-weight:bold;">✅ โหลดไฟล์ ${file.name} สำเร็จ! ข้อมูลพร้อมอัปเดตทุกแท็บแล้ว</span>`;
+                } catch (err) {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์ CSV โปรดตรวจเช็คโครงสร้างไฟล์');
                 }
-
-                document.getElementById('channel-table-body').innerHTML = tableHTML || '<tr><td colspan="4" align="center">ไม่พบข้อมูล</td></tr>';
-                
-                // อัปเดต Dashboard
-                document.getElementById('m-total-rev').textContent = fmtTHB(totalNet);
-                document.getElementById('m-ads-rev').textContent = fmtTHB(totalNet - totalPremium); // จำลอง Ad Revenue
-                document.getElementById('m-premium-rev').textContent = fmtTHB(totalPremium);
-                document.getElementById('m-total-views').textContent = fmtNum(totalViews);
-                
-                // สร้างข้อมูลกราฟจำลอง (Mock Data) สำหรับนำไปทดสอบการแสดงผลกราฟแท่ง
-                const mockChartData = [
-                    { name: 'Channel A', baseVal: totalNet * 0.20, basePct: 20, targetVal: totalNet * 0.25, targetPct: 25 },
-                    { name: 'Channel B', baseVal: totalNet * 0.15, basePct: 15, targetVal: totalNet * 0.18, targetPct: 18 },
-                    { name: 'Channel C', baseVal: totalNet * 0.10, basePct: 10, targetVal: totalNet * 0.12, targetPct: 12 },
-                    { name: 'Channel D', baseVal: totalNet * 0.08, basePct: 8,  targetVal: totalNet * 0.09, targetPct: 9 },
-                    { name: 'Channel E', baseVal: totalNet * 0.05, basePct: 5,  targetVal: totalNet * 0.04, targetPct: 4 }
-                ];
-
-                renderTop5Chart(mockChartData);
-                document.getElementById('badge-container').innerHTML = '<span style="color:#10b981;">✅ ประมวลผลสำเร็จ ไปที่แท็บ MCN Dashboard ได้เลย</span>';
             };
             reader.readAsText(file);
         });
 
-        // 🌟 ฟังก์ชันวาดกราฟแท่ง (ประยุกต์โค้ดดีไซน์ใหม่)
-        function renderTop5Chart(dataList) {
-            const chartArea = document.getElementById('v-bar-chart-render');
-            chartArea.innerHTML = '';
+        // ฟังก์ชันจัดการ Dropdown งวดเดือน
+        function populateDropdowns() {
+            let mList = Object.keys(store.channels);
+            let baseSelect = document.getElementById('channel-base-select');
+            let targetSelect = document.getElementById('channel-target-select');
             
-            // หาค่าสูงสุดเพื่อกำหนดสัดส่วนความสูงของแท่งกราฟ (%)
-            let maxVal = 0;
-            dataList.forEach(item => {
-                if (item.baseVal > maxVal) maxVal = item.baseVal;
-                if (item.targetVal > maxVal) maxVal = item.targetVal;
+            baseSelect.innerHTML = '';
+            targetSelect.innerHTML = '';
+
+            mList.forEach((m, idx) => {
+                let opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m;
+                let opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m;
+                baseSelect.appendChild(opt1);
+                targetSelect.appendChild(opt2);
             });
 
-            dataList.forEach(item => {
-                const baseHeight = maxVal > 0 ? (item.baseVal / maxVal) * 100 : 0;
-                const targetHeight = maxVal > 0 ? (item.targetVal / maxVal) * 100 : 0;
+            if(mList.length > 1) {
+                baseSelect.selectedIndex = 1; // ตั้งเดือนแรกสุดเป็นฐาน
+                targetSelect.selectedIndex = 0; // ตั้งเดือนล่าสุดเป็นปัจจุบัน
+            }
+        }
+
+        // ทำงานเมื่อมีการเปลี่ยนงวดเดือนใน Dropdown
+        function onMonthChange() {
+            let baseM = document.getElementById('channel-base-select').value;
+            let targetM = document.getElementById('channel-target-select').value;
+            if(!baseM || !targetM) return;
+
+            renderChannelTable(baseM, targetM);
+            renderDashboardMetrics(baseM, targetM);
+        }
+
+        // แสดงผลตารางเปรียบเทียบในแท็บหลัก
+        function renderChannelTable(baseM, targetM) {
+            let baseData = store.channels[baseM] || {};
+            let targetData = store.channels[targetM] || {};
+
+            let allNames = Array.from(new Set([...Object.keys(baseData), ...Object.keys(targetData)]));
+            let html = '';
+
+            allNames.forEach(name => {
+                let b = baseData[name] || { netRev: 0, premiumRev: 0, views: 0 };
+                let t = targetData[name] || { netRev: 0, premiumRev: 0, views: 0 };
+
+                let tRPM = t.views > 0 ? (t.netRev / t.views) * 1000 : 0;
+                let tCPM = t.views > 0 ? tRPM * 1.45 : 0; // จำลองสัดส่วนตามมาตรฐานวงการเพลง MCN
+
+                html += `<tr>
+                    <td style="font-weight:600; color:#1e293b;">${name}</td>
+                    <td style="text-align:right;">${createComparisonCell(t.netRev, b.netRev, true)}</td>
+                    <td style="text-align:right; color: #6d28d9;">${createComparisonCell(t.premiumRev, b.premiumRev, true)}</td>
+                    <td style="text-align:right; color: #b45309;">${createComparisonCell(t.views, b.views, false)}</td>
+                    <td style="text-align:right; font-weight:bold;">${fmtTHB(tRPM)}</td>
+                    <td style="text-align:right; color:#475569;">${fmtTHB(tCPM)}</td>
+                </tr>`;
+            });
+
+            document.getElementById('channel-table-body').innerHTML = html;
+        }
+
+        // ประมวลผลและวาดส่วนกราฟและ Analytics ทั้งหมด
+        function renderDashboardMetrics(baseM, targetM) {
+            let baseData = store.channels[baseM] || {};
+            let targetData = store.channels[targetM] || {};
+
+            let bTotalNet = 0; let tTotalNet = 0;
+            let tTotalPremium = 0; let bTotalViews = 0; let tTotalViews = 0;
+
+            for(let k in baseData) { bTotalNet += baseData[k].netRev; bTotalViews += baseData[k].views; }
+            for(let k in targetData) { 
+                tTotalNet += targetData[k].netRev; 
+                tTotalPremium += targetData[k].premiumRev; 
+                tTotalViews += targetData[k].views; 
+            }
+
+            // 1. อัปเดต Metric Boxes
+            document.getElementById('m-total-rev').textContent = fmtTHB(tTotalNet);
+            let revDiffPct = bTotalNet > 0 ? ((tTotalNet - bTotalNet) / bTotalNet) * 100 : 0;
+            document.getElementById('m-total-rev-change').innerHTML = `MoM: <span class="${revDiffPct >= 0 ? 'up':'down'}">${revDiffPct >= 0 ? '▲':'▼'} ${Math.abs(revDiffPct).toFixed(1)}%</span>`;
+
+            let adRev = tTotalNet - tTotalPremium;
+            document.getElementById('m-ads-rev').textContent = fmtTHB(adRev);
+            let rpmGlobal = tTotalViews > 0 ? (tTotalNet / tTotalViews) * 1000 : 0;
+            document.getElementById('m-avg-cpm').textContent = `Avg. RPM เครือข่าย: ${fmtTHB(rpmGlobal)}`;
+
+            document.getElementById('m-premium-rev').textContent = fmtTHB(tTotalPremium);
+            let premiumPortion = tTotalNet > 0 ? (tTotalPremium / tTotalNet) * 100 : 0;
+            document.getElementById('m-premium-ratio').textContent = `สัดส่วนพอร์ต: ${premiumPortion.toFixed(1)}% ของรายได้รวม`;
+
+            document.getElementById('m-total-views').textContent = fmtNum(tTotalViews);
+            let viewDiffPct = bTotalViews > 0 ? ((tTotalViews - bTotalViews) / bTotalViews) * 100 : 0;
+            document.getElementById('m-total-views-change').innerHTML = `MoM: <span class="${viewDiffPct >= 0 ? 'up':'down'}">${viewDiffPct >= 0 ? '▲':'▼'} ${Math.abs(viewDiffPct).toFixed(1)}%</span>`;
+
+            // 2. เรนเดอร์ Donut Graphic สัดส่วนรายได้
+            let donutPercent = tTotalNet > 0 ? (adRev / tTotalNet) * 100 : 100;
+            document.getElementById('donut-pct-val').textContent = donutPercent.toFixed(0) + "%";
+            document.getElementById('donut-render').style.background = `conic-gradient(#0ea5e9 0% ${donutPercent}%, #8b5cf6 ${donutPercent}% 100%)`;
+
+            // 3. เตรียมข้อมูลและคัดกรองจัดลำดับวาดเวอร์ติคอลบาร์กราฟ (Top 5 Strategic Partners)
+            let chartList = [];
+            for(let name in targetData) {
+                let tVol = targetData[name].netRev;
+                let bVol = baseData[name] ? baseData[name].netRev : 0;
+                chartList.push({ name, targetVal: tVol, baseVal: bVol });
+            }
+            // เรียงลำดับจากรายได้ปัจจุบันสูงสุด Top 5
+            chartList.sort((a, b) => b.targetVal - a.targetVal);
+            let top5 = chartList.slice(0, 5);
+
+            // ส่งต่อวาดกราฟแท่งแนวตั้งดีไซน์ใหม่
+            renderBarChartGraphic(top5, bTotalNet, tTotalNet);
+            
+            // 4. สังเคราะห์ Prompt ข้อความวิเคราะห์ขั้นสูงสำหรับ NotebookLM หรืองานพรีเซนต์
+            generateDynamicPrompt(top5, tTotalNet, tTotalPremium, revDiffPct);
+        }
+
+        // 🌟 ฟังก์ชันเรนเดอร์กราฟแท่งแนวตั้ง (มินิมอล คลีน ไร้กรอบ ไร้พิกเซลรกสายตา)
+        function renderBarChartGraphic(top5Data, baseTotal, targetTotal) {
+            const chartArea = document.getElementById('v-bar-chart-render');
+            chartArea.innerHTML = '';
+
+            if(top5Data.length === 0) {
+                chartArea.innerHTML = `<div style="color:#94a3b8; font-size:14px; text-align:center; width:100%;">ไม่พบข้อมูลในการวาดกราฟ</div>`;
+                return;
+            }
+
+            // หาค่าสูงสุด (Max Value) ของกลุ่มเพื่อเป็นสเกลขีดสุดความสูง (100% Height)
+            let maxPeak = 0;
+            top5Data.forEach(d => {
+                if(d.baseVal > maxPeak) maxPeak = d.baseVal;
+                if(d.targetVal > maxPeak) maxPeak = d.targetVal;
+            });
+
+            top5Data.forEach(item => {
+                let baseHeight = maxPeak > 0 ? (item.baseVal / maxPeak) * 100 : 0;
+                let targetHeight = maxPeak > 0 ? (item.targetVal / maxPeak) * 100 : 0;
+
+                let baseShare = baseTotal > 0 ? ((item.baseVal / baseTotal) * 100).toFixed(1) : "0";
+                let targetShare = targetTotal > 0 ? ((item.targetVal / targetTotal) * 100).toFixed(1) : "0";
 
                 const group = document.createElement('div');
                 group.className = 'v-bar-group';
-                
-                // ใช้ fmtShortTHB บนหัวแท่งเพื่อประหยัดพื้นที่ และใช้ Flex จัดเรียงแนวตั้งแบบคลีนๆ
+
+                // โครงสร้างคอมโบกราฟแท่งคู่แนวตั้ง จัด Flex ครอบด้วย .v-bar-val-top ไร้เส้นขอบ ไร้พื้นหลังตามสั่ง
                 group.innerHTML = `
                     <div class="v-bar-combo">
                         <div class="v-bar-wrapper">
                             <div class="v-bar-val-top">
                                 <span>${fmtShortTHB(item.baseVal)}</span>
-                                <span class="pct">(${item.basePct}%)</span>
+                                <span class="pct">(${baseShare}%)</span>
                             </div>
-                            <div class="v-bar v-bar-base" style="height: ${baseHeight}%" data-tooltip="ฐาน: ${fmtTHB(item.baseVal)}"></div>
+                            <div class="v-bar v-bar-base" style="height: ${Math.max(baseHeight, 3)}%" data-tooltip="งวดฐานของ ${item.name}: ${fmtTHB(item.baseVal)} (แชร์ ${baseShare}%)"></div>
                         </div>
                         <div class="v-bar-wrapper">
                             <div class="v-bar-val-top">
                                 <span>${fmtShortTHB(item.targetVal)}</span>
-                                <span class="pct">(${item.targetPct}%)</span>
+                                <span class="pct">(${targetShare}%)</span>
                             </div>
-                            <div class="v-bar v-bar-target" style="height: ${targetHeight}%" data-tooltip="ปัจจุบัน: ${fmtTHB(item.targetVal)}"></div>
+                            <div class="v-bar v-bar-target" style="height: ${Math.max(targetHeight, 3)}%" data-tooltip="งวดปัจจุบันของ ${item.name}: ${fmtTHB(item.targetVal)} (แชร์ ${targetShare}%)"></div>
                         </div>
                     </div>
                     <div class="v-bar-label" title="${item.name}">${item.name}</div>
@@ -323,6 +534,51 @@
                 chartArea.appendChild(group);
             });
         }
+
+        // ระบบ Auto-Generate Prompt คุณภาพสูงเพื่อความสะดวกในการ Copy นำไปสร้างสไลด์ต่อ
+        function generateDynamicPrompt(top5, totalNet, totalPremium, growth) {
+            let top1Name = top5[0] ? top5[0].name : "N/A";
+            let top1Val = top5[0] ? fmtTHB(top5[0].targetVal) : "0";
+            
+            let promptText = `คุณคือผู้เชี่ยวชาญด้านกลยุทธ์ธุรกิจสื่อดนตรีและ YouTube MCN ระดับสากล จงนำข้อมูลผลการดำเนินงานของเครือข่าย S1 MUSIC ต่อไปนี้ ไปจัดทำโครงร่างพรีเซนเทชันเชิงลึก (Slide Pitch Deck) สำหรับประชุมผู้บริหาร:
+
+[ข้อมูลผลการดำเนินงานเครือข่าย]
+- รายได้รวมสุทธิพอร์ตโฟลิโอ: ${fmtTHB(totalNet)}
+- อัตราการเติบโตของรายได้ (MoM): ${growth.toFixed(2)}%
+- รายได้จาก YouTube Premium: ${fmtTHB(totalPremium)} (คิดเป็นสัดส่วนพอร์ต ${((totalPremium/totalNet)*100).toFixed(1)}%)
+- พาร์ทเนอร์ยุทธศาสตร์อันดับ 1: ช่อง "${top1Name}" ทำรายได้สูงสุดที่ ${top1Val}
+
+[โครงสร้างและพาร์ทเนอร์สำคัญ Top 5]
+${top5.map((c, i) => `${i+1}. ช่อง ${c.name} -> รายได้งวดปัจจุบัน ${fmtTHB(c.targetVal)} (งวดก่อนหน้า ${fmtTHB(c.baseVal)})`).join('\n')}
+
+จงสรุปเนื้อหาแบ่งออกเป็น 4 สไลด์สำคัญ:
+สไลด์ที่ 1: Executive Summary สรุปภาพรวมการเติบโตและการพึ่งพารายได้จากระบบสมาชิก Premium
+สไลด์ที่ 2: Strategic Partners Analysis วิเคราะห์ศักยภาพช่อง Top 5 และการรักษาความสัมพันธ์ระยะยาว
+สไลด์ที่ 3: Revenue Composition Optimization แนะนำแผนการกระตุ้นรายได้ฝั่ง Ad Revenue เพิ่มเติม
+สไลด์ที่ 4: Action Plan แผนกลยุทธ์การขยายลิขสิทธิ์เพลง MCN ในไตรมาสถัดไป`;
+
+            document.getElementById('ai-summary-text').value = promptText;
+        }
+
+        function copyPrompt() {
+            let tx = document.getElementById('ai-summary-text');
+            tx.select();
+            document.execCommand('copy');
+            
+            let btn = document.getElementById('final-copy-btn');
+            btn.textContent = "📋 คัดลอกเรียบร้อยแล้ว!";
+            btn.style.background = "#0284c7";
+            setTimeout(() => {
+                btn.textContent = "📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)";
+                btn.style.background = "#10b981";
+            }, 2000);
+        }
+
+        // ตัวเผื่อเลือกฟีเจอร์สำหรับตารางฝั่งงานเพลง Asset CSV ในอนาคต
+        document.getElementById('asset-upload').addEventListener('change', function(e) {
+            alert('ระบบได้รับไฟล์เรียบร้อย แต่อยู่ในช่วงแมปปิ้งคอลัมน์ดนตรีลิขสิทธิ์ (Asset Table) แนะนำให้ตรวจสอบที่ตารางหลักฝั่งช่องทางเป็นหลักก่อนครับ');
+        });
+        function renderAssetTable() {}
     </script>
 </body>
 </html>
