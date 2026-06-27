@@ -262,7 +262,7 @@
                 <input type="text" id="gsheet-label" placeholder="ชื่องวด เช่น JUN" style="max-width:140px;" />
                 <button class="btn-fetch" id="gsheet-btn" onclick="fetchGoogleSheet()">⬇️ ดึงข้อมูล</button>
             </div>
-            <div class="dz-hint" style="margin-top:8px;">💡 วิธีที่เสถียรสุด: ใน Google Sheet เลือก File → Share → <b>Publish to web</b> → เลือกชีต → รูปแบบ <b>CSV</b> → คัดลอก URL มาวาง</div>
+            <div class="dz-hint" style="margin-top:8px;">💡 วาง URL ปกติของ Google Sheet ได้เลย (รองรับ #gid ของแต่ละชีต) — <b>สำคัญ:</b> ต้องตั้งแชร์เป็น "ทุกคนที่มีลิงก์ดูได้ (Anyone with the link)" ก่อน ไม่งั้นจะดึงไม่ได้</div>
         </div>
 
         <div class="btn-group">
@@ -740,13 +740,15 @@
                 if (!/output=csv/.test(url)) url += (url.includes('?') ? '&' : '?') + 'output=csv';
                 return url;
             }
-            // 2) URL ปกติ /spreadsheets/d/{id}/edit#gid=123 → แปลงเป็น export CSV
+            // 2) URL ปกติ /spreadsheets/d/{id}/edit#gid=123 → ใช้ endpoint gviz
+            //    (gviz ตอบ CSV ตรงจาก docs.google.com พร้อม CORS header และไม่ redirect ข้ามโดเมน
+            //     จึง fetch จากเบราว์เซอร์ได้ ต่างจาก /export ที่มัก redirect ไป googleusercontent แล้วโดน CORS บล็อก)
             const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
             if (!idMatch) return null;
             const id = idMatch[1];
             const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
             const gid = gidMatch ? gidMatch[1] : '0';
-            return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+            return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`;
         }
 
         async function fetchGoogleSheet() {
