@@ -18,8 +18,17 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:20px;font-size:14px;-webkit-font-smoothing:antialiased}
-.app{display:grid;grid-template-columns:236px 1fr;max-width:1440px;margin:0 auto;background:var(--card);border-radius:28px;box-shadow:var(--shadow);overflow:hidden}
-@media(max-width:900px){.app{grid-template-columns:1fr}}
+.app{display:grid;grid-template-columns:212px 1fr;max-width:1480px;margin:0 auto;background:var(--card);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;transition:grid-template-columns .2s}
+.app.collapsed{grid-template-columns:60px 1fr}
+.app.collapsed .side{padding:24px 8px}
+.app.collapsed .brand b{display:none}
+.app.collapsed .nav{font-size:0;justify-content:center;padding:11px 0;gap:0}
+.app.collapsed .nav .ic{font-size:18px}
+.app.collapsed .nav-h{font-size:0;height:10px;padding:8px 0 0}
+.app.collapsed .promo{display:none}
+.app.collapsed .sb-toggle .ic{transform:rotate(180deg)}
+.sb-toggle{color:var(--faint)!important}
+@media(max-width:900px){.app,.app.collapsed{grid-template-columns:1fr}}
 
 /* Sidebar */
 .side{padding:24px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;background:#fff}
@@ -177,6 +186,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
 <div class="app">
     <aside class="side">
         <div class="brand"><div class="mark">S1</div><b>S1 MUSIC</b></div>
+        <button class="nav sb-toggle" onclick="toggleSidebar()" title="ย่อ/ขยายเมนู" aria-label="ย่อ/ขยายเมนู"><span class="ic">«</span> ย่อเมนู</button>
         <div class="nav-h">เมนูหลัก</div>
         <button class="nav active" id="tab-overview" onclick="switchTab('overview')"><span class="ic">▤</span> ตารางรายช่อง</button>
         <button class="nav" id="tab-assets" onclick="switchTab('assets')"><span class="ic">♪</span> ตารางชิ้นงาน Asset</button>
@@ -433,9 +443,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
         // แม็พช่อง → คำค้นชื่อศิลปินเพิ่มเติม (สำหรับช่องที่ "ชื่อช่อง ≠ ชื่อศิลปินในเพลง")
         // คีย์ = Channel ID (เสถียรสุด ไม่เปลี่ยนตามการเปลี่ยนชื่อช่อง)
         // วิธีหา: เปิดช่องใน YouTube ดูชื่อศิลปินจริงในชื่อคลิป แล้วใส่คำค้นที่นี่
+        // หมายเหตุ: key ต้องเป็น "ตัวพิมพ์เล็กทั้งหมด" เพราะ channel id ถูกเก็บแบบ toLowerCase()
         const CHANNEL_ALIASES = {
-            'UCVF7MqSBlGcyDLHT_y2SSEg': ['แมทธิว พชร', 'พอใจ พชรมน', 'แมทธิว'],   // เอ็มที แชนแนล (MT Channel) — ศิลปิน: แมทธิว พชร / พอใจ พชรมน
-            'UCOLseobMUsRXScVR5vvAiiw': ['peet model', 'ball parinya', 'ta ake', 'first time'] // COLOR ROOM OFFICIAL — ค่าย, ศิลปินหลัก: Peet Model
+            'ucvf7mqsblgcydlht_y2sseg': ['แมทธิว พชร', 'พอใจ พชรมน', 'แมทธิว'],   // เอ็มที แชนแนล (MT Channel) — ศิลปิน: แมทธิว พชร / พอใจ พชรมน
+            'ucolseobmusrxscvr5vvaiiw': ['peet model', 'ball parinya', 'ta ake', 'first time'] // COLOR ROOM OFFICIAL — ค่าย, ศิลปินหลัก: Peet Model
             // วิธีเพิ่มช่องใหม่: เปิด RSS ของช่อง https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID
             // ดูชื่อศิลปินในชื่อคลิป แล้วเพิ่มบรรทัด 'CHANNEL_ID': ['ชื่อศิลปิน1','ชื่อศิลปิน2']
         };
@@ -469,7 +480,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             const toks = channelTokens(channel.name);
             const core = channelCore(channel.name);
             // คำค้น alias (ช่องที่ชื่อ ≠ ศิลปิน) — ลองทั้ง Channel ID และชื่อช่อง
-            const aliasRaw = CHANNEL_ALIASES[channel.id] || CHANNEL_ALIASES[(channel.name || '').trim()] || [];
+            const aliasRaw = CHANNEL_ALIASES[(channel.id || '').toLowerCase()] || CHANNEL_ALIASES[(channel.name || '').trim()] || [];
             const aliases = aliasRaw.map(_compact).filter(a => a.length >= 4);
             const hits = [];
             for (const a of assetIndex) {
@@ -1310,6 +1321,12 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
         }
 
         // init
+        function toggleSidebar() {
+            const collapsed = document.querySelector('.app').classList.toggle('collapsed');
+            try { localStorage.setItem('mcn_sidebar', collapsed ? '1' : '0'); } catch (e) {}
+        }
+        try { if (localStorage.getItem('mcn_sidebar') === '1') document.querySelector('.app').classList.add('collapsed'); } catch (e) {}
+
         (async () => {
             try { if (await loadStore()) updateDropdownsAndBadges(); } catch (e) { console.error(e); }
             updateStorageInfo();
