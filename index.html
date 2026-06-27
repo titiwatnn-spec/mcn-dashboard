@@ -138,7 +138,7 @@ tbody tr{transition:background .15s}tbody tr:hover{background:#fafbff}
 .v-bar-val-top{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.25;background:#fff;padding:2px 6px;border-radius:6px;box-shadow:var(--shadow-sm);border:1px solid var(--line2);z-index:5}
 .v-bar-val-top .pct-sub{font-size:9px;font-weight:700}
 .v-bar-val-top.target{border-color:#c7d2fe;background:var(--indigo-soft)}
-.v-grp-top{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:8px;text-align:center;white-space:nowrap;background:#fff;border:1px solid var(--line2);border-radius:9px;padding:4px 10px;box-shadow:var(--shadow-sm);z-index:5}
+.v-grp-top{position:absolute;left:50%;transform:translateX(-50%);margin-bottom:6px;text-align:center;white-space:nowrap;background:#fff;border:1px solid var(--line2);border-radius:9px;padding:4px 10px;box-shadow:var(--shadow-sm);z-index:5}
 .v-grp-top .gt-cur{font-size:11px;font-weight:800;color:var(--ink)}
 .v-grp-top .gt-contrib{font-size:9px;font-weight:700;color:var(--indigo);margin-left:2px}
 .v-grp-top .gt-base{font-size:9px;font-weight:600;color:var(--faint);margin-top:1px}
@@ -918,8 +918,9 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                let hBase = p ? Math.max(0, (p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
-                let hTarget = Math.max(0, (c.rev / maxRevenueFound) * 100).toFixed(1);
+                // สเกลแท่งสูงสุด ~80% เพื่อเหลือที่ว่างด้านบนให้กล่องป้าย (ไม่ชนหัวข้อ)
+                let hBase = p ? Math.max(0, (p.rev / maxRevenueFound) * 80).toFixed(1) : 0;
+                let hTarget = Math.max(0, (c.rev / maxRevenueFound) * 80).toFixed(1);
 
                 let barMoM = p && p.rev > 0 ? (((c.rev - p.rev) / p.rev) * 100).toFixed(1) : null;
                 let barDiffSymbol = barMoM === null ? `<span class="neutral" style="padding:2px 6px; border-radius:4px;">ใหม่</span>`
@@ -932,7 +933,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
-                            <div class="v-grp-top">
+                            <div class="v-grp-top" style="bottom: ${Math.max(hBase, hTarget)}%;">
                                 <div class="gt-cur">${fmtTHBshort(c.rev)}<span class="gt-contrib">${contributionPct}%</span></div>
                                 ${p ? `<div class="gt-base">ฐาน ${fmtTHBshort(p.rev || 0)}</div>` : ''}
                             </div>
