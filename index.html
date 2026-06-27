@@ -4,102 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S1 MUSIC - MCN Exclusive Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Sarabun', sans-serif; color: #0f172a; }
+        :root {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --faint: #94a3b8;
+            --brand: #0ea5e9;
+            --brand-dark: #0284c7;
+            --up: #10b981;
+            --down: #ef4444;
+            --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
+            --shadow-md: 0 6px 16px -6px rgba(15,23,42,0.12);
+            --shadow-lg: 0 18px 40px -18px rgba(15,23,42,0.25);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            background: radial-gradient(1200px 600px at 50% -200px, #e0f2fe 0%, var(--bg) 60%);
+            min-height: 100vh;
+            font-family: 'Sarabun', sans-serif;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
         .container { padding: 24px; max-width: 1400px; margin: 0 auto; }
-        .card { background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 24px; }
-        
-        /* Header Style */
-        .header-card { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 16px; padding: 30px 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .header-card h2 { margin: 0; font-weight: 700; color: #38bdf8; font-size: 24px; letter-spacing: 0.5px; }
-        .header-card p { color: #94a3b8; font-size: 14px; margin-top: 8px; margin-bottom: 0; }
-        
-        h3 { color: #334155; font-size: 16px; margin-bottom: 16px; font-weight: 700; }
-        
+
+        .card {
+            background: var(--surface); border-radius: var(--radius); padding: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+
+        /* Header */
+        .header-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white; border-radius: var(--radius); padding: 30px 28px; margin-bottom: 24px;
+            box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+        }
+        .header-card::after {
+            content: ""; position: absolute; top: -60px; right: -40px; width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(56,189,248,0.25) 0%, transparent 70%);
+        }
+        .header-card h2 { margin: 0; font-weight: 700; color: #38bdf8; font-size: 24px; letter-spacing: 0.3px; }
+        .header-card .sub { color: #94a3b8; font-size: 14px; margin-top: 8px; line-height: 1.6; }
+        #badge-container { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+        h3 { color: #334155; font-size: 16px; margin: 0 0 16px; font-weight: 700; }
+
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
         @media (max-width: 768px) { .grid-inputs { grid-template-columns: 1fr; } }
-        
-        .btn-group { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-        .btn { padding: 12px 24px; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn:hover { background: #f1f5f9; }
-        .btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 4px 6px -1px rgba(14,165,233,0.3); }
-        
-        select { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 16px; color: #0f172a; font-size: 14px; font-weight: bold; outline: none; }
-        .table-container { overflow-x: auto; }
+
+        /* Drag & drop upload */
+        .upload-label { font-weight: 700; font-size: 13px; color: var(--ink); display: block; margin-bottom: 12px; }
+        .dropzone {
+            position: relative; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+            padding: 22px 16px; text-align: center; background: #f8fafc;
+            transition: border-color .2s, background .2s, transform .12s; cursor: pointer;
+        }
+        .dropzone:hover { border-color: var(--brand); background: #f0f9ff; }
+        .dropzone.dragover { border-color: var(--brand); background: #e0f2fe; transform: scale(1.01); }
+        .dropzone.has-file { border-style: solid; border-color: var(--up); background: #f0fdf4; }
+        .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .dropzone .dz-icon { font-size: 22px; }
+        .dropzone .dz-text { font-size: 13px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+        .dropzone .dz-hint { font-size: 11px; color: var(--faint); margin-top: 2px; }
+
+        /* Tabs */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+        .btn {
+            padding: 12px 22px; background: var(--surface); color: #475569; border: 1px solid #cbd5e1;
+            border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: all .18s; box-shadow: var(--shadow-sm); font-family: inherit;
+        }
+        .btn:hover { background: #f1f5f9; transform: translateY(-1px); }
+        .btn.active {
+            background: linear-gradient(180deg, #0ea5e9, #0284c7); color: #fff; border-color: var(--brand-dark);
+            box-shadow: 0 6px 14px -4px rgba(2,132,199,0.5);
+        }
+
+        select {
+            background: var(--surface); border: 1px solid #cbd5e1; border-radius: 10px;
+            padding: 10px 14px; color: var(--ink); font-size: 14px; font-weight: 600;
+            outline: none; font-family: inherit; cursor: pointer; transition: border-color .2s, box-shadow .2s;
+        }
+        select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+
+        .period-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .period-bar .lbl { font-size: 14px; font-weight: 700; color: #475569; }
+
+        /* Table */
+        .table-container { overflow-x: auto; border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 14px; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; background-color: #f8fafc; font-size: 13px; white-space: nowrap; }
-        td { padding: 16px 14px; border-bottom: 1px solid #f1f5f9; font-size: 14px; white-space: nowrap; }
-        
+        th {
+            padding: 14px; color: var(--muted); font-weight: 700; border-bottom: 2px solid var(--border);
+            background-color: #f8fafc; font-size: 13px; white-space: nowrap; position: sticky; top: 0; z-index: 2;
+        }
+        td { padding: 15px 14px; border-bottom: 1px solid #f1f5f9; font-size: 14px; white-space: nowrap; }
+        tbody tr { transition: background .15s; }
+        tbody tr:hover { background: #f8fbff; }
+        .rpm-col { background-color: #f8fafc; }
+
         /* Metric Cards */
         .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px; }
-        .metric-box { background: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; position: relative; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-        .metric-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px; }
-        .metric-value { font-size: 28px; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
-        .metric-change { font-size: 13px; font-weight: 700; margin-top: 8px; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; }
-        
+        .metric-box {
+            background: var(--surface); padding: 22px; border-radius: var(--radius); border: 1px solid var(--border);
+            position: relative; box-shadow: var(--shadow-sm); transition: transform .15s, box-shadow .15s; overflow: hidden;
+        }
+        .metric-box:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .metric-title { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -0.5px; }
+        .metric-change {
+            font-size: 13px; font-weight: 700; margin-top: 10px; display: inline-flex; align-items: center;
+            padding: 4px 10px; border-radius: 20px; background: #f1f5f9;
+        }
+
         .panel-split { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 1024px) { .panel-split { grid-template-columns: 1fr; } }
-        
-        /* Donut Chart */
-        .donut-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px 0; }
-        .donut-graphic { width: 180px; height: 180px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        .donut-center { width: 120px; height: 120px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .donut-center .pct { font-size: 24px; font-weight: 700; color: #0f172a; }
-        .donut-center .lbl { font-size: 11px; color: #64748b; font-weight: bold; margin-top: 4px; }
-        .legend-list { display: flex; justify-content: center; gap: 16px; width: 100%; }
+
+        /* Donut */
+        .donut-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 16px 0; }
+        .donut-graphic { width: 180px; height: 180px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: background .5s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.12); }
+        .donut-center { width: 120px; height: 120px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .donut-center .pct { font-size: 26px; font-weight: 700; color: var(--ink); }
+        .donut-center .lbl { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+        .legend-list { display: flex; justify-content: center; gap: 18px; width: 100%; flex-wrap: wrap; }
         .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
-        
+
         /* Vertical Bar Chart */
-        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 300px; padding-top: 60px; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; gap: 12px; }
-        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 100px; }
-        .v-bar-combo { display: flex; align-items: flex-end; gap: 12px; height: 220px; width: 100%; justify-content: center; position: relative; }
-        
-        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 32px; }
-        
-        .v-bar-val-top { position: absolute; top: -50px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.4; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; z-index: 5; }
+        .v-chart-area { display: flex; align-items: flex-end; justify-content: space-around; height: 300px; padding-top: 60px; padding-bottom: 20px; border-bottom: 2px solid var(--border); gap: 12px; }
+        .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 110px; }
+        .v-bar-combo { display: flex; align-items: flex-end; gap: 10px; height: 220px; width: 100%; justify-content: center; position: relative; }
+        .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 34px; }
+        .v-bar-val-top { position: absolute; top: -50px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.4; background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 6px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); z-index: 5; }
         .v-bar-val-top.target { border-color: #bae6fd; background: #f0f9ff; }
-        
-        .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height 0.5s ease-out; position: relative; cursor: pointer; }
-        .v-bar-base { background-color: #cbd5e1; opacity: 0.7; }
-        .v-bar-target { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 6px rgba(2,132,199,0.2); }
+        .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height .6s cubic-bezier(.22,1,.36,1); position: relative; cursor: pointer; }
+        .v-bar:hover { filter: brightness(1.05); }
+        .v-bar-base { background-color: #cbd5e1; opacity: 0.75; }
+        .v-bar-target { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); box-shadow: 0 4px 8px rgba(2,132,199,0.25); }
         .v-bar-label { font-size: 12px; font-weight: 700; color: #475569; margin-top: 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
-        .slide-preview-box { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; padding: 16px; font-family: 'Sarabun', monospace; font-size: 13px; color: #e2e8f0; resize: vertical; box-sizing: border-box; outline: none; line-height: 1.5; }
-        .btn-copy { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: background 0.2s; }
-        .btn-copy:hover { background: #059669; }
-        
-        .badge { display: inline-flex; align-items: center; background: #334155; color: #e2e8f0; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-right: 8px; margin-bottom: 8px; border: 1px solid #475569; }
+        /* Tooltip (works on bars) */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            margin-bottom: 8px; background: #0f172a; color: #fff; padding: 7px 11px; border-radius: 8px;
+            font-size: 11px; font-weight: 600; white-space: nowrap; z-index: 20; box-shadow: var(--shadow-md); pointer-events: none;
+        }
+        [data-tooltip]:hover::before {
+            content: ""; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: #0f172a; z-index: 20; pointer-events: none;
+        }
+
+        .slide-preview-box { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.15); }
+        textarea { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; padding: 16px; font-family: 'Sarabun', monospace; font-size: 13px; color: #e2e8f0; resize: vertical; box-sizing: border-box; outline: none; line-height: 1.6; }
+        .btn-copy { background: linear-gradient(180deg, #10b981, #059669); color: white; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: filter .2s, transform .12s; font-family: inherit; box-shadow: 0 6px 14px -4px rgba(5,150,105,0.5); }
+        .btn-copy:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-copy:active { transform: translateY(0); }
+
+        .badge { display: inline-flex; align-items: center; background: #334155; color: #e2e8f0; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid #475569; }
         .badge-asset { background: #064e3b; color: #d1fae5; border-color: #047857; }
-        .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: bold; margin-left: 8px; padding: 0; font-size: 14px; }
+        .btn-del { background: none; color: #f87171; border: none; cursor: pointer; font-weight: 700; margin-left: 8px; padding: 0; font-size: 14px; line-height: 1; }
+        .btn-del:hover { color: #fca5a5; }
         .hidden { display: none; }
-        
-        /* สีกำกับการเติบโต */
-        .up { color: #10b981; background: #d1fae5; } 
-        .down { color: #ef4444; background: #fee2e2; } 
-        .neutral { color: #64748b; background: #f1f5f9; }
-        
-        .text-base { color: #64748b; }
-        .text-target { color: #0284c7; }
+
+        .up { color: var(--up); background: #d1fae5; }
+        .down { color: var(--down); background: #fee2e2; }
+        .neutral { color: var(--muted); background: #f1f5f9; }
+        .text-base { color: var(--muted); }
+        .text-target { color: var(--brand-dark); }
+
+        .empty-state { padding: 48px 20px; text-align: center; color: var(--faint); font-weight: 700; }
+
+        /* Content Growth Drivers */
+        .driver-row { display: grid; grid-template-columns: 240px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f1f5f9; align-items: start; }
+        .driver-row:last-child { border-bottom: none; }
+        @media (max-width: 720px) { .driver-row { grid-template-columns: 1fr; gap: 10px; } }
+        .driver-ch { font-weight: 700; color: var(--ink); font-size: 14px; }
+        .driver-ch .meta { font-weight: 600; color: var(--faint); font-size: 12px; margin-top: 4px; }
+        .driver-ch .cover { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--brand-dark); background: #f0f9ff; border: 1px solid #bae6fd; padding: 3px 8px; border-radius: 20px; }
+        .driver-assets { display: flex; flex-direction: column; gap: 8px; }
+        .asset-pill { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+        .asset-pill .nm { font-size: 13px; font-weight: 600; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .asset-pill .rv { font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+        .mom-chip { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+        .driver-none { font-size: 12px; color: var(--faint); font-style: italic; padding: 8px 0; }
+
+        /* View fade-in */
+        .view-enter { animation: fadeUp .35s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #0f172a; color: #fff; padding: 13px 22px; border-radius: 12px; font-weight: 700; font-size: 14px;
+            box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 100;
+            display: flex; align-items: center; gap: 8px;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.error { background: #7f1d1d; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header-card">
-            <h2>📈 S1 MUSIC - MCN Exclusive Dashboard</h2>
-            <p id="badge-container">ระบบพร้อมประมวลผล โปรดอัปโหลดไฟล์รายงาน .csv ด้านล่าง</p>
+            <h2>📈 S1 MUSIC — MCN Exclusive Dashboard</h2>
+            <div class="sub">ระบบวิเคราะห์รายได้เครือข่าย MCN เปรียบเทียบรายงวด • อัปโหลดไฟล์ .csv เพื่อเริ่มประมวลผล</div>
+            <div id="badge-container"><span style="color:#94a3b8;">รอรับไฟล์ CSV...</span></div>
         </div>
 
         <div class="grid-inputs">
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:13px; color:#0f172a; display:block; margin-bottom:12px;">📁 1. อัปโหลดรายงานรายช่องทาง (Channel CSV)</label>
-                <input type="file" id="channel-upload" accept=".csv" style="width: 100%; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 8px;" />
+                <label class="upload-label" for="channel-upload">📁 1. อัปโหลดรายงานรายช่องทาง (Channel CSV)</label>
+                <div class="dropzone" id="channel-dropzone">
+                    <input type="file" id="channel-upload" accept=".csv" />
+                    <div class="dz-icon">📺</div>
+                    <div class="dz-text">ลากไฟล์มาวาง หรือคลิกเพื่อเลือก</div>
+                    <div class="dz-hint">รองรับไฟล์ .csv รายงานรายช่อง</div>
+                </div>
             </div>
             <div class="card" style="margin-bottom: 0;">
-                <label style="font-weight:700; font-size:13px; color:#0f172a; display:block; margin-bottom:12px;">💎 2. อัปโหลดรายงานชิ้นงานเพลง (Asset CSV)</label>
-                <input type="file" id="asset-upload" accept=".csv" style="width: 100%; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 8px;" />
+                <label class="upload-label" for="asset-upload">💎 2. อัปโหลดรายงานชิ้นงานเพลง (Asset CSV)</label>
+                <div class="dropzone" id="asset-dropzone">
+                    <input type="file" id="asset-upload" accept=".csv" />
+                    <div class="dz-icon">🎵</div>
+                    <div class="dz-text">ลากไฟล์มาวาง หรือคลิกเพื่อเลือก</div>
+                    <div class="dz-hint">รองรับไฟล์ .csv รายงานชิ้นงาน Asset</div>
+                </div>
             </div>
         </div>
 
@@ -110,11 +248,11 @@
         </div>
 
         <div class="card" id="view-overview">
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+            <div class="period-bar">
+                <span class="lbl">งวดเดือนฐาน:</span>
                 <select id="channel-base-select" onchange="renderChannelTable()"></select>
                 <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
+                <span class="lbl">งวดปัจจุบัน:</span>
                 <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
             <div class="table-container">
@@ -130,18 +268,18 @@
                         </tr>
                     </thead>
                     <tbody id="channel-table-body">
-                        <tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colspan="6" class="empty-state">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="card hidden" id="view-assets">
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดเดือนฐาน:</span>
+            <div class="period-bar">
+                <span class="lbl">งวดเดือนฐาน:</span>
                 <select id="asset-base-select" onchange="renderAssetTable()"></select>
                 <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span style="font-size:14px; font-weight:700; color:#475569;">งวดปัจจุบัน:</span>
+                <span class="lbl">งวดปัจจุบัน:</span>
                 <select id="asset-target-select" onchange="renderAssetTable()"></select>
             </div>
             <div class="table-container">
@@ -156,7 +294,7 @@
                         </tr>
                     </thead>
                     <tbody id="asset-table-body">
-                        <tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight: bold;">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                        <tr><td colspan="5" class="empty-state">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -165,22 +303,22 @@
         <div class="hidden" id="view-analysis">
             <div class="metric-row">
                 <div class="metric-box" style="border-left: 6px solid #0ea5e9;">
-                    <div class="metric-title">รายได้สุทธิเครือข่าย (Net Revenue)</div>
+                    <div class="metric-title">💰 รายได้สุทธิเครือข่าย (Net Revenue)</div>
                     <div class="metric-value" id="m-total-rev">฿0.00</div>
                     <div class="metric-change" id="m-total-rev-change">MoM: --</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #10b981;">
-                    <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
+                    <div class="metric-title">📣 รายได้จากโฆษณา (Ad Revenue)</div>
                     <div class="metric-value" id="m-ads-rev">฿0.00</div>
                     <div class="metric-change neutral" id="m-avg-cpm" style="background: #f0fdf4; color: #047857;">Avg. CPM: ฿0.00</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #8b5cf6;">
-                    <div class="metric-title">รายได้ YouTube Premium</div>
+                    <div class="metric-title">⭐ รายได้ YouTube Premium</div>
                     <div class="metric-value" id="m-premium-rev">฿0.00</div>
                     <div class="metric-change neutral" id="m-premium-ratio" style="background: #f5f3ff; color: #6d28d9;">สัดส่วนพอร์ต: --</div>
                 </div>
                 <div class="metric-box" style="border-left: 6px solid #f59e0b;">
-                    <div class="metric-title">ยอดวิวสะสมรวม (Total Views)</div>
+                    <div class="metric-title">👁️ ยอดวิวสะสมรวม (Total Views)</div>
                     <div class="metric-value" id="m-total-views">0</div>
                     <div class="metric-change" id="m-total-views-change">MoM: --</div>
                 </div>
@@ -214,10 +352,16 @@
             </div>
 
             <div class="card" style="margin-top: 24px;">
+                <h3>🎯 คอนเทนต์ที่ขับเคลื่อนการเติบโต (Content Growth Drivers)</h3>
+                <p style="font-size:13px; color:#64748b; margin:-8px 0 18px;">เพลง (Asset) ที่จับคู่กับแต่ละช่อง Top 5 — สะท้อนว่าการเติบโตของช่องมาจากคอนเทนต์ไหน</p>
+                <div id="drivers-render"><div class="empty-state">อัปโหลดทั้งไฟล์ช่องและไฟล์ Asset เพื่อดูคอนเทนต์ที่ขับเคลื่อนช่อง</div></div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
                 <h3>💬 ข้อความสรุปเนื้อหา (Prompt) สำหรับสร้าง Presentation</h3>
                 <div class="slide-preview-box">
                     <textarea id="ai-summary-text" readonly>ระบบกำลังรอข้อมูลเพื่อประมวลผลข้อความ Prompt สำหรับ NotebookLM...</textarea>
-                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
                         <span style="color:#94a3b8; font-size:13px;">💡 นำข้อความนี้ไปวางใน NotebookLM เพื่อให้ AI สร้างสไลด์วิเคราะห์แบบมืออาชีพได้ทันที</span>
                         <button class="btn-copy" id="final-copy-btn">📋 คัดลอกข้อความสรุปเนื้อหา (Prompt)</button>
                     </div>
@@ -226,19 +370,81 @@
         </div>
     </div>
 
+    <div id="toast"></div>
+
     <script>
         let store = { channels: {}, assets: {} };
         let activeTab = 'overview';
 
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         const fmtNum = (v) => Number(v || 0).toLocaleString();
-        
+
+        // ============================================================
+        //  Asset ↔ Channel Matcher
+        //  เชื่อมเพลง (Asset) เข้ากับช่อง (Channel) ด้วยชื่อ เพราะไฟล์
+        //  ไม่มีคอลัมน์ ID ที่ลิงก์กัน — verify กับข้อมูลจริงแล้วจับได้
+        //  ครบทุกช่องที่มีเพลงในไฟล์ โดยไม่มี false positive
+        // ============================================================
+        const MATCH_JUNK = new Set(['production','official','officail','channel','แชนแนล','มิวสิค','music',
+            'สตูดิโอ','studio','stdio','record','records','เรคคอร์ด','ค่ายเพลง','audio','media','version','cover','original','song']);
+        const _compact = (s) => (s || '').toLowerCase().replace(/[^0-9a-zก-๙]/g, '');
+        const _stripBrackets = (s) => (s || '').replace(/\[[^\]]*\]|\([^)]*\)|【[^】]*】|▌[^▌]*▌|\|[^|]*\|/g, ' ');
+        const _isThai = (t) => /[ก-๙]/.test(t);
+        const _minLen = (t) => _isThai(t) ? 4 : 6; // ไทยสั้นก็เด่นพอ, อังกฤษต้องยาวกันคำโหลชนกัน
+
+        function channelTokens(name) {
+            return _stripBrackets(name).toLowerCase().split(/[^0-9a-zก-๙]+/)
+                .filter(p => p && !MATCH_JUNK.has(p) && p.length >= _minLen(p));
+        }
+        function channelCore(name) {
+            let s = _stripBrackets(name).toLowerCase();
+            MATCH_JUNK.forEach(j => { s = s.split(j).join(' '); });
+            return _compact(s);
+        }
+        // ดึงชื่อศิลปินท้ายเพลง (หลัง - / @) แล้วแตกหลายศิลปิน
+        function assetArtists(name) {
+            let seg = name;
+            for (const sep of [' - ', '–', '/', '@']) {
+                const i = name.lastIndexOf(sep);
+                if (i > -1) { seg = name.slice(i + sep.length); break; }
+            }
+            return seg.split(/[,&]|\bx\b|\bX\b|feat|ft\./).map(a => _compact(_stripBrackets(a))).filter(Boolean);
+        }
+        function buildAssetIndex(assets) {
+            return assets.map(a => ({ ...a, _arts: assetArtists(a.name), _full: _compact(_stripBrackets(a.name)) }));
+        }
+        function matchAssetsForChannel(channel, assetIndex) {
+            const toks = channelTokens(channel.name);
+            const core = channelCore(channel.name);
+            const hits = [];
+            for (const a of assetIndex) {
+                let ok = false;
+                for (const art of a._arts) {
+                    const [short, long] = core.length <= art.length ? [core, art] : [art, core];
+                    const thr = _isThai(short) ? 4 : 6;
+                    if (short.length >= thr && long.includes(short)) { ok = true; break; }
+                }
+                if (!ok) { for (const t of toks) { if (a._full.includes(t)) { ok = true; break; } } }
+                if (ok) hits.push(a);
+            }
+            return hits.sort((x, y) => y.rev - x.rev);
+        }
+
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.toggle('error', isError);
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+        }
+
         function createComparisonCell(curVal, prevVal, curLabel, prevLabel, isCurrency = true) {
             const formatter = isCurrency ? fmtTHB : fmtNum;
             let baseText = prevLabel ? `<span style="font-size:11px; color:#94a3b8;">${prevLabel}:</span> ${formatter(prevVal)}` : `<span style="font-size:11px; color:#cbd5e1;">ฐาน:</span> --`;
             let targetText = curLabel ? `<span style="font-size:11px; color:#64748b;">ปัจจุบัน:</span> <b style="color:#0f172a;">${formatter(curVal)}</b>` : `<b style="color:#0f172a;">${formatter(curVal)}</b>`;
             let indicatorText = '';
-            
+
             if (prevVal === undefined || prevVal === null || prevVal === 0) {
                 indicatorText = `<span style="font-size:11px; font-weight:bold; color:#94a3b8;">--</span>`;
             } else {
@@ -250,15 +456,19 @@
             return `<div style="margin-bottom:2px;">${baseText}</div><div>${targetText} &nbsp;${indicatorText}</div>`;
         }
 
-        // ⚠️ แก้บั๊กการแยกไฟล์ CSV เรียบร้อยแล้ว เปลี่ยนชื่อตัวแปรที่ผิดเป็น insideQuote ให้ถูกต้อง
+        // CSV parser ที่รองรับ quoted fields และ escaped double-quote ("")
         function parseCSV(text) {
-            let lines = text.split(/\r\n|\n/);
+            // ตัด BOM ที่มักติดมากับไฟล์ export จาก YouTube/Excel
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+            let lines = text.split(/\r\n|\n|\r/);
             return lines.filter(line => line.trim() !== '').map(line => {
                 let row = ['']; let insideQuote = false;
                 for (let i = 0; i < line.length; i++) {
                     let c = line[i];
-                    if (c === '"') { insideQuote = !insideQuote; } 
-                    else if (c === ',' && !insideQuote) { row.push(''); } 
+                    if (c === '"') {
+                        if (insideQuote && line[i + 1] === '"') { row[row.length - 1] += '"'; i++; }
+                        else { insideQuote = !insideQuote; }
+                    } else if (c === ',' && !insideQuote) { row.push(''); }
                     else { row[row.length - 1] += c; }
                 }
                 return row.map(v => v.trim());
@@ -267,58 +477,96 @@
 
         function switchTab(tabName) {
             activeTab = tabName;
-            document.getElementById('tab-overview').classList.toggle('active', tabName === 'overview');
-            document.getElementById('tab-assets').classList.toggle('active', tabName === 'assets');
-            document.getElementById('tab-analysis').classList.toggle('active', tabName === 'analysis');
-            
-            document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
-            document.getElementById('view-assets').classList.toggle('hidden', tabName !== 'assets');
-            document.getElementById('view-analysis').classList.toggle('hidden', tabName !== 'analysis');
-            
+            ['overview', 'assets', 'analysis'].forEach(name => {
+                document.getElementById('tab-' + name).classList.toggle('active', tabName === name);
+                const view = document.getElementById('view-' + name);
+                view.classList.toggle('hidden', tabName !== name);
+                if (tabName === name) {
+                    view.classList.remove('view-enter');
+                    void view.offsetWidth; // restart animation
+                    view.classList.add('view-enter');
+                }
+            });
             if (tabName === 'analysis') generateExecutiveReport();
         }
 
-        document.getElementById('channel-upload').addEventListener('change', (e) => handleFileUpload(e, 'channels'));
-        document.getElementById('asset-upload').addEventListener('change', (e) => handleFileUpload(e, 'assets'));
+        // ---- Drag & drop + file input wiring ----
+        function setupDropzone(zoneId, inputId, type) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+            ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('dragover'); }));
+            ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('dragover'); }));
+            zone.addEventListener('drop', e => {
+                const file = e.dataTransfer.files[0];
+                if (file) handleFile(file, type, zone);
+            });
+            input.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) handleFile(file, type, zone);
+            });
+        }
 
-        function handleFileUpload(e, type) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const label = file.name.replace(".csv", "").replace("Asset", "").replace("asset", "").trim().toUpperCase();
-            
+        function handleFile(file, type, zone) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showToast('⚠️ รองรับเฉพาะไฟล์ .csv เท่านั้น', true);
+                return;
+            }
+            const label = file.name
+                .replace(/\.csv$/i, '')
+                .replace(/asset/gi, '')
+                .trim().toUpperCase() || file.name.toUpperCase();
+
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const rows = parseCSV(evt.target.result);
-                if (rows.length < 2) return;
-                
-                const headers = rows[0].map(h => h.toLowerCase().trim());
-                
-                const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset');
-                const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
-                let revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
-                let premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
-                let viewsIdx = headers.findIndex(h => h.includes('views'));
-                let rpmIdx = headers.findIndex(h => h.includes('rpm'));
-                let cpmIdx = headers.findIndex(h => h.includes('cpm') || h.includes('playback-based'));
+                try {
+                    const rows = parseCSV(evt.target.result);
+                    if (rows.length < 2) { showToast('⚠️ ไฟล์ไม่มีข้อมูล หรือรูปแบบไม่ถูกต้อง', true); return; }
 
-                const processedData = [];
-                for(let i = 1; i < rows.length; i++) {
-                    let r = rows[i];
-                    if(idIdx === -1 || !r[idIdx] || r[idIdx].toLowerCase() === 'total' || r[idIdx] === '') continue;
-                    
-                    processedData.push({
-                        id: r[idIdx].toLowerCase().trim(),
-                        name: r[nameIdx] || 'Unknown',
-                        rev: parseFloat(r[revIdx]?.replace(/[^0-9.-]/g, "")) || 0,
-                        premium: parseFloat(r[premiumIdx]?.replace(/[^0-9.-]/g, "")) || 0,
-                        views: parseInt(r[viewsIdx]?.replace(/[^0-9.-]/g, "")) || 0,
-                        rpm: parseFloat(r[rpmIdx]?.replace(/[^0-9.-]/g, "")) || 0,
-                        cpm: parseFloat(r[cpmIdx]?.replace(/[^0-9.-]/g, "")) || 0
-                    });
+                    const headers = rows[0].map(h => h.toLowerCase().trim());
+                    const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset' || h === 'channel id' || h === 'asset id');
+                    if (idIdx === -1) { showToast('⚠️ ไม่พบคอลัมน์ channel/asset ในไฟล์', true); return; }
+
+                    const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
+                    const revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
+                    const premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
+                    const viewsIdx = headers.findIndex(h => h === 'views' || h.includes('views'));
+                    const rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                    // ไฟล์จริงมี 2 คอลัมน์ CPM: "Playback-based CPM" และ "CPM" ตัวล้วน
+                    // ต้องเลือก "CPM" ตัวล้วนก่อน (ตรงกับพาดหัว Avg. CPM) แล้วค่อย fallback ไป playback-based
+                    let cpmIdx = headers.findIndex(h => h === 'cpm (thb)' || h === 'cpm');
+                    if (cpmIdx === -1) cpmIdx = headers.findIndex(h => h.includes('cpm'));
+
+                    const toNum = (cell) => parseFloat(String(cell ?? '').replace(/[^0-9.-]/g, "")) || 0;
+
+                    const processedData = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        let r = rows[i];
+                        let idVal = (r[idIdx] || '').toLowerCase().trim();
+                        if (!idVal || idVal === 'total') continue;
+                        processedData.push({
+                            id: idVal,
+                            name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
+                            rev: toNum(r[revIdx]),
+                            premium: toNum(r[premiumIdx]),
+                            views: Math.round(toNum(r[viewsIdx])),
+                            rpm: toNum(r[rpmIdx]),
+                            cpm: toNum(r[cpmIdx])
+                        });
+                    }
+
+                    if (processedData.length === 0) { showToast('⚠️ ไม่พบแถวข้อมูลที่ใช้ได้', true); return; }
+
+                    store[type][label] = processedData;
+                    zone.classList.add('has-file');
+                    zone.querySelector('.dz-text').textContent = `✓ โหลดแล้ว: ${label} (${processedData.length} รายการ)`;
+                    updateDropdownsAndBadges();
+                    showToast(`✅ นำเข้า ${label} สำเร็จ (${processedData.length} รายการ)`);
+                } catch (err) {
+                    console.error(err);
+                    showToast('❌ เกิดข้อผิดพลาดในการอ่านไฟล์', true);
                 }
-                store[type][label] = processedData;
-                updateDropdownsAndBadges();
             };
+            reader.onerror = () => showToast('❌ อ่านไฟล์ไม่สำเร็จ', true);
             reader.readAsText(file, "UTF-8");
         }
 
@@ -327,16 +575,16 @@
             const chBase = document.getElementById('channel-base-select'); const chTarget = document.getElementById('channel-target-select'); const chLabels = Object.keys(store.channels);
             const astBase = document.getElementById('asset-base-select'); const astTarget = document.getElementById('asset-target-select'); const astLabels = Object.keys(store.assets);
 
-            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">📺 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'channels')">✕</button></span>`; });
-            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">🎵 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'assets')">✕</button></span>`; });
-            if(chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<span style="color:#64748b;">รอรับไฟล์ CSV...</span>';
+            chLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge">📺 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'channels')" title="ลบงวดนี้">✕</button></span>`; });
+            astLabels.forEach(l => { badgeContainer.innerHTML += `<span class="badge badge-asset">🎵 ${l} <button class="btn-del" onclick="deleteMonth('${l}', 'assets')" title="ลบงวดนี้">✕</button></span>`; });
+            if (chLabels.length === 0 && astLabels.length === 0) badgeContainer.innerHTML = '<span style="color:#94a3b8;">รอรับไฟล์ CSV...</span>';
 
             updateSelectOptions(chBase, chLabels); updateSelectOptions(chTarget, chLabels); updateSelectOptions(astBase, astLabels); updateSelectOptions(astTarget, astLabels);
 
-            if(chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
-            if(chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
-            if(astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
-            if(astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
+            if (chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
+            if (chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
+            if (astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
+            if (astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
 
             renderChannelTable(); renderAssetTable();
             if (activeTab === 'analysis') generateExecutiveReport();
@@ -352,23 +600,23 @@
 
         function renderChannelTable() {
             const base = document.getElementById('channel-base-select').value; const target = document.getElementById('channel-target-select').value; const tbody = document.getElementById('channel-table-body');
-            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colSpan="6" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>`; return; }
+            if (!target || !store.channels[target]) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state">โปรดอัปโหลดไฟล์ช่องเพื่อแสดงตาราง</td></tr>`; return; }
             const curData = store.channels[target]; const prevData = base ? store.channels[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(c => {
                 let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
-                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="rpm-col">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
         function renderAssetTable() {
             const base = document.getElementById('asset-base-select').value; const target = document.getElementById('asset-target-select').value; const tbody = document.getElementById('asset-table-body');
-            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colSpan="5" align="center" style="padding:40px; color:#94a3b8; font-weight:bold;">โปรดอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>`; return; }
+            if (!target || !store.assets[target]) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state">โปรดอัปโหลดไฟล์ Asset เพื่อแสดงตาราง</td></tr>`; return; }
             const curData = store.assets[target]; const prevData = base ? store.assets[base] : null; const sorted = [...curData].sort((a, b) => b.rev - a.rev);
             tbody.innerHTML = '';
             sorted.forEach(a => {
                 let prevItem = prevData ? prevData.find(x => x.id === a.id) : null;
-                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" style="background-color: #f8fafc;">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${a.name}</b></td><td align="right">${createComparisonCell(a.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(a.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="rpm-col">${createComparisonCell(a.rpm, prevItem?.rpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
@@ -377,7 +625,7 @@
             const target = document.getElementById('channel-target-select').value;
             const astTarget = document.getElementById('asset-target-select').value;
             const astBase = document.getElementById('asset-base-select').value;
-            
+
             const aiTextBox = document.getElementById('ai-summary-text');
             const vBarChartContainer = document.getElementById('v-bar-chart-render');
             const donutRender = document.getElementById('donut-render');
@@ -385,6 +633,8 @@
 
             if (!target || !store.channels[target]) {
                 aiTextBox.value = "ระบบรอรับไฟล์ข้อมูล CSV...";
+                vBarChartContainer.innerHTML = '<div class="empty-state" style="width:100%;">ยังไม่มีข้อมูลช่องสำหรับงวดปัจจุบัน</div>';
+                document.getElementById('drivers-render').innerHTML = '<div class="empty-state">อัปโหลดทั้งไฟล์ช่องและไฟล์ Asset เพื่อดูคอนเทนต์ที่ขับเคลื่อนช่อง</div>';
                 return;
             }
 
@@ -392,6 +642,7 @@
             const prevChannels = base ? store.channels[base] : null;
             const assets = store.assets[astTarget] || [];
             const prevAssets = store.assets[astBase] || [];
+            const assetIndex = buildAssetIndex(assets);
 
             let totalRevCur = curChannels.reduce((sum, x) => sum + x.rev, 0);
             let totalRevPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.rev, 0) : 0;
@@ -399,11 +650,11 @@
             let adsCur = totalRevCur - premiumCur;
             let viewsCur = curChannels.reduce((sum, x) => sum + x.views, 0);
             let viewsPrev = prevChannels ? prevChannels.reduce((sum, x) => sum + x.views, 0) : 0;
-            
+
             let avgCpm = 0;
             let validCpmCount = 0;
-            curChannels.forEach(x => { if(x.cpm > 0) { avgCpm += x.cpm; validCpmCount++; } });
-            if(validCpmCount > 0) avgCpm = avgCpm / validCpmCount;
+            curChannels.forEach(x => { if (x.cpm > 0) { avgCpm += x.cpm; validCpmCount++; } });
+            if (validCpmCount > 0) avgCpm = avgCpm / validCpmCount;
 
             document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
             document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
@@ -411,50 +662,53 @@
             document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
             document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
 
-            let momRevDiff = 0;
-            if(totalRevPrev > 0) {
-                momRevDiff = (((totalRevCur - totalRevPrev)/totalRevPrev)*100).toFixed(1);
-                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) > 0 ? `<span class="up">▲ +${momRevDiff}% MoM</span>` : `<span class="down">▼ ${momRevDiff}% MoM</span>`;
+            if (totalRevPrev > 0) {
+                let momRevDiff = (((totalRevCur - totalRevPrev) / totalRevPrev) * 100).toFixed(1);
+                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) >= 0 ? `<span class="up">▲ +${momRevDiff}% MoM</span>` : `<span class="down">▼ ${momRevDiff}% MoM</span>`;
             } else { document.getElementById('m-total-rev-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
 
-            let momViewDiff = 0;
-            if(viewsPrev > 0) {
-                momViewDiff = (((viewsCur - viewsPrev)/viewsPrev)*100).toFixed(1);
-                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) > 0 ? `<span class="up">▲ +${momViewDiff}% MoM</span>` : `<span class="down">▼ ${momViewDiff}% MoM</span>`;
+            if (viewsPrev > 0) {
+                let momViewDiff = (((viewsCur - viewsPrev) / viewsPrev) * 100).toFixed(1);
+                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) >= 0 ? `<span class="up">▲ +${momViewDiff}% MoM</span>` : `<span class="down">▼ ${momViewDiff}% MoM</span>`;
             } else { document.getElementById('m-total-views-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
 
-            let premiumRatio = totalRevCur > 0 ? ((premiumCur / totalRevCur) * 100).toFixed(1) : "0.0";
-            let adsRatio = (100 - parseFloat(premiumRatio)).toFixed(1);
+            // clamp สัดส่วนไม่ให้หลุด 0–100% กรณีข้อมูลผิดปกติ
+            let premiumRatioNum = totalRevCur > 0 ? Math.min(100, Math.max(0, (premiumCur / totalRevCur) * 100)) : 0;
+            let premiumRatio = premiumRatioNum.toFixed(1);
+            let adsRatio = (100 - premiumRatioNum).toFixed(1);
             document.getElementById('m-premium-ratio').innerText = `สัดส่วนพอร์ต: ${premiumRatio}%`;
 
             donutRender.style.background = `conic-gradient(#0ea5e9 0% ${adsRatio}%, #8b5cf6 ${adsRatio}% 100%)`;
             donutPctVal.innerText = `${adsRatio}%`;
 
-            const top5 = [...curChannels].sort((a,b) => b.rev - a.rev).slice(0, 5);
+            const top5 = [...curChannels].sort((a, b) => b.rev - a.rev).slice(0, 5);
             let maxRevenueFound = 1;
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                if(c.rev > maxRevenueFound) maxRevenueFound = c.rev;
-                if(p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
+                if (c.rev > maxRevenueFound) maxRevenueFound = c.rev;
+                if (p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
             });
 
             vBarChartContainer.innerHTML = '';
             top5.forEach(c => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                let hBase = p ? ((p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
-                let hTarget = ((c.rev / maxRevenueFound) * 100).toFixed(1);
-                
-                let barMoM = p && p.rev > 0 ? (((c.rev - p.rev)/p.rev)*100).toFixed(1) : "0.0";
-                let barDiffSymbol = parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>` : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>` : `<span class="neutral">0.0%</span>`);
-                
+                let hBase = p ? Math.max(0, (p.rev / maxRevenueFound) * 100).toFixed(1) : 0;
+                let hTarget = Math.max(0, (c.rev / maxRevenueFound) * 100).toFixed(1);
+
+                let barMoM = p && p.rev > 0 ? (((c.rev - p.rev) / p.rev) * 100).toFixed(1) : null;
+                let barDiffSymbol = barMoM === null ? `<span class="neutral" style="padding:2px 6px; border-radius:4px;">ใหม่</span>`
+                    : (parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>`
+                    : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>`
+                    : `<span class="neutral" style="padding:2px 6px; border-radius:4px;">0.0%</span>`));
+
                 let contributionPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
 
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHB(p?.rev||0)}</div>
-                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev||0)}"></div>
+                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHB(p?.rev || 0)}</div>
+                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev || 0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
                                 <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHB(c.rev)}<br><span style="color:#0284c7;">(${contributionPct}%)</span></div>
@@ -467,52 +721,58 @@
                 `;
             });
 
+            renderDrivers(top5, assetIndex, prevAssets, prevChannels);
+
             let topGrower = { name: '--', pct: -9999 };
-            let topStable = [];
             if (prevChannels) {
                 curChannels.forEach(c => {
                     let p = prevChannels.find(x => x.id === c.id);
                     if (p && p.rev > 1000) {
                         let change = ((c.rev - p.rev) / p.rev) * 100;
                         if (change > topGrower.pct) { topGrower = { name: c.name, pct: change }; }
-                        if (Math.abs(change) <= 5) { topStable.push({ name: c.name, val: c.rev }); }
                     }
                 });
             }
+            let growerLine = topGrower.pct > -9999
+                ? `ค่าย [ ${topGrower.name} ] เป็นตัวผลักดันสำคัญในงวดนี้ โดยมีอัตราการเติบโตเพิ่มขึ้นถึง +${topGrower.pct.toFixed(1)}% ช่วยดันยอดรวมเครือข่ายอย่างมีนัยสำคัญ`
+                : `ยังไม่มีงวดฐานสำหรับเปรียบเทียบอัตราการเติบโต`;
 
             let aiText = `## ข้อความสรุปเนื้อหา (Prompt) สำหรับ Executive Presentation\n`;
             aiText += `รายงานข้อมูลเปรียบเทียบ: ${base || 'งวดฐาน'} เทียบกับ ${target}\n\n`;
-            
+
             aiText += `### SLIDE 1: ภาพรวมผลประกอบการของเครือข่าย MCN\n`;
             aiText += `- **รายได้สุทธิเครือข่ายรวม:** ${fmtTHB(totalRevCur)} (เติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace('MoM', '').trim()})\n`;
             aiText += `- **รายได้จากโฆษณา (Ad Revenue):** ${fmtTHB(adsCur)} (สัดส่วน ${adsRatio}% | Average CPM: ${fmtTHB(avgCpm)})\n`;
             aiText += `- **รายได้ YouTube Premium:** ${fmtTHB(premiumCur)} (สัดส่วน ${premiumRatio}%)\n`;
             aiText += `- **ปริมาณการเข้าชมสะสม (Total Views):** ${fmtNum(viewsCur)} ครั้ง\n\n`;
-            
+
             aiText += `### SLIDE 2: Insight สัดส่วนผู้บริโภคคุณภาพ และศักยภาพแพลตฟอร์ม\n`;
             aiText += `- **ความภักดีของผู้ชมและกำลังซื้อ (Premium Subscriber Loyalty):** เครือข่ายสามารถสร้างรายได้จากผู้ใช้ Premium ได้ถึง ${premiumRatio}% สะท้อนให้เห็นว่าผู้ฟังมีความผูกพันและเลือกใช้แพลตฟอร์มแบบไม่มีโฆษณาคั่น ซึ่งเป็นฐานรายได้ที่มีคุณภาพสูงและยั่งยืน\n`;
-            aiText += `- **ช่องทางที่มีอัตราการเติบโตโดดเด่น (Top Growth Catalyst):** ค่าย [ ${topGrower.name} ] เป็นตัวผลักดันสำคัญในงวดนี้ โดยมีอัตราการเติบโตเพิ่มขึ้นถึง +${topGrower.pct.toFixed(1)}% ช่วยดันยอดรวมเครือข่ายอย่างมีนัยสำคัญ\n\n`;
-            
+            aiText += `- **ช่องทางที่มีอัตราการเติบโตโดดเด่น (Top Growth Catalyst):** ${growerLine}\n\n`;
+
             aiText += `### SLIDE 3: โครงสร้างรายได้ Top 5 Strategic Partners และ Top Assets\n`;
             top5.forEach((c, idx) => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev)/c.rev)*100).toFixed(1) : "0.0";
-                let c_pct_str = parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`;
+                // FIX: %MoM ต้องหารด้วยรายได้งวดฐาน (p.rev) ให้ตรงกับตาราง ไม่ใช่ c.rev
+                let c_pct = p && p.rev > 0 ? (((c.rev - p.rev) / p.rev) * 100).toFixed(1) : null;
+                let c_pct_str = c_pct === null ? 'ใหม่' : (parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`);
                 let itemAds = c.rev - c.premium;
                 let contrPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
-                
+
                 aiText += `${idx + 1}. **พาร์ทเนอร์: ${c.name}** (Contribution: ${contrPct}% ของเครือข่าย)\n`;
                 aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (MoM: ${c_pct_str})\n`;
                 aiText += `   - [ประเภทรายได้] รายได้โฆษณา: ${fmtTHB(itemAds)} | รายได้ Premium: ${fmtTHB(c.premium)}\n`;
-                
-                let cleanKey = c.name.replace(/production|official|channel|แชนแนล|มิวสิค|music|สตูดิโอ|studio/gi, "").trim().toLowerCase();
-                let matchedAssets = assets.filter(a => a.name.toLowerCase().includes(cleanKey)).slice(0, 2);
-                
+
+                // จับคู่เพลงของช่องด้วย matcher ตัวใหม่ (แม่นกว่าเดิมมาก)
+                let allMatched = matchAssetsForChannel(c, assetIndex);
+                let matchedAssets = allMatched.slice(0, 3);
                 if (matchedAssets.length > 0) {
-                    aiText += `   - [Top Assets ชิ้นงานสร้างรายได้หลัก]\n`;
+                    let coveredRev = allMatched.reduce((s, x) => s + x.rev, 0);
+                    let coverPct = c.rev > 0 ? Math.min(100, (coveredRev / c.rev) * 100).toFixed(0) : 0;
+                    aiText += `   - [Top Content Drivers — เพลงที่ขับเคลื่อนช่อง | ระบุได้ ${allMatched.length} เพลง ≈ ${coverPct}% ของรายได้ช่อง]\n`;
                     matchedAssets.forEach(ast => {
                         let prevAst = prevAssets.find(x => x.id === ast.id);
-                        let astPctStr = '--';
+                        let astPctStr = 'เพลงใหม่';
                         if (prevAst && prevAst.rev > 0) {
                             let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
                             astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
@@ -522,7 +782,7 @@
                 }
                 aiText += `\n`;
             });
-            
+
             aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์ (Strategic Action Items)\n`;
             aiText += `1. นำข้อมูล Average CPM ไปวางแผนร่วมกับทีมการตลาด เพื่อกระตุ้นแคมเปญให้ตรงกับช่วงเวลาที่อัตราโฆษณาสูงขึ้น\n`;
             aiText += `2. ต่อยอดการสนับสนุนพาร์ทเนอร์ที่มีฐานคนฟัง Premium เพื่อสร้าง Exclusive Content ที่ดึงดูดผู้ใช้งานคุณภาพในระยะยาว`;
@@ -530,17 +790,81 @@
             aiTextBox.value = aiText;
         }
 
-        document.getElementById('final-copy-btn').addEventListener('click', function() {
-            const textarea = document.getElementById('ai-summary-text');
-            if (!textarea || textarea.value.includes("รอข้อมูล")) {
-                alert("กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอกครับ");
+        function momChip(cur, prev) {
+            if (prev === null || prev === undefined) return `<span class="mom-chip neutral">เพลงใหม่</span>`;
+            if (prev > 0) {
+                let d = (((cur - prev) / prev) * 100).toFixed(1);
+                if (parseFloat(d) > 0) return `<span class="mom-chip up">▲ +${d}%</span>`;
+                if (parseFloat(d) < 0) return `<span class="mom-chip down">▼ ${d}%</span>`;
+                return `<span class="mom-chip neutral">0.0%</span>`;
+            }
+            return `<span class="mom-chip neutral">--</span>`;
+        }
+
+        function renderDrivers(channels, assetIndex, prevAssets, prevChannels) {
+            const box = document.getElementById('drivers-render');
+            if (!assetIndex || assetIndex.length === 0) {
+                box.innerHTML = `<div class="empty-state">อัปโหลดไฟล์ Asset งวดปัจจุบันเพื่อดูคอนเทนต์ที่ขับเคลื่อนช่อง</div>`;
                 return;
             }
-            textarea.select();
-            textarea.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(textarea.value);
-            alert("📋 คัดลอก Prompt สำหรับสร้าง Presentation เรียบร้อยครับ!");
+            box.innerHTML = '';
+            channels.forEach(c => {
+                const matched = matchAssetsForChannel(c, assetIndex);
+                const prevCh = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
+                const chChip = momChip(c.rev, prevCh ? prevCh.rev : null);
+                const covered = matched.reduce((s, x) => s + x.rev, 0);
+                const coverPct = c.rev > 0 ? Math.min(100, (covered / c.rev) * 100).toFixed(0) : 0;
+
+                let assetsHtml;
+                if (matched.length === 0) {
+                    assetsHtml = `<div class="driver-none">— ไม่พบเพลงของช่องนี้ในไฟล์ Asset (อาจไม่ติด Top assets)</div>`;
+                } else {
+                    assetsHtml = matched.slice(0, 3).map(a => {
+                        const pa = prevAssets.find(x => x.id === a.id);
+                        return `<div class="asset-pill"><span class="nm" title="${a.name}">🎵 ${a.name}</span>
+                            <span style="display:flex; gap:10px; align-items:center;"><span class="rv">${fmtTHB(a.rev)}</span>${momChip(a.rev, pa ? pa.rev : null)}</span></div>`;
+                    }).join('');
+                }
+
+                box.innerHTML += `<div class="driver-row">
+                    <div class="driver-ch">${c.name} ${chChip}
+                        <div class="meta">รายได้ช่อง: ${fmtTHB(c.rev)}</div>
+                        ${matched.length ? `<span class="cover">ระบุ ${matched.length} เพลง ≈ ${coverPct}% ของรายได้ช่อง</span>` : ''}
+                    </div>
+                    <div class="driver-assets">${assetsHtml}</div>
+                </div>`;
+            });
+        }
+
+        // ---- Copy with file:// fallback ----
+        async function copyText(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch (e) { /* fall through */ }
+            try {
+                const ta = document.getElementById('ai-summary-text');
+                ta.focus(); ta.select(); ta.setSelectionRange(0, 99999);
+                return document.execCommand('copy');
+            } catch (e) { return false; }
+        }
+
+        document.getElementById('final-copy-btn').addEventListener('click', async function() {
+            const textarea = document.getElementById('ai-summary-text');
+            const noData = !textarea.value || textarea.value.includes('รอข้อมูล') || textarea.value.includes('รอรับไฟล์');
+            if (noData) {
+                showToast('⚠️ กรุณาอัปโหลดไฟล์ข้อมูลก่อนทำการคัดลอก', true);
+                return;
+            }
+            const ok = await copyText(textarea.value);
+            showToast(ok ? '📋 คัดลอก Prompt เรียบร้อยแล้ว!' : '❌ คัดลอกไม่สำเร็จ กรุณาคัดลอกด้วยตนเอง', !ok);
         });
+
+        // init
+        setupDropzone('channel-dropzone', 'channel-upload', 'channels');
+        setupDropzone('asset-dropzone', 'asset-upload', 'assets');
     </script>
 </body>
 </html>
