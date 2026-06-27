@@ -142,7 +142,8 @@
         .v-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 110px; }
         .v-bar-combo { display: flex; align-items: flex-end; gap: 10px; height: 220px; width: 100%; justify-content: center; position: relative; }
         .v-bar-wrapper { display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; width: 34px; }
-        .v-bar-val-top { position: absolute; top: -50px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.4; background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 6px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); z-index: 5; }
+        .v-bar-val-top { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; white-space: nowrap; text-align: center; line-height: 1.25; background: rgba(255,255,255,0.95); padding: 2px 6px; border-radius: 5px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); z-index: 5; }
+        .v-bar-val-top .pct-sub { font-size: 9px; font-weight: 600; }
         .v-bar-val-top.target { border-color: #bae6fd; background: #f0f9ff; }
         .v-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; transition: height .6s cubic-bezier(.22,1,.36,1); position: relative; cursor: pointer; }
         .v-bar:hover { filter: brightness(1.05); }
@@ -377,6 +378,13 @@
         let activeTab = 'overview';
 
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        // ตัวเลขแบบย่อสำหรับป้ายบนกราฟ (กล่องเล็ก ไม่ล้น) เช่น ฿1.18M, ฿292.8K
+        const fmtTHBshort = (v) => {
+            v = Number(v || 0); const a = Math.abs(v);
+            if (a >= 1e6) return "฿" + (v / 1e6).toFixed(2) + "M";
+            if (a >= 1e3) return "฿" + (v / 1e3).toFixed(1) + "K";
+            return "฿" + v.toFixed(0);
+        };
         const fmtNum = (v) => Number(v || 0).toLocaleString();
 
         // ============================================================
@@ -535,14 +543,24 @@
                     // ต้องเลือก "CPM" ตัวล้วนก่อน (ตรงกับพาดหัว Avg. CPM) แล้วค่อย fallback ไป playback-based
                     let cpmIdx = headers.findIndex(h => h === 'cpm (thb)' || h === 'cpm');
                     if (cpmIdx === -1) cpmIdx = headers.findIndex(h => h.includes('cpm'));
+                    const playbackIdx = headers.findIndex(h => h.includes('playback-based'));
 
                     const toNum = (cell) => parseFloat(String(cell ?? '').replace(/[^0-9.-]/g, "")) || 0;
 
                     const processedData = [];
+                    let totals = null; // เก็บค่าระดับเครือข่ายจากแถว Total (Playback CPM / RPM)
                     for (let i = 1; i < rows.length; i++) {
                         let r = rows[i];
                         let idVal = (r[idIdx] || '').toLowerCase().trim();
-                        if (!idVal || idVal === 'total') continue;
+                        if (idVal === 'total') {
+                            totals = {
+                                rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
+                                views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]),
+                                cpm: toNum(r[cpmIdx]), playbackCpm: toNum(r[playbackIdx])
+                            };
+                            continue;
+                        }
+                        if (!idVal) continue;
                         processedData.push({
                             id: idVal,
                             name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
@@ -555,6 +573,7 @@
                     }
 
                     if (processedData.length === 0) { showToast('⚠️ ไม่พบแถวข้อมูลที่ใช้ได้', true); return; }
+                    processedData.totals = totals; // แนบค่าเครือข่ายไว้กับชุดข้อมูลงวดนั้น
 
                     store[type][label] = processedData;
                     zone.classList.add('has-file');
@@ -707,11 +726,11 @@
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHB(p?.rev || 0)}</div>
+                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHBshort(p?.rev || 0)}</div>
                                 <div class="v-bar v-bar-base" style="height: ${hBase}%;" data-tooltip="ฐาน: ${fmtTHB(p?.rev || 0)}"></div>
                             </div>
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHB(c.rev)}<br><span style="color:#0284c7;">(${contributionPct}%)</span></div>
+                                <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHBshort(c.rev)}<br><span class="pct-sub" style="color:#0284c7;">${contributionPct}%</span></div>
                                 <div class="v-bar v-bar-target" style="height: ${hTarget}%;" data-tooltip="ปัจจุบัน: ${fmtTHB(c.rev)} | สัดส่วน: ${contributionPct}%"></div>
                             </div>
                         </div>
@@ -737,39 +756,62 @@
                 ? `ค่าย [ ${topGrower.name} ] เป็นตัวผลักดันสำคัญในงวดนี้ โดยมีอัตราการเติบโตเพิ่มขึ้นถึง +${topGrower.pct.toFixed(1)}% ช่วยดันยอดรวมเครือข่ายอย่างมีนัยสำคัญ`
                 : `ยังไม่มีงวดฐานสำหรับเปรียบเทียบอัตราการเติบโต`;
 
-            let aiText = `## ข้อความสรุปเนื้อหา (Prompt) สำหรับ Executive Presentation\n`;
-            aiText += `รายงานข้อมูลเปรียบเทียบ: ${base || 'งวดฐาน'} เทียบกับ ${target}\n\n`;
+            // ---- ค่าระดับเครือข่ายจากแถว Total (อ้างอิงสไตล์เด็คตัวอย่าง) ----
+            const mom = (cur, prev) => {
+                if (!prev || prev === 0) return 'N/A (ไม่มีงวดฐาน)';
+                const d = ((cur - prev) / prev * 100).toFixed(1);
+                return parseFloat(d) >= 0 ? `▲ +${d}%` : `▼ ${d}%`;
+            };
+            const curTotals = curChannels.totals || null;
+            const prevTotals = prevChannels ? (prevChannels.totals || null) : null;
+            const netRpmCur = curTotals ? curTotals.rpm : (viewsCur > 0 ? totalRevCur / viewsCur * 1000 : 0);
+            const netRpmPrev = prevTotals ? prevTotals.rpm : (viewsPrev > 0 ? totalRevPrev / viewsPrev * 1000 : 0);
+            const pbCpmCur = curTotals ? curTotals.playbackCpm : 0;
+            const pbCpmPrev = prevTotals ? prevTotals.playbackCpm : 0;
+            const viewUp = viewsCur >= viewsPrev;
+            const rpmDown = netRpmCur < netRpmPrev;
 
-            aiText += `### SLIDE 1: ภาพรวมผลประกอบการของเครือข่าย MCN\n`;
-            aiText += `- **รายได้สุทธิเครือข่ายรวม:** ${fmtTHB(totalRevCur)} (เติบโต MoM: ${document.getElementById('m-total-rev-change').innerText.replace('MoM', '').trim()})\n`;
-            aiText += `- **รายได้จากโฆษณา (Ad Revenue):** ${fmtTHB(adsCur)} (สัดส่วน ${adsRatio}% | Average CPM: ${fmtTHB(avgCpm)})\n`;
-            aiText += `- **รายได้ YouTube Premium:** ${fmtTHB(premiumCur)} (สัดส่วน ${premiumRatio}%)\n`;
-            aiText += `- **ปริมาณการเข้าชมสะสม (Total Views):** ${fmtNum(viewsCur)} ครั้ง\n\n`;
+            let aiText = `# คำสั่งสร้าง Executive Presentation — S1 MUSIC (MCN)\n`;
+            aiText += `เปรียบเทียบงวด: ${base || 'งวดฐาน'} → ${target}\n\n`;
+            aiText += `บทบาท: คุณคือนักวิเคราะห์ธุรกิจของ S1 MUSIC ช่วยสร้างสไลด์นำเสนอผู้บริหาร 3 สไลด์ ภาษาไทย โทนมืออาชีพ กระชับ คม\n`;
+            aiText += `ข้อกำหนด: ใช้ตัวเลขจริงด้านล่างทั้งหมด ห้ามแก้ไขตัวเลข | แสดงลูกศร ▲ (เพิ่ม=เขียว) ▼ (ลด=แดง) | จัดเลย์เอาต์ตามที่ระบุในแต่ละสไลด์\n\n`;
 
-            aiText += `### SLIDE 2: Insight สัดส่วนผู้บริโภคคุณภาพ และศักยภาพแพลตฟอร์ม\n`;
-            aiText += `- **ความภักดีของผู้ชมและกำลังซื้อ (Premium Subscriber Loyalty):** เครือข่ายสามารถสร้างรายได้จากผู้ใช้ Premium ได้ถึง ${premiumRatio}% สะท้อนให้เห็นว่าผู้ฟังมีความผูกพันและเลือกใช้แพลตฟอร์มแบบไม่มีโฆษณาคั่น ซึ่งเป็นฐานรายได้ที่มีคุณภาพสูงและยั่งยืน\n`;
-            aiText += `- **ช่องทางที่มีอัตราการเติบโตโดดเด่น (Top Growth Catalyst):** ${growerLine}\n\n`;
+            aiText += `============================================================\n`;
+            aiText += `SLIDE 1 — Executive Summary\n`;
+            aiText += `หัวข้อ (ปรับให้สื่อทิศทางเดือน): "ยอดวิว${viewUp ? 'เติบโตแข็งแกร่ง' : 'ชะลอตัว'} ดันรายได้รวม ${target} อยู่ที่ ${fmtTHB(totalRevCur)}"\n`;
+            aiText += `เลย์เอาต์: กล่องตัวเลขเด่น 4 กล่องเรียงแนวนอน แต่ละกล่อง = ค่าปัจจุบัน (ตัวใหญ่) + ลูกศร MoM% + ค่างวดก่อน (ตัวเล็ก)\n`;
+            aiText += `  1) Total Revenue (รายได้รวม): ${fmtTHB(totalRevCur)} | ${mom(totalRevCur, totalRevPrev)} | งวดก่อน ${fmtTHB(totalRevPrev)}\n`;
+            aiText += `  2) Total Views (ยอดวิวรวม): ${fmtNum(viewsCur)} Views | ${mom(viewsCur, viewsPrev)} | งวดก่อน ${fmtNum(viewsPrev)}\n`;
+            aiText += `  3) Playback-based CPM: ${fmtTHB(pbCpmCur)} | ${mom(pbCpmCur, pbCpmPrev)} | งวดก่อน ${fmtTHB(pbCpmPrev)}\n`;
+            aiText += `  4) Average RPM: ${fmtTHB(netRpmCur)} | ${mom(netRpmCur, netRpmPrev)} | งวดก่อน ${fmtTHB(netRpmPrev)}\n`;
+            aiText += `ความเห็นเชิงวิเคราะห์ (เขียนใต้กล่อง 1 ย่อหน้า): รายได้รวมเดือน ${target} อยู่ที่ ${fmtTHB(totalRevCur)} (${mom(totalRevCur, totalRevPrev)}) ` +
+                `${viewUp ? `โดยได้แรงหนุนหลักจากปริมาณวิวที่เพิ่มขึ้น (${mom(viewsCur, viewsPrev)})` : `ขณะที่ปริมาณวิวปรับตัว ${mom(viewsCur, viewsPrev)}`} ` +
+                `${rpmDown ? `แม้ค่าโฆษณาเฉลี่ย (RPM/CPM) จะปรับฐานลงเล็กน้อย สะท้อนการเติบโตเชิงปริมาณ (Volume-driven) ที่ยังรักษาฐานรายได้ไว้ได้มั่นคง` : `พร้อมค่าโฆษณาเฉลี่ยที่ปรับตัวดีขึ้น เป็นการเติบโตที่มีคุณภาพทั้งปริมาณและประสิทธิภาพ`}\n\n`;
 
-            aiText += `### SLIDE 3: โครงสร้างรายได้ Top 5 Strategic Partners และ Top Assets\n`;
+            aiText += `============================================================\n`;
+            aiText += `SLIDE 2 — Deep Dive Analysis: การชดเชยของ Volume สวนทาง Margin\n`;
+            aiText += `เลย์เอาต์: ซ้าย = โดนัทสัดส่วนรายได้ | ขวา = เปรียบเทียบ 2 แรง (Volume vs Margin)\n`;
+            aiText += `  • โดนัทสัดส่วนรายได้: Ad Revenue (โฆษณา) ${adsRatio}% = ${fmtTHB(adsCur)} | Premium Revenue (พรีเมียม) ${premiumRatio}% = ${fmtTHB(premiumCur)}\n`;
+            aiText += `  • Volume (Views): ${mom(viewsCur, viewsPrev)}  ⟷  Margin (RPM): ${mom(netRpmCur, netRpmPrev)}\n`;
+            aiText += `กลยุทธ์ที่ต้องผลักดันต่อ (1 ย่อหน้า): ${rpmDown ? `การที่ Views เติบโตสวนทางกับ RPM ที่ลดลง สะท้อนว่าการเติบโตมาจากปริมาณคอนเทนต์ที่มากขึ้น ทีมควรเร่งยกระดับคุณภาพรายได้ต่อวิว (RPM) ผ่านการจัดสรรโฆษณาและดันสัดส่วน Premium ให้สูงขึ้น` : `ทั้ง Volume และ Margin ปรับตัวไปในทางเดียวกัน เป็นสัญญาณการเติบโตที่แข็งแรง ทีมควรรักษาโมเมนตัมและขยายฐานคอนเทนต์คุณภาพต่อเนื่อง`} ${growerLine}\n\n`;
+
+            aiText += `============================================================\n`;
+            aiText += `SLIDE 3 — Top 5 Revenue Generators: ผู้ขับเคลื่อนรายได้และประสิทธิภาพ (${target})\n`;
+            aiText += `เลย์เอาต์: ตารางผู้นำ "Hybrid Leaderboard Matrix" — อันดับ | ช่อง | รายได้ | Views | RPM | สัดส่วน + เพลงที่ขับเคลื่อน\n`;
             top5.forEach((c, idx) => {
                 let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                // FIX: %MoM ต้องหารด้วยรายได้งวดฐาน (p.rev) ให้ตรงกับตาราง ไม่ใช่ c.rev
                 let c_pct = p && p.rev > 0 ? (((c.rev - p.rev) / p.rev) * 100).toFixed(1) : null;
                 let c_pct_str = c_pct === null ? 'ใหม่' : (parseFloat(c_pct) >= 0 ? `+${c_pct}%` : `${c_pct}%`);
-                let itemAds = c.rev - c.premium;
                 let contrPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
 
-                aiText += `${idx + 1}. **พาร์ทเนอร์: ${c.name}** (Contribution: ${contrPct}% ของเครือข่าย)\n`;
-                aiText += `   - รายได้รวมงวดนี้: ${fmtTHB(c.rev)} (MoM: ${c_pct_str})\n`;
-                aiText += `   - [ประเภทรายได้] รายได้โฆษณา: ${fmtTHB(itemAds)} | รายได้ Premium: ${fmtTHB(c.premium)}\n`;
+                aiText += `  ${idx + 1}. ${c.name} — ${fmtTHB(c.rev)} (MoM: ${c_pct_str}) | Views: ${fmtNum(c.views)} | RPM: ${fmtTHB(c.rpm)} | สัดส่วน ${contrPct}%\n`;
 
-                // จับคู่เพลงของช่องด้วย matcher ตัวใหม่ (แม่นกว่าเดิมมาก)
                 let allMatched = matchAssetsForChannel(c, assetIndex);
                 let matchedAssets = allMatched.slice(0, 3);
                 if (matchedAssets.length > 0) {
                     let coveredRev = allMatched.reduce((s, x) => s + x.rev, 0);
                     let coverPct = c.rev > 0 ? Math.min(100, (coveredRev / c.rev) * 100).toFixed(0) : 0;
-                    aiText += `   - [Top Content Drivers — เพลงที่ขับเคลื่อนช่อง | ระบุได้ ${allMatched.length} เพลง ≈ ${coverPct}% ของรายได้ช่อง]\n`;
+                    aiText += `     เพลงที่ขับเคลื่อน (ระบุ ${allMatched.length} เพลง ≈ ${coverPct}% ของรายได้ช่อง):\n`;
                     matchedAssets.forEach(ast => {
                         let prevAst = prevAssets.find(x => x.id === ast.id);
                         let astPctStr = 'เพลงใหม่';
@@ -777,15 +819,19 @@
                             let d = (((ast.rev - prevAst.rev) / prevAst.rev) * 100).toFixed(1);
                             astPctStr = parseFloat(d) >= 0 ? `+${d}%` : `${d}%`;
                         }
-                        aiText += `     • ${ast.name} (รายได้: ${fmtTHB(ast.rev)} | MoM: ${astPctStr})\n`;
+                        aiText += `       • ${ast.name} (${fmtTHB(ast.rev)} | MoM: ${astPctStr})\n`;
                     });
                 }
-                aiText += `\n`;
             });
-
-            aiText += `### SLIDE 4: ข้อเสนอแนะเชิงกลยุทธ์ (Strategic Action Items)\n`;
-            aiText += `1. นำข้อมูล Average CPM ไปวางแผนร่วมกับทีมการตลาด เพื่อกระตุ้นแคมเปญให้ตรงกับช่วงเวลาที่อัตราโฆษณาสูงขึ้น\n`;
-            aiText += `2. ต่อยอดการสนับสนุนพาร์ทเนอร์ที่มีฐานคนฟัง Premium เพื่อสร้าง Exclusive Content ที่ดึงดูดผู้ใช้งานคุณภาพในระยะยาว`;
+            // Insight: Mass Volume vs High Efficiency
+            let massVol = [...top5].sort((a, b) => b.views - a.views)[0];
+            let highEff = [...top5].filter(c => c.rpm > 0).sort((a, b) => b.rpm - a.rpm)[0];
+            if (massVol && highEff) {
+                aiText += `\nInsight "Mass Volume vs High Efficiency":\n`;
+                aiText += `  • Mass Volume (วิวสูงสุด): ${massVol.name} — ${fmtNum(massVol.views)} วิว สร้างรายได้ด้วยปริมาณการเข้าถึง\n`;
+                aiText += `  • High Efficiency (RPM สูงสุด): ${highEff.name} — RPM ${fmtTHB(highEff.rpm)} สร้างรายได้ต่อวิวได้คุ้มค่าที่สุด\n`;
+            }
+            aiText += `ข้อสังเกต (เขียนปิดสไลด์): ควรบาลานซ์พอร์ตคอนเทนต์ระหว่างช่องที่เน้น "ปริมาณวิว" กับช่องที่ "RPM สูง" เพื่อให้รายได้รวมเติบโตอย่างมีคุณภาพและยั่งยืน พร้อมต่อยอดเพลงที่ขับเคลื่อนช่องในงวดนี้\n`;
 
             aiTextBox.value = aiText;
         }
