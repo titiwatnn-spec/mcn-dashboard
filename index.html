@@ -138,6 +138,10 @@ tbody tr{transition:background .15s}tbody tr:hover{background:#fafbff}
 .v-bar-val-top{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.25;background:#fff;padding:2px 6px;border-radius:6px;box-shadow:var(--shadow-sm);border:1px solid var(--line2);z-index:5}
 .v-bar-val-top .pct-sub{font-size:9px;font-weight:700}
 .v-bar-val-top.target{border-color:#c7d2fe;background:var(--indigo-soft)}
+.v-grp-top{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:8px;text-align:center;white-space:nowrap;background:#fff;border:1px solid var(--line2);border-radius:9px;padding:4px 10px;box-shadow:var(--shadow-sm);z-index:5}
+.v-grp-top .gt-cur{font-size:11px;font-weight:800;color:var(--ink)}
+.v-grp-top .gt-contrib{font-size:9px;font-weight:700;color:var(--indigo);margin-left:2px}
+.v-grp-top .gt-base{font-size:9px;font-weight:600;color:var(--faint);margin-top:1px}
 .v-bar{width:100%;border-radius:7px 7px 0 0;min-height:4px;transition:height .6s cubic-bezier(.22,1,.36,1);position:relative;cursor:pointer}
 .v-bar:hover{filter:brightness(1.05)}
 .v-bar-base{background:#dfe1ee}
@@ -928,13 +932,15 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
                 vBarChartContainer.innerHTML += `
                     <div class="v-bar-group">
                         <div class="v-bar-combo">
-                            <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top" style="bottom: ${Math.max(hBase, 5)}%; color:#64748b;">${fmtTHBshort(p?.rev || 0)}</div>
-                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" title="งวดฐาน — ${c.name}: ${fmtTHB(p?.rev || 0)}"></div>
+                            <div class="v-grp-top">
+                                <div class="gt-cur">${fmtTHBshort(c.rev)}<span class="gt-contrib">${contributionPct}%</span></div>
+                                ${p ? `<div class="gt-base">ฐาน ${fmtTHBshort(p.rev || 0)}</div>` : ''}
                             </div>
                             <div class="v-bar-wrapper">
-                                <div class="v-bar-val-top target" style="bottom: ${Math.max(hTarget, 5)}%;">${fmtTHBshort(c.rev)}<br><span class="pct-sub" style="color:#0284c7;">${contributionPct}%</span></div>
-                                <div class="v-bar v-bar-target" style="height: ${hTarget}%;" title="งวดปัจจุบัน — ${c.name}: ${fmtTHB(c.rev)} | สัดส่วน ${contributionPct}%"></div>
+                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" title="เดือนที่เปรียบเทียบ — ${c.name}: ${fmtTHB(p?.rev || 0)}"></div>
+                            </div>
+                            <div class="v-bar-wrapper">
+                                <div class="v-bar v-bar-target" style="height: ${hTarget}%;" title="เดือนปัจจุบัน — ${c.name}: ${fmtTHB(c.rev)} | สัดส่วน ${contributionPct}%"></div>
                             </div>
                         </div>
                         <div style="font-size:10px; margin-top:8px;">${barDiffSymbol}</div>
