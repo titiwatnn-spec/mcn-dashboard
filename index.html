@@ -268,10 +268,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
 
         <div class="card" id="view-overview">
             <div class="period-bar">
-                <span class="lbl">งวดเดือนฐาน:</span>
+                <span class="lbl">เดือนที่เปรียบเทียบ:</span>
                 <select id="channel-base-select" onchange="renderChannelTable()"></select>
                 <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span class="lbl">งวดปัจจุบัน:</span>
+                <span class="lbl">เดือนปัจจุบัน:</span>
                 <select id="channel-target-select" onchange="renderChannelTable()"></select>
             </div>
             <div class="table-container">
@@ -295,10 +295,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
 
         <div class="card hidden" id="view-assets">
             <div class="period-bar">
-                <span class="lbl">งวดเดือนฐาน:</span>
+                <span class="lbl">เดือนที่เปรียบเทียบ:</span>
                 <select id="asset-base-select" onchange="renderAssetTable()"></select>
                 <span style="color:#cbd5e1; font-weight: bold;">➔</span>
-                <span class="lbl">งวดปัจจุบัน:</span>
+                <span class="lbl">เดือนปัจจุบัน:</span>
                 <select id="asset-target-select" onchange="renderAssetTable()"></select>
             </div>
             <div class="table-container">
@@ -389,8 +389,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
                     <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
                     <div class="v-chart-area" id="v-bar-chart-render"></div>
                     <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
-                        <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">งวดเดือนฐาน</span></div>
-                        <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">งวดปัจจุบัน</span></div>
+                        <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">เดือนที่เปรียบเทียบ</span></div>
+                        <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">เดือนปัจจุบัน</span></div>
                     </div>
                 </div>
             </div>
@@ -420,6 +420,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
     <script>
         let store = { channels: {}, assets: {} };
         let activeTab = 'overview';
+        let _lastNewest = { channels: null, assets: null }; // จำงวดล่าสุดที่เคยเห็น เพื่อเด้งคู่เปรียบเทียบตามอัตโนมัติ
 
         const fmtTHB = (v) => "฿" + Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
         // ตัวเลขแบบย่อสำหรับป้ายบนกราฟ (กล่องเล็ก ไม่ล้น) เช่น ฿1.18M, ฿292.8K
@@ -785,10 +786,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
 
             updateSelectOptions(chBase, chLabels); updateSelectOptions(chTarget, chLabels); updateSelectOptions(astBase, astLabels); updateSelectOptions(astTarget, astLabels);
 
-            if (chLabels.length >= 1 && !chTarget.value) chTarget.value = chLabels[chLabels.length - 1];
-            if (chLabels.length >= 2 && !chBase.value) chBase.value = chLabels[chLabels.length - 2];
-            if (astLabels.length >= 1 && !astTarget.value) astTarget.value = astLabels[astLabels.length - 1];
-            if (astLabels.length >= 2 && !astBase.value) astBase.value = astLabels[astLabels.length - 2];
+            // เด้งคู่เปรียบเทียบไปที่ "2 งวดล่าสุด" อัตโนมัติ และตามทันทีเมื่อมีงวดใหม่กว่าเข้ามา
+            // (ถ้าผู้ใช้เลือกคู่เองไว้ และยังไม่มีงวดใหม่ → คงค่าที่เลือกไว้)
+            autoFollowLatest(chBase, chTarget, chLabels, 'channels');
+            autoFollowLatest(astBase, astTarget, astLabels, 'assets');
 
             renderChannelTable(); renderAssetTable();
             if (activeTab === 'analysis') generateExecutiveReport();
@@ -800,6 +801,21 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             const currentVal = selectElement.value; selectElement.innerHTML = `<option value="">-- เลือกงวด --</option>`;
             labels.forEach(l => { selectElement.innerHTML += `<option value="${l}">${l}</option>`; });
             if (labels.includes(currentVal)) selectElement.value = currentVal;
+        }
+
+        // เลือก "2 งวดล่าสุด" เป็นค่าเริ่มต้น และเด้งตามเมื่อมีงวดใหม่กว่าเข้ามา
+        // (งวดล่าสุด = งวดที่นำเข้าล่าสุด = คีย์ตัวท้าย)
+        function autoFollowLatest(baseSel, targetSel, labels, type) {
+            if (!labels.length) { _lastNewest[type] = null; return; }
+            const newest = labels[labels.length - 1];
+            const prev = labels.length >= 2 ? labels[labels.length - 2] : '';
+            const cur = targetSel.value;
+            // เด้งไปคู่ล่าสุดเมื่อ: ยังไม่ได้เลือก / ค่าที่เลือกหายไป / มีงวดใหม่กว่าเข้ามา
+            if (!cur || !labels.includes(cur) || newest !== _lastNewest[type]) {
+                targetSel.value = newest;
+                baseSel.value = prev;
+            }
+            _lastNewest[type] = newest;
         }
 
         function deleteMonth(label, type) { delete store[type][label]; updateDropdownsAndBadges(); }
