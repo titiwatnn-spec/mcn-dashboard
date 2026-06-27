@@ -172,6 +172,26 @@
 
         .empty-state { padding: 48px 20px; text-align: center; color: var(--faint); font-weight: 700; }
 
+        /* Google Sheet loader */
+        .gsheet-card { margin-bottom: 24px; padding: 18px 20px; }
+        .gsheet-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .gsheet-row #gsheet-url { flex: 1; min-width: 220px; }
+        .gsheet-row input[type=text] { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .2s, box-shadow .2s; }
+        .gsheet-row input[type=text]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+        .btn-fetch { background: linear-gradient(180deg, #0ea5e9, #0284c7); color: #fff; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; white-space: nowrap; transition: filter .2s, transform .12s; box-shadow: 0 4px 10px -3px rgba(2,132,199,0.5); }
+        .btn-fetch:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-fetch:disabled { opacity: .6; cursor: wait; transform: none; }
+
+        /* Trend table */
+        #trend-table th, #trend-table td { text-align: right; }
+        #trend-table th:first-child, #trend-table td:first-child { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
+        #trend-table thead th:first-child { background: #f8fafc; z-index: 3; }
+        .spark-cell { width: 130px; }
+        .trend-mom { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 12px; white-space: nowrap; }
+        .trend-up { color: var(--up); background: #d1fae5; }
+        .trend-down { color: var(--down); background: #fee2e2; }
+        .trend-flat { color: var(--muted); background: #f1f5f9; }
+
         /* Content Growth Drivers */
         .driver-row { display: grid; grid-template-columns: 240px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f1f5f9; align-items: start; }
         .driver-row:last-child { border-bottom: none; }
@@ -231,9 +251,24 @@
             </div>
         </div>
 
+        <div class="card gsheet-card">
+            <label class="upload-label">🔗 หรือดึงข้อมูลจาก Google Sheet โดยตรง (ไม่ต้องดาวน์โหลดไฟล์)</label>
+            <div class="gsheet-row">
+                <select id="gsheet-type" title="เลือกประเภทข้อมูล">
+                    <option value="channels">📺 ข้อมูลช่อง (Channel)</option>
+                    <option value="assets">🎵 ข้อมูลเพลง (Asset)</option>
+                </select>
+                <input type="text" id="gsheet-url" placeholder="วาง URL Google Sheet ที่นี่ (แนะนำ: Publish to web → CSV)" />
+                <input type="text" id="gsheet-label" placeholder="ชื่องวด เช่น JUN" style="max-width:140px;" />
+                <button class="btn-fetch" id="gsheet-btn" onclick="fetchGoogleSheet()">⬇️ ดึงข้อมูล</button>
+            </div>
+            <div class="dz-hint" style="margin-top:8px;">💡 วิธีที่เสถียรสุด: ใน Google Sheet เลือก File → Share → <b>Publish to web</b> → เลือกชีต → รูปแบบ <b>CSV</b> → คัดลอก URL มาวาง</div>
+        </div>
+
         <div class="btn-group">
             <button class="btn active" id="tab-overview" onclick="switchTab('overview')">📺 ตารางรายช่องทาง</button>
             <button class="btn" id="tab-assets" onclick="switchTab('assets')">🎵 ตารางชิ้นงาน Asset</button>
+            <button class="btn" id="tab-trend" onclick="switchTab('trend')">📈 Trend หลายเดือน</button>
             <button class="btn" id="tab-analysis" onclick="switchTab('analysis')">👔 MCN Exclusive Dashboard</button>
         </div>
 
@@ -285,6 +320,31 @@
                     </thead>
                     <tbody id="asset-table-body">
                         <tr><td colspan="5" class="empty-state">อัปโหลดไฟล์เพื่อแสดงข้อมูล</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card hidden" id="view-trend">
+            <div class="period-bar" style="justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span class="lbl">📈 แนวโน้มรายได้ช่องรายเดือน</span>
+                    <span class="dz-hint">(เรียงตามเดือนที่อัปโหลด • เทียบ MoM = 2 เดือนล่าสุด)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="lbl">เรียงตาม:</span>
+                    <select id="trend-sort" onchange="renderTrend()">
+                        <option value="latest">รายได้ล่าสุด (มาก→น้อย)</option>
+                        <option value="growth">เติบโตสุด (MoM)</option>
+                        <option value="drop">หดแรงสุด (MoM)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="trend-table">
+                    <thead><tr id="trend-head"></tr></thead>
+                    <tbody id="trend-body">
+                        <tr><td class="empty-state">อัปโหลด/ดึงข้อมูลช่องอย่างน้อย 2 เดือนเพื่อดูแนวโน้ม</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -384,6 +444,16 @@
         // ============================================================
         const MATCH_JUNK = new Set(['production','official','officail','channel','แชนแนล','มิวสิค','music',
             'สตูดิโอ','studio','stdio','record','records','เรคคอร์ด','ค่ายเพลง','audio','media','version','cover','original','song']);
+
+        // แม็พช่อง → คำค้นชื่อศิลปินเพิ่มเติม (สำหรับช่องที่ "ชื่อช่อง ≠ ชื่อศิลปินในเพลง")
+        // คีย์ = Channel ID (เสถียรสุด ไม่เปลี่ยนตามการเปลี่ยนชื่อช่อง)
+        // วิธีหา: เปิดช่องใน YouTube ดูชื่อศิลปินจริงในชื่อคลิป แล้วใส่คำค้นที่นี่
+        const CHANNEL_ALIASES = {
+            'UCVF7MqSBlGcyDLHT_y2SSEg': ['แมทธิว พชร', 'พอใจ พชรมน', 'แมทธิว'],   // เอ็มที แชนแนล (MT Channel) — ศิลปิน: แมทธิว พชร / พอใจ พชรมน
+            'UCOLseobMUsRXScVR5vvAiiw': ['peet model', 'ball parinya', 'ta ake', 'first time'] // COLOR ROOM OFFICIAL — ค่าย, ศิลปินหลัก: Peet Model
+            // วิธีเพิ่มช่องใหม่: เปิด RSS ของช่อง https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID
+            // ดูชื่อศิลปินในชื่อคลิป แล้วเพิ่มบรรทัด 'CHANNEL_ID': ['ชื่อศิลปิน1','ชื่อศิลปิน2']
+        };
         const _compact = (s) => (s || '').toLowerCase().replace(/[^0-9a-zก-๙]/g, '');
         const _stripBrackets = (s) => (s || '').replace(/\[[^\]]*\]|\([^)]*\)|【[^】]*】|▌[^▌]*▌|\|[^|]*\|/g, ' ');
         const _isThai = (t) => /[ก-๙]/.test(t);
@@ -413,10 +483,14 @@
         function matchAssetsForChannel(channel, assetIndex) {
             const toks = channelTokens(channel.name);
             const core = channelCore(channel.name);
+            // คำค้น alias (ช่องที่ชื่อ ≠ ศิลปิน) — ลองทั้ง Channel ID และชื่อช่อง
+            const aliasRaw = CHANNEL_ALIASES[channel.id] || CHANNEL_ALIASES[(channel.name || '').trim()] || [];
+            const aliases = aliasRaw.map(_compact).filter(a => a.length >= 4);
             const hits = [];
             for (const a of assetIndex) {
                 let ok = false;
-                for (const art of a._arts) {
+                for (const al of aliases) { if (a._full.includes(al)) { ok = true; break; } }
+                if (!ok) for (const art of a._arts) {
                     const [short, long] = core.length <= art.length ? [core, art] : [art, core];
                     const thr = _isThai(short) ? 4 : 6;
                     if (short.length >= thr && long.includes(short)) { ok = true; break; }
@@ -474,7 +548,7 @@
 
         function switchTab(tabName) {
             activeTab = tabName;
-            ['overview', 'assets', 'analysis'].forEach(name => {
+            ['overview', 'assets', 'trend', 'analysis'].forEach(name => {
                 document.getElementById('tab-' + name).classList.toggle('active', tabName === name);
                 const view = document.getElementById('view-' + name);
                 view.classList.toggle('hidden', tabName !== name);
@@ -485,6 +559,81 @@
                 }
             });
             if (tabName === 'analysis') generateExecutiveReport();
+            if (tabName === 'trend') renderTrend();
+        }
+
+        // ---- Trend หลายเดือน: ตารางช่อง × เดือน + sparkline + MoM ----
+        function sparkline(values, w = 120, h = 30) {
+            const vals = values.map(v => v == null ? null : v);
+            const real = vals.filter(v => v != null);
+            if (real.length < 2) return `<span style="color:#cbd5e1;">—</span>`;
+            const max = Math.max(...real), min = Math.min(...real);
+            const span = max - min || 1;
+            const stepX = w / (vals.length - 1);
+            let d = '', pts = [];
+            vals.forEach((v, i) => {
+                if (v == null) return;
+                const x = (i * stepX).toFixed(1);
+                const y = (h - 4 - ((v - min) / span) * (h - 8)).toFixed(1);
+                pts.push([x, y]);
+            });
+            d = pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0] + ' ' + p[1]).join(' ');
+            const last = vals.filter(v => v != null);
+            const up = last[last.length - 1] >= last[0];
+            const color = up ? '#10b981' : '#ef4444';
+            const lastPt = pts[pts.length - 1];
+            return `<svg width="${w}" height="${h}" style="vertical-align:middle;">
+                <path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="3" fill="${color}"/></svg>`;
+        }
+
+        function renderTrend() {
+            const labels = Object.keys(store.channels); // เรียงตามลำดับที่อัปโหลด (งวดเก่า→ใหม่)
+            const head = document.getElementById('trend-head');
+            const body = document.getElementById('trend-body');
+            if (labels.length < 1) {
+                head.innerHTML = '';
+                body.innerHTML = `<tr><td class="empty-state">อัปโหลด/ดึงข้อมูลช่องอย่างน้อย 2 เดือนเพื่อดูแนวโน้ม</td></tr>`;
+                return;
+            }
+            // รวมรายชื่อช่องทั้งหมด (จาก id) + ชื่อล่าสุด
+            const chMap = {}; // id -> {name, byLabel:{}}
+            labels.forEach(lb => {
+                store.channels[lb].forEach(c => {
+                    if (!chMap[c.id]) chMap[c.id] = { id: c.id, name: c.name, vals: {} };
+                    chMap[c.id].name = c.name;
+                    chMap[c.id].vals[lb] = c.rev;
+                });
+            });
+            const lastLb = labels[labels.length - 1], prevLb = labels.length >= 2 ? labels[labels.length - 2] : null;
+            let rows = Object.values(chMap).map(c => {
+                const series = labels.map(lb => c.vals[lb] ?? null);
+                const cur = c.vals[lastLb] ?? 0;
+                const prev = prevLb ? (c.vals[prevLb] ?? 0) : 0;
+                const mom = prev > 0 ? ((cur - prev) / prev * 100) : null;
+                return { ...c, series, cur, mom };
+            });
+
+            const sort = document.getElementById('trend-sort').value;
+            if (sort === 'growth') rows.sort((a, b) => (b.mom ?? -1e9) - (a.mom ?? -1e9));
+            else if (sort === 'drop') rows.sort((a, b) => (a.mom ?? 1e9) - (b.mom ?? 1e9));
+            else rows.sort((a, b) => b.cur - a.cur);
+
+            head.innerHTML = `<th>ช่อง</th>` + labels.map(lb => `<th>${lb}</th>`).join('') +
+                `<th class="spark-cell">แนวโน้ม</th><th>MoM ล่าสุด</th>`;
+            body.innerHTML = rows.map(c => {
+                const cells = labels.map(lb => {
+                    const v = c.vals[lb];
+                    return `<td>${v == null ? '<span style="color:#cbd5e1;">—</span>' : fmtTHBshort(v)}</td>`;
+                }).join('');
+                let momChip = '<span class="trend-mom trend-flat">—</span>';
+                if (c.mom != null) {
+                    const cls = c.mom > 0.05 ? 'trend-up' : (c.mom < -0.05 ? 'trend-down' : 'trend-flat');
+                    const arr = c.mom >= 0 ? '▲ +' : '▼ ';
+                    momChip = `<span class="trend-mom ${cls}">${arr}${c.mom.toFixed(1)}%</span>`;
+                }
+                return `<tr><td><b style="color:#0f172a;">${c.name}</b></td>${cells}<td class="spark-cell">${sparkline(c.series)}</td><td>${momChip}</td></tr>`;
+            }).join('');
         }
 
         // ---- Drag & drop + file input wiring ----
@@ -515,67 +664,115 @@
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                try {
-                    const rows = parseCSV(evt.target.result);
-                    if (rows.length < 2) { showToast('⚠️ ไฟล์ไม่มีข้อมูล หรือรูปแบบไม่ถูกต้อง', true); return; }
-
-                    const headers = rows[0].map(h => h.toLowerCase().trim());
-                    const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset' || h === 'channel id' || h === 'asset id');
-                    if (idIdx === -1) { showToast('⚠️ ไม่พบคอลัมน์ channel/asset ในไฟล์', true); return; }
-
-                    const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
-                    const revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
-                    const premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
-                    const viewsIdx = headers.findIndex(h => h === 'views' || h.includes('views'));
-                    const rpmIdx = headers.findIndex(h => h.includes('rpm'));
-                    // ไฟล์จริงมี 2 คอลัมน์ CPM: "Playback-based CPM" และ "CPM" ตัวล้วน
-                    // ต้องเลือก "CPM" ตัวล้วนก่อน (ตรงกับพาดหัว Avg. CPM) แล้วค่อย fallback ไป playback-based
-                    let cpmIdx = headers.findIndex(h => h === 'cpm (thb)' || h === 'cpm');
-                    if (cpmIdx === -1) cpmIdx = headers.findIndex(h => h.includes('cpm'));
-                    const playbackIdx = headers.findIndex(h => h.includes('playback-based'));
-
-                    const toNum = (cell) => parseFloat(String(cell ?? '').replace(/[^0-9.-]/g, "")) || 0;
-
-                    const processedData = [];
-                    let totals = null; // เก็บค่าระดับเครือข่ายจากแถว Total (Playback CPM / RPM)
-                    for (let i = 1; i < rows.length; i++) {
-                        let r = rows[i];
-                        let idVal = (r[idIdx] || '').toLowerCase().trim();
-                        if (idVal === 'total') {
-                            totals = {
-                                rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
-                                views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]),
-                                cpm: toNum(r[cpmIdx]), playbackCpm: toNum(r[playbackIdx])
-                            };
-                            continue;
-                        }
-                        if (!idVal) continue;
-                        processedData.push({
-                            id: idVal,
-                            name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
-                            rev: toNum(r[revIdx]),
-                            premium: toNum(r[premiumIdx]),
-                            views: Math.round(toNum(r[viewsIdx])),
-                            rpm: toNum(r[rpmIdx]),
-                            cpm: toNum(r[cpmIdx])
-                        });
-                    }
-
-                    if (processedData.length === 0) { showToast('⚠️ ไม่พบแถวข้อมูลที่ใช้ได้', true); return; }
-                    processedData.totals = totals; // แนบค่าเครือข่ายไว้กับชุดข้อมูลงวดนั้น
-
-                    store[type][label] = processedData;
+                const n = ingestCSV(evt.target.result, type, label);
+                if (n > 0) {
                     zone.classList.add('has-file');
-                    zone.querySelector('.dz-text').textContent = `✓ โหลดแล้ว: ${label} (${processedData.length} รายการ)`;
-                    updateDropdownsAndBadges();
-                    showToast(`✅ นำเข้า ${label} สำเร็จ (${processedData.length} รายการ)`);
-                } catch (err) {
-                    console.error(err);
-                    showToast('❌ เกิดข้อผิดพลาดในการอ่านไฟล์', true);
+                    zone.querySelector('.dz-text').textContent = `✓ โหลดแล้ว: ${label} (${n} รายการ)`;
                 }
             };
             reader.onerror = () => showToast('❌ อ่านไฟล์ไม่สำเร็จ', true);
             reader.readAsText(file, "UTF-8");
+        }
+
+        // แปลง CSV → เก็บเข้า store (ใช้ร่วมกันทั้งอัปโหลดไฟล์และดึงจาก Google Sheet)
+        // คืนค่าจำนวนรายการที่นำเข้า (0 = ล้มเหลว)
+        function ingestCSV(text, type, label) {
+            try {
+                const rows = parseCSV(text);
+                if (rows.length < 2) { showToast('⚠️ ข้อมูลว่าง หรือรูปแบบไม่ถูกต้อง', true); return 0; }
+
+                const headers = rows[0].map(h => h.toLowerCase().trim());
+                const idIdx = headers.findIndex(h => h === 'channel' || h === 'asset' || h === 'channel id' || h === 'asset id');
+                if (idIdx === -1) { showToast('⚠️ ไม่พบคอลัมน์ channel/asset ในข้อมูล', true); return 0; }
+
+                const nameIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
+                const revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
+                const premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
+                const viewsIdx = headers.findIndex(h => h === 'views' || h.includes('views'));
+                const rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                let cpmIdx = headers.findIndex(h => h === 'cpm (thb)' || h === 'cpm');
+                if (cpmIdx === -1) cpmIdx = headers.findIndex(h => h.includes('cpm'));
+                const playbackIdx = headers.findIndex(h => h.includes('playback-based'));
+
+                const toNum = (cell) => parseFloat(String(cell ?? '').replace(/[^0-9.-]/g, "")) || 0;
+
+                const processedData = [];
+                let totals = null;
+                for (let i = 1; i < rows.length; i++) {
+                    let r = rows[i];
+                    let idVal = (r[idIdx] || '').toLowerCase().trim();
+                    if (idVal === 'total') {
+                        totals = {
+                            rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
+                            views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]),
+                            cpm: toNum(r[cpmIdx]), playbackCpm: toNum(r[playbackIdx])
+                        };
+                        continue;
+                    }
+                    if (!idVal) continue;
+                    processedData.push({
+                        id: idVal,
+                        name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
+                        rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
+                        views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]), cpm: toNum(r[cpmIdx])
+                    });
+                }
+
+                if (processedData.length === 0) { showToast('⚠️ ไม่พบแถวข้อมูลที่ใช้ได้', true); return 0; }
+                processedData.totals = totals;
+                store[type][label] = processedData;
+                updateDropdownsAndBadges();
+                showToast(`✅ นำเข้า ${label} สำเร็จ (${processedData.length} รายการ)`);
+                return processedData.length;
+            } catch (err) {
+                console.error(err);
+                showToast('❌ เกิดข้อผิดพลาดในการประมวลผลข้อมูล', true);
+                return 0;
+            }
+        }
+
+        // ---- ดึงข้อมูลจาก Google Sheet โดยตรง ----
+        function buildSheetCsvUrl(url) {
+            url = (url || '').trim();
+            if (!url) return null;
+            // 1) URL แบบ Publish to web อยู่แล้ว (มี /pub) — ใช้ได้เลย เติม output=csv ถ้ายังไม่มี
+            if (url.includes('/pub')) {
+                if (!/output=csv/.test(url)) url += (url.includes('?') ? '&' : '?') + 'output=csv';
+                return url;
+            }
+            // 2) URL ปกติ /spreadsheets/d/{id}/edit#gid=123 → แปลงเป็น export CSV
+            const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch) return null;
+            const id = idMatch[1];
+            const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+            const gid = gidMatch ? gidMatch[1] : '0';
+            return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+        }
+
+        async function fetchGoogleSheet() {
+            const type = document.getElementById('gsheet-type').value;
+            const rawUrl = document.getElementById('gsheet-url').value;
+            let label = document.getElementById('gsheet-label').value.trim().toUpperCase();
+            const btn = document.getElementById('gsheet-btn');
+
+            const csvUrl = buildSheetCsvUrl(rawUrl);
+            if (!csvUrl) { showToast('⚠️ URL ไม่ถูกต้อง — วางลิงก์ Google Sheet ให้ครบ', true); return; }
+            if (!label) label = type === 'assets' ? 'ASSET-SHEET' : 'SHEET';
+
+            btn.disabled = true; const orig = btn.textContent; btn.textContent = '⏳ กำลังดึง...';
+            try {
+                const res = await fetch(csvUrl);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const text = await res.text();
+                if (/<html|<!doctype/i.test(text.slice(0, 200))) throw new Error('ได้หน้าเว็บแทน CSV (สิทธิ์/CORS)');
+                const n = ingestCSV(text, type, label);
+                if (n > 0) { document.getElementById('gsheet-url').value = ''; document.getElementById('gsheet-label').value = ''; }
+            } catch (err) {
+                console.error(err);
+                showToast('❌ ดึงไม่สำเร็จ: ' + err.message + ' — ลองใช้ Publish to web → CSV', true);
+            } finally {
+                btn.disabled = false; btn.textContent = orig;
+            }
         }
 
         function updateDropdownsAndBadges() {
@@ -596,6 +793,7 @@
 
             renderChannelTable(); renderAssetTable();
             if (activeTab === 'analysis') generateExecutiveReport();
+            if (activeTab === 'trend') renderTrend();
         }
 
         function updateSelectOptions(selectElement, labels) {
