@@ -450,10 +450,16 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
         // วิธีหา: เปิดช่องใน YouTube ดูชื่อศิลปินจริงในชื่อคลิป แล้วใส่คำค้นที่นี่
         // หมายเหตุ: key ต้องเป็น "ตัวพิมพ์เล็กทั้งหมด" เพราะ channel id ถูกเก็บแบบ toLowerCase()
         const CHANNEL_ALIASES = {
-            'ucvf7mqsblgcydlht_y2sseg': ['แมทธิว พชร', 'พอใจ พชรมน', 'แมทธิว'],   // เอ็มที แชนแนล (MT Channel) — ศิลปิน: แมทธิว พชร / พอใจ พชรมน
-            'ucolseobmusrxscvr5vvaiiw': ['peet model', 'ball parinya', 'ta ake', 'first time'] // COLOR ROOM OFFICIAL — ค่าย, ศิลปินหลัก: Peet Model
-            // วิธีเพิ่มช่องใหม่: เปิด RSS ของช่อง https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID
-            // ดูชื่อศิลปินในชื่อคลิป แล้วเพิ่มบรรทัด 'CHANNEL_ID': ['ชื่อศิลปิน1','ชื่อศิลปิน2']
+            'ucvf7mqsblgcydlht_y2sseg': ['แมทธิว พชร', 'พอใจ พชรมน', 'แมทธิว'],   // เอ็มที แชนแนล — แมทธิว พชร / พอใจ พชรมน
+            'ucolseobmusrxscvr5vvaiiw': ['peet model', 'ball parinya', 'ta ake', 'first time'], // COLOR ROOM OFFICIAL — Peet Model
+            'uczpdzutgihyd555gcaefega': ['จาห์โป', 'ยักษ์ร้องเพลง'],            // 128 STUDIO — จาห์โป / ยักษ์ร้องเพลง
+            'ucpdni7jjpb4sqk0okdyqhja': ['เต้ ธีรภัทร์', 'แน๊ท ราเชนทร์', 'น้ำฝน นิรมล'], // โกเฮงมิวสิค — เต้ ธีรภัทร์ และคณะ
+            'ucliq5_ocvc_iavx-jnhvwfg': ['เจมส์ พีรพัฒน์', 'บ่าวใบตาล'],        // บ่าวใบตาล มิวสิค — เจมส์ พีรพัฒน์
+            'uc8ft37ckqtdsh_vnas3d-qg': ['สุรสีห์ อิทธิกุล'],                   // Dnu Huntrakul — สุรสีห์ อิทธิกุล
+            'ucdm2hxrxffgyjiqm2xfkqwg': ['ฮอลิเดย์', 'อนัส'],                   // N O M O M E D I A — วงฮอลิเดย์
+            'ucmytwnj4yz1pvzcenykibpq': ['มายมิ้นท์']                          // บ้านดนตรี บรรเลง — มายมิ้นท์
+            // วิธีเพิ่มช่องใหม่: เปิด RSS https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID (ใช้ id ตัวจริง คง case)
+            // ดูชื่อศิลปินในชื่อคลิป แล้วเพิ่มบรรทัด 'channel_id_ตัวพิมพ์เล็ก': ['ชื่อศิลปิน1','ชื่อศิลปิน2']
         };
         const _compact = (s) => (s || '').toLowerCase().replace(/[^0-9a-zก-๙]/g, '');
         const _stripBrackets = (s) => (s || '').replace(/\[[^\]]*\]|\([^)]*\)|【[^】]*】|▌[^▌]*▌|\|[^|]*\|/g, ' ');
