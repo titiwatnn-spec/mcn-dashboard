@@ -1112,37 +1112,89 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             return JSON.stringify(out);
         }
 
-        function saveStore() {
+        // ---- IndexedDB (จุข้อมูลได้หลายร้อย MB — รองรับไฟล์ Asset ใหญ่ๆ หลายงวด) ----
+        let _idb = null;
+        function idbOpen() {
+            return new Promise((resolve, reject) => {
+                if (_idb) return resolve(_idb);
+                if (!window.indexedDB) return reject(new Error('no-indexeddb'));
+                const req = indexedDB.open('mcn_db', 1);
+                req.onupgradeneeded = () => req.result.createObjectStore('kv');
+                req.onsuccess = () => { _idb = req.result; resolve(_idb); };
+                req.onerror = () => reject(req.error);
+            });
+        }
+        function idbSet(key, val) {
+            return idbOpen().then(db => new Promise((resolve, reject) => {
+                const tx = db.transaction('kv', 'readwrite');
+                tx.objectStore('kv').put(val, key);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error('abort'));
+            }));
+        }
+        function idbGet(key) {
+            return idbOpen().then(db => new Promise((resolve, reject) => {
+                const tx = db.transaction('kv', 'readonly');
+                const r = tx.objectStore('kv').get(key);
+                r.onsuccess = () => resolve(r.result);
+                r.onerror = () => reject(r.error);
+            }));
+        }
+        function idbDel(key) {
+            return idbOpen().then(db => new Promise((resolve) => {
+                const tx = db.transaction('kv', 'readwrite');
+                tx.objectStore('kv').delete(key);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+            })).catch(() => false);
+        }
+
+        async function saveStore() {
+            const data = serializeStore();
             try {
-                localStorage.setItem(STORE_KEY, serializeStore());
-                updateStorageInfo();
+                await idbSet(STORE_KEY, data);
+                updateStorageInfo(data.length);
             } catch (e) {
-                console.error(e);
-                showToast('⚠️ บันทึกถาวรไม่สำเร็จ (พื้นที่เต็ม) — ลองลบงวดเก่าออกบ้าง', true);
+                // เผื่อเบราว์เซอร์ไม่รองรับ IndexedDB → fallback localStorage
+                try { localStorage.setItem(STORE_KEY, data); updateStorageInfo(data.length); }
+                catch (e2) {
+                    console.error(e2);
+                    showToast('⚠️ บันทึกถาวรไม่สำเร็จ (พื้นที่เต็ม) — ลองลบงวดเก่า หรือกด "สำรอง JSON"', true);
+                }
             }
         }
 
-        function loadStore() {
-            try {
-                const raw = localStorage.getItem(STORE_KEY);
-                if (!raw) return false;
-                const obj = JSON.parse(raw);
-                ['channels', 'assets'].forEach(type => {
-                    for (const lb in (obj[type] || {})) {
-                        const entry = obj[type][lb];
-                        const arr = Array.isArray(entry) ? entry : (entry.rows || []);
-                        arr.totals = (entry && entry.totals) || null;
-                        store[type][lb] = arr;
-                    }
-                    enforceMonthLimit(type, true);
-                });
-                return true;
-            } catch (e) { console.error(e); return false; }
+        function applyLoadedJSON(raw) {
+            const obj = JSON.parse(raw);
+            ['channels', 'assets'].forEach(type => {
+                for (const lb in (obj[type] || {})) {
+                    const entry = obj[type][lb];
+                    const arr = Array.isArray(entry) ? entry : (entry.rows || []);
+                    arr.totals = (entry && entry.totals) || null;
+                    store[type][lb] = arr;
+                }
+                enforceMonthLimit(type, true);
+            });
+        }
+
+        async function loadStore() {
+            let raw = null;
+            try { raw = await idbGet(STORE_KEY); } catch (e) { /* IDB ไม่พร้อม */ }
+            if (!raw) {
+                // ย้ายข้อมูลเดิมจาก localStorage (ผู้ใช้เก่า) มาเข้า IndexedDB ครั้งเดียว
+                try { raw = localStorage.getItem(STORE_KEY); } catch (e) {}
+                if (raw) { try { await idbSet(STORE_KEY, raw); localStorage.removeItem(STORE_KEY); } catch (e) {} }
+            }
+            if (!raw) return false;
+            try { applyLoadedJSON(raw); return true; }
+            catch (e) { console.error(e); return false; }
         }
 
         function clearAllData() {
             if (!confirm('ลบข้อมูลทุกงวดทั้งหมด (ทั้งช่องและ Asset) ออกจากเครื่อง? การกระทำนี้ย้อนกลับไม่ได้')) return;
             store = { channels: {}, assets: {} };
+            idbDel(STORE_KEY);
             try { localStorage.removeItem(STORE_KEY); } catch (e) {}
             document.querySelectorAll('.dropzone').forEach(z => {
                 z.classList.remove('has-file');
@@ -1153,14 +1205,16 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             showToast('🗑️ ล้างข้อมูลทั้งหมดแล้ว');
         }
 
-        function updateStorageInfo() {
+        function updateStorageInfo(byteLen) {
             const el = document.getElementById('storage-info');
             if (!el) return;
             const nCh = Object.keys(store.channels).length, nAs = Object.keys(store.assets).length;
-            let kb = 0;
-            try { kb = Math.round((localStorage.getItem(STORE_KEY) || '').length / 1024); } catch (e) {}
+            let len = byteLen;
+            if (len == null) { try { len = serializeStore().length; } catch (e) { len = 0; } }
+            const kb = Math.round(len / 1024);
+            const sz = kb >= 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
             el.textContent = (nCh + nAs) === 0 ? `ยังไม่มีข้อมูลบันทึกไว้ (เก็บได้สูงสุด ${MAX_MONTHS} งวด)`
-                : `💾 บันทึกถาวรแล้ว: ช่อง ${nCh}/${MAX_MONTHS} งวด · Asset ${nAs}/${MAX_MONTHS} งวด (${kb} KB)`;
+                : `💾 บันทึกถาวร (IndexedDB): ช่อง ${nCh}/${MAX_MONTHS} งวด · Asset ${nAs}/${MAX_MONTHS} งวด (${sz})`;
         }
 
         // ============================================================
@@ -1256,8 +1310,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
         }
 
         // init
-        if (loadStore()) updateDropdownsAndBadges();
-        updateStorageInfo();
+        (async () => {
+            try { if (await loadStore()) updateDropdownsAndBadges(); } catch (e) { console.error(e); }
+            updateStorageInfo();
+        })();
         setupDropzone('channel-dropzone', 'channel-upload', 'channels');
         setupDropzone('asset-dropzone', 'asset-upload', 'assets');
 </script>
