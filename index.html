@@ -9,125 +9,112 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
 :root{
-  --bg:#eaecf6; --card:#ffffff; --ink:#1e2139; --muted:#7a7f9c; --faint:#a8acc4;
-  --indigo:#4f46e5; --indigo2:#6366f1; --indigo-soft:#eef0fe;
-  --up:#16a34a; --up-bg:#dcfce7; --down:#e11d48; --down-bg:#ffe4e6; --neutral:#64748b;
-  --line:#edeef4; --line2:#e2e4ee; --radius:20px;
-  --shadow:0 10px 30px -12px rgba(40,43,80,.18);
-  --shadow-sm:0 4px 14px -8px rgba(40,43,80,.22);
+  --bg:#f4f5fb; --card:#fff; --ink:#23234b; --muted:#9a9ab5; --faint:#b9b9d0; --line:#eef0f6; --line2:#e6e7f2;
+  --purple:#5b3df5; --purple2:#7b5cf6; --teal:#1bcfb4; --blue:#2a86fb; --pink:#fe5c8a; --yellow:#ffaf3b; --dark:#2c2c44;
+  --up:#1bcd8c; --up-bg:#e3f9ef; --down:#fe5c8a; --down-bg:#ffe9ef; --neutral:#8a8aa8;
+  --radius:14px; --shadow:0 6px 22px -14px rgba(40,40,90,.28); --shadow-sm:0 4px 14px -10px rgba(40,40,90,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:20px;font-size:14px;-webkit-font-smoothing:antialiased}
-.app{display:grid;grid-template-columns:212px 1fr;max-width:1480px;margin:0 auto;background:var(--card);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;transition:grid-template-columns .2s}
-.app.collapsed{grid-template-columns:60px 1fr}
-.app.collapsed .side{padding:24px 8px}
-.app.collapsed .brand b{display:none}
-.app.collapsed .nav{font-size:0;justify-content:center;padding:11px 0;gap:0}
-.app.collapsed .nav .ic{font-size:18px}
-.app.collapsed .nav-h{font-size:0;height:10px;padding:8px 0 0}
-.app.collapsed .promo{display:none}
-.app.collapsed .sb-toggle .ic{transform:rotate(180deg)}
-.sb-toggle{color:var(--faint)!important}
-@media(max-width:900px){.app,.app.collapsed{grid-template-columns:1fr}}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased}
+.topnav{background:var(--purple);color:#fff;padding:0 26px;display:flex;align-items:center;gap:24px;height:56px;flex-wrap:wrap}
+.topnav .logo{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.topnav .logo-sub{font-weight:400;font-size:12px;opacity:.7}
+.topnav .menu{display:flex;gap:20px;font-size:13px;font-weight:600;flex-wrap:wrap}
+.topnav .menu a{color:#cbc2fb;text-decoration:none;padding:18px 0;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.topnav .menu a:hover{color:#fff}
+.topnav .menu a.active{color:#fff;border-bottom-color:#fff}
+.topnav .topnav-right{margin-left:auto;display:flex;align-items:center;gap:13px}
+.topsearch{background:rgba(255,255,255,.16);border:none;border-radius:8px;padding:8px 14px;color:#fff;font-size:12px;width:160px;font-family:inherit;outline:none}
+.topsearch::placeholder{color:#d6cffb}
+.topbell{font-size:13px;opacity:.9;cursor:pointer}
+.topav{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+.wrap{padding:22px 26px 60px;max-width:1340px;margin:0 auto}
+.crumb{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.crumb h1{font-size:21px;font-weight:800;letter-spacing:-.3px}
+.crumb .sub2{font-size:12px;color:var(--muted);margin-top:2px}
+.crumb .tools{display:flex;gap:9px;flex-wrap:wrap}
+.pill{background:#fff;border:1px solid var(--line2);border-radius:9px;padding:9px 14px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;transition:.15s}
+.pill:hover{border-color:var(--purple);color:var(--purple)}
+.pill.primary{background:var(--purple);color:#fff;border:none}.pill.primary:hover{background:#4a30d8;color:#fff}
 
-/* Sidebar */
-.side{padding:24px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;background:#fff}
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
-.brand .mark{width:34px;height:34px;border-radius:10px;background:var(--indigo);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
-.brand b{font-size:16px;font-weight:800;letter-spacing:-.3px}
-.nav-h{font-size:10px;font-weight:700;color:var(--faint);letter-spacing:.12em;padding:14px 12px 6px}
-.nav{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:12px;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;transition:.15s;border:none;background:transparent;font-family:inherit;width:100%;text-align:left}
-.nav:hover{background:#f4f5fb;color:var(--ink)}
-.nav.active{background:var(--indigo);color:#fff;box-shadow:0 8px 18px -7px rgba(79,70,229,.55)}
-.nav .ic{width:18px;text-align:center;font-size:14px;flex-shrink:0}
-.promo{margin-top:auto;background:#1e2139;border-radius:16px;padding:16px;color:#fff;text-align:center}
-.promo .pic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 9px;font-size:16px}
-.promo b{font-size:13px;display:block}
-.promo p{font-size:11px;color:#a8acc4;margin:5px 0 11px;line-height:1.5}
-.promo button{background:var(--indigo);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit;width:100%}
+.hidden{display:none}
+.view-enter{animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* Main */
-.main{padding:24px 26px;min-width:0}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.topbar h1{font-size:23px;font-weight:800;letter-spacing:-.5px}
-.topbar .date{font-size:12.5px;color:var(--muted);margin-top:2px}
-.top-right{display:flex;align-items:center;gap:12px}
-.icbtn{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;font-size:15px;box-shadow:var(--shadow-sm)}
-.user{display:flex;align-items:center;gap:9px}
-.user .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
-.user b{font-size:13px;display:block;line-height:1.2}.user span{font-size:11px;color:var(--muted)}
-
-/* Header status strip (was header-card) */
-.header-card{background:var(--indigo-soft);border:1px solid #e0e3fb;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px}
+/* status strip */
+.header-card{background:#efeefe;border:1px solid #e2e0fc;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px}
 .header-card h2{display:none}
-.header-card .sub{font-size:12px;color:#5b5fa6;font-weight:600}
+.header-card .sub{font-size:12px;color:#6b62b8;font-weight:600}
 #badge-container{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
 .badge{display:inline-flex;align-items:center;background:#fff;color:var(--ink);padding:5px 11px;border-radius:18px;font-size:12px;font-weight:700;border:1px solid var(--line2)}
-.badge-asset{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+.badge-asset{background:#e3f9ef;color:#0f9d6b;border-color:#bff0d8}
 .btn-del{background:none;color:var(--down);border:none;cursor:pointer;font-weight:700;margin-left:7px;padding:0;font-size:13px;line-height:1}
-.btn-del:hover{color:#fb7185}
-.data-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:11px;padding-top:11px;border-top:1px dashed #d6d9f3}
+.btn-del:hover{color:#fb7fa0}
+.data-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:11px;padding-top:11px;border-top:1px dashed #d6d3f3}
 .storage-info{font-size:11.5px;color:var(--muted);font-weight:600}
 .data-actions{display:flex;gap:7px;flex-wrap:wrap}
 .mini-btn{background:#fff;border:1px solid var(--line2);color:var(--muted);border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
-.mini-btn:hover{border-color:var(--indigo);color:var(--indigo)}
+.mini-btn:hover{border-color:var(--purple);color:var(--purple)}
 .mini-btn.danger{color:var(--down)}.mini-btn.danger:hover{border-color:var(--down)}
 
-/* Upload + Google Sheet */
+/* inputs */
 .grid-inputs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
 @media(max-width:760px){.grid-inputs{grid-template-columns:1fr}}
 .upload-label{font-weight:700;font-size:13px;color:var(--ink);display:block;margin-bottom:11px}
-.dropzone{position:relative;border:1.5px dashed var(--line2);border-radius:14px;padding:20px 16px;text-align:center;background:#fafbff;transition:.2s;cursor:pointer}
-.dropzone:hover{border-color:var(--indigo);background:var(--indigo-soft)}
-.dropzone.dragover{border-color:var(--indigo);background:#e6e9fe;transform:scale(1.01)}
-.dropzone.has-file{border-style:solid;border-color:var(--up);background:#f0fdf4}
+.dropzone{position:relative;border:1.5px dashed var(--line2);border-radius:12px;padding:20px 16px;text-align:center;background:#fafbff;transition:.2s;cursor:pointer}
+.dropzone:hover{border-color:var(--purple);background:#f5f3ff}
+.dropzone.dragover{border-color:var(--purple);background:#ece8ff;transform:scale(1.01)}
+.dropzone.has-file{border-style:solid;border-color:var(--up);background:#f0fdf7}
 .dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .dz-icon{font-size:22px}.dz-text{font-size:13px;color:var(--muted);margin-top:6px;font-weight:600}.dz-hint{font-size:11px;color:var(--faint);margin-top:2px}
 .gsheet-card{margin-bottom:18px;padding:18px 20px}
 .gsheet-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .gsheet-row #gsheet-url{flex:1;min-width:220px}
-.gsheet-row input[type=text]{border:1px solid var(--line2);border-radius:11px;padding:10px 14px;font-size:14px;font-family:inherit;outline:none;transition:.2s;background:#fafbff}
-.gsheet-row input[type=text]:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
-.btn-fetch{background:var(--indigo);color:#fff;border:none;padding:11px 18px;border-radius:11px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.2s;box-shadow:0 6px 14px -6px rgba(79,70,229,.6)}
-.btn-fetch:hover{background:#4338ca;transform:translateY(-1px)}.btn-fetch:disabled{opacity:.6;cursor:wait;transform:none}
-select{background:#fff;border:1px solid var(--line2);border-radius:11px;padding:10px 13px;color:var(--ink);font-size:13.5px;font-weight:600;outline:none;font-family:inherit;cursor:pointer;transition:.2s}
-select:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.gsheet-row input[type=text]{border:1px solid var(--line2);border-radius:10px;padding:10px 14px;font-size:13.5px;font-family:inherit;outline:none;transition:.2s;background:#fafbff}
+.gsheet-row input[type=text]:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(91,61,245,.12)}
+.btn-fetch{background:var(--purple);color:#fff;border:none;padding:11px 18px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.2s}
+.btn-fetch:hover{background:#4a30d8;transform:translateY(-1px)}.btn-fetch:disabled{opacity:.6;cursor:wait}
+select{background:#fff;border:1px solid var(--line2);border-radius:10px;padding:9px 13px;color:var(--ink);font-size:13px;font-weight:600;outline:none;font-family:inherit;cursor:pointer;transition:.2s}
+select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(91,61,245,.12)}
 
-/* Cards / tables */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);margin-bottom:18px}
+/* cards / tables */
+.card{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
 .period-bar{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
 .period-bar .lbl{font-size:13px;font-weight:700;color:var(--muted)}
 h3{color:var(--ink);font-size:16px;margin:0 0 16px;font-weight:800}
-.table-container{overflow-x:auto;border-radius:12px}
+.table-container{overflow-x:auto;border-radius:10px}
 table{width:100%;border-collapse:collapse;text-align:left}
-th{padding:13px 14px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line2);background:#fafbff;font-size:12px;white-space:nowrap;position:sticky;top:0;z-index:2}
-td{padding:14px;border-bottom:1px solid var(--line);font-size:13.5px;white-space:nowrap}
-tbody tr{transition:background .15s}tbody tr:hover{background:#fafbff}
+th{padding:12px 13px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line2);background:#fafbff;font-size:11.5px;white-space:nowrap;position:sticky;top:0;z-index:2}
+td{padding:13px;border-bottom:1px solid var(--line);font-size:12.5px;white-space:nowrap}
+tbody tr{transition:.12s}tbody tr:hover{background:#faf9ff}
 .rpm-col{background:#fafbff}
 .empty-state{padding:46px 20px;text-align:center;color:var(--faint);font-weight:700}
 
-/* KPI cards */
-.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px}
-.metric-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s}
-.metric-box:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.metric-box.hero{background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;color:#fff;box-shadow:0 16px 32px -14px rgba(79,70,229,.6)}
-.metric-title{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:9px}
-.metric-box.hero .metric-title{color:#d6d8fb}
-.metric-value{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-.6px}
-.metric-box.hero .metric-value{color:#fff}
-.metric-change{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;padding:5px 11px;border-radius:20px;background:#f3f4fb}
-.metric-box.hero .metric-change{background:rgba(255,255,255,.18);color:#fff}
-.metric-box.hero .metric-change .up,.metric-box.hero .metric-change .down,.metric-box.hero .metric-change .neutral{background:transparent;color:#fff;padding:0}
-.up{color:var(--up);background:var(--up-bg)}.down{color:var(--down);background:var(--down-bg)}.neutral{color:var(--neutral);background:#f1f5f9}
-.metric-change .up,.metric-change .down,.metric-change .neutral{padding:0;background:transparent}
-.metric-change.neutral{color:#6d28d9;background:#f5f3ff}
+/* KPI strip */
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+@media(max-width:980px){.metric-row{grid-template-columns:1fr 1fr}}
+.kpi{border-radius:var(--radius);padding:18px 20px;color:#fff;position:relative;overflow:hidden}
+.kpi.p{background:linear-gradient(135deg,#6f4ef6,#5b3df5)}.kpi.t{background:linear-gradient(135deg,#22d3bd,#13b9a3)}
+.kpi.b{background:linear-gradient(135deg,#3a91fb,#2a6ff0)}.kpi.d{background:linear-gradient(135deg,#363652,#262639)}
+.kpi-lbl{font-size:12px;opacity:.88;font-weight:600}
+.kpi-val{font-size:25px;font-weight:800;margin-top:9px;letter-spacing:-.5px}
+.kpi-sub{font-size:11.5px;opacity:.9;margin-top:7px;font-weight:700;display:inline-flex;align-items:center}
+.kpi-sub .up,.kpi-sub .down,.kpi-sub .neutral{background:rgba(255,255,255,.22)!important;color:#fff!important;padding:2px 9px;border-radius:14px}
 
-/* Panels / donut / bars */
-.panel-split{display:grid;grid-template-columns:1fr 1.5fr;gap:18px;margin-bottom:18px}
+/* chart card (Chart.js) */
+.chart-card{background:var(--card);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+.chart-card .ch-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chart-card .ch-h b{font-size:15px;font-weight:800}
+.chart-card .ch-leg{display:flex;gap:14px;font-size:11px;color:var(--muted);font-weight:600}
+.chart-card .ch-leg .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.rev-canvas-wrap{position:relative;height:280px}
+
+/* panels / donut / bars */
+.panel-split{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
 @media(max-width:1024px){.panel-split{grid-template-columns:1fr}}
 .donut-container{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:14px 0}
 .donut-graphic{width:180px;height:180px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;transition:background .5s ease}
-.donut-center{width:122px;height:122px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(40,43,80,.1)}
+.donut-center{width:124px;height:124px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(40,40,90,.12)}
 .donut-center .pct{font-size:25px;font-weight:800;color:var(--ink)}.donut-center .lbl{font-size:11px;color:var(--muted);font-weight:700;margin-top:3px}
 .legend-list{display:flex;justify-content:center;gap:18px;width:100%;flex-wrap:wrap}
 .legend-dot{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:6px;vertical-align:middle}
@@ -135,27 +122,24 @@ tbody tr{transition:background .15s}tbody tr:hover{background:#fafbff}
 .v-bar-group{display:flex;flex-direction:column;align-items:center;flex:1;max-width:110px}
 .v-bar-combo{display:flex;align-items:flex-end;gap:8px;height:220px;width:100%;justify-content:center;position:relative}
 .v-bar-wrapper{display:flex;flex-direction:column;align-items:center;position:relative;height:100%;justify-content:flex-end;width:30px}
-.v-bar-val-top{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.25;background:#fff;padding:2px 6px;border-radius:6px;box-shadow:var(--shadow-sm);border:1px solid var(--line2);z-index:5}
-.v-bar-val-top .pct-sub{font-size:9px;font-weight:700}
-.v-bar-val-top.target{border-color:#c7d2fe;background:var(--indigo-soft)}
 .v-grp-top{position:absolute;left:50%;transform:translateX(-50%);margin-bottom:6px;text-align:center;white-space:nowrap;background:#fff;border:1px solid var(--line2);border-radius:9px;padding:4px 10px;box-shadow:var(--shadow-sm);z-index:5}
 .v-grp-top .gt-cur{font-size:11px;font-weight:800;color:var(--ink)}
-.v-grp-top .gt-contrib{font-size:9px;font-weight:700;color:var(--indigo);margin-left:2px}
+.v-grp-top .gt-contrib{font-size:9px;font-weight:700;color:var(--purple);margin-left:2px}
 .v-grp-top .gt-base{font-size:9px;font-weight:600;color:var(--faint);margin-top:1px}
 .v-bar{width:100%;border-radius:7px 7px 0 0;min-height:4px;transition:height .6s cubic-bezier(.22,1,.36,1);position:relative;cursor:pointer}
 .v-bar:hover{filter:brightness(1.05)}
-.v-bar-base{background:#dfe1ee}
-.v-bar-target{background:linear-gradient(180deg,#6366f1,#4f46e5)}
+.v-bar-base{background:#e3e3f0}
+.v-bar-target{background:linear-gradient(180deg,#7b5cf6,#5b3df5)}
 .v-bar-label{font-size:12px;font-weight:700;color:var(--muted);margin-top:12px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
-.text-base{color:var(--muted)}.text-target{color:var(--indigo)}
+.text-base{color:var(--muted)}.text-target{color:var(--purple)}
 
-/* Drivers */
+/* drivers */
 .driver-row{display:grid;grid-template-columns:240px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);align-items:start}
 .driver-row:last-child{border-bottom:none}
 @media(max-width:720px){.driver-row{grid-template-columns:1fr;gap:10px}}
 .driver-ch{font-weight:800;color:var(--ink);font-size:14px}
 .driver-ch .meta{font-weight:600;color:var(--faint);font-size:12px;margin-top:4px}
-.driver-ch .cover{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--indigo);background:var(--indigo-soft);border:1px solid #d6d9fb;padding:3px 9px;border-radius:18px}
+.driver-ch .cover{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--purple);background:#efeefe;border:1px solid #ddd9fb;padding:3px 9px;border-radius:18px}
 .driver-assets{display:flex;flex-direction:column;gap:8px}
 .asset-pill{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fafbff;border:1px solid var(--line2);border-radius:12px;padding:10px 14px}
 .asset-pill .nm{font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -163,61 +147,53 @@ tbody tr{transition:background .15s}tbody tr:hover{background:#fafbff}
 .mom-chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:18px;white-space:nowrap}
 .driver-none{font-size:12px;color:var(--faint);font-style:italic;padding:8px 0}
 
-/* Trend */
+/* trend */
 #trend-table th,#trend-table td{text-align:right}
 #trend-table th:first-child,#trend-table td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1}
 #trend-table thead th:first-child{background:#fafbff;z-index:3}
 .spark-cell{width:130px}
 .trend-mom{font-size:11px;font-weight:700;padding:2px 8px;border-radius:14px;white-space:nowrap}
-.trend-up{color:var(--up);background:var(--up-bg)}.trend-down{color:var(--down);background:var(--down-bg)}.trend-flat{color:var(--neutral);background:#f1f5f9}
+.trend-up{color:#0f9d6b;background:var(--up-bg)}.trend-down{color:#e0356a;background:var(--down-bg)}.trend-flat{color:var(--neutral);background:#f1f1f7}
 
-/* Prompt */
-.slide-preview-box{background:#1e2139;border-radius:16px;padding:20px}
-textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;background:#15172a;padding:16px;font-family:'Sarabun',monospace;font-size:13px;color:#e2e4f3;resize:vertical;box-sizing:border-box;outline:none;line-height:1.6}
-.btn-copy{background:var(--indigo);color:#fff;border:none;padding:11px 20px;border-radius:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:14px;transition:.2s;font-family:inherit}
-.btn-copy:hover{background:#4338ca;transform:translateY(-1px)}
+/* prompt */
+.slide-preview-box{background:#2c2c44;border-radius:14px;padding:20px}
+textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;background:#23233a;padding:16px;font-family:'Sarabun',monospace;font-size:13px;color:#e3e3f3;resize:vertical;box-sizing:border-box;outline:none;line-height:1.6}
+.btn-copy{background:var(--purple);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:14px;transition:.2s;font-family:inherit}
+.btn-copy:hover{background:#4a30d8;transform:translateY(-1px)}
 
-.hidden{display:none}
-.view-enter{animation:fadeUp .35s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e2139;color:#fff;padding:13px 22px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:100;display:flex;align-items:center;gap:8px}
+.up{color:#0f9d6b;background:var(--up-bg)}.down{color:#e0356a;background:var(--down-bg)}.neutral{color:var(--neutral);background:#f1f1f7}
+.metric-change .up,.metric-change .down,.metric-change .neutral{padding:0;background:transparent}
+
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c2c44;color:#fff;padding:13px 22px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:100;display:flex;align-items:center;gap:8px}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.error{background:#7f1d1d}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </head>
 <body>
 
-<div class="app">
-    <aside class="side">
-        <div class="brand"><div class="mark">S1</div><b>S1 MUSIC</b></div>
-        <button class="nav sb-toggle" onclick="toggleSidebar()" title="ย่อ/ขยายเมนู" aria-label="ย่อ/ขยายเมนู"><span class="ic">«</span> ย่อเมนู</button>
-        <div class="nav-h">เมนูหลัก</div>
-        <button class="nav active" id="tab-overview" onclick="switchTab('overview')"><span class="ic">▤</span> ตารางรายช่อง</button>
-        <button class="nav" id="tab-assets" onclick="switchTab('assets')"><span class="ic">♪</span> ตารางชิ้นงาน Asset</button>
-        <button class="nav" id="tab-trend" onclick="switchTab('trend')"><span class="ic">📈</span> Trend หลายเดือน</button>
-        <button class="nav" id="tab-analysis" onclick="switchTab('analysis')"><span class="ic">▦</span> MCN Dashboard</button>
-        <div class="nav-h">ส่งออกไฟล์</div>
-        <button class="nav" onclick="exportTrendCSV()"><span class="ic">⬇</span> Trend (CSV)</button>
-        <button class="nav" onclick="exportSummaryCSV()"><span class="ic">⬇</span> สรุปรายช่อง (CSV)</button>
-        <button class="nav" onclick="exportJSON()"><span class="ic">💾</span> สำรอง JSON</button>
-        <div class="promo">
-            <div class="pic">🔗</div>
-            <b>เชื่อม Google Sheet</b>
-            <p>ดึงข้อมูลรายเดือนอัตโนมัติ ไม่ต้องอัปไฟล์</p>
-            <button onclick="document.getElementById('gsheet-url').focus()">เริ่มเชื่อม</button>
+<div class="topnav">
+    <div class="logo">📊 S1 MUSIC <span class="logo-sub">MCN</span></div>
+    <div class="menu">
+        <a class="active" id="tab-overview" onclick="switchTab('overview')">ตารางช่อง</a>
+        <a id="tab-assets" onclick="switchTab('assets')">Asset</a>
+        <a id="tab-trend" onclick="switchTab('trend')">Trend</a>
+        <a id="tab-analysis" onclick="switchTab('analysis')">MCN Dashboard</a>
+    </div>
+    <div class="topnav-right">
+        <input class="topsearch" placeholder="🔍 ค้นหา...">
+        <span class="topbell">🔔</span>
+        <span class="topav">S1</span>
+    </div>
+</div>
+<div class="wrap">
+    <div class="crumb">
+        <div><h1>MCN Exclusive Dashboard</h1><div class="sub2">ระบบวิเคราะห์รายได้เครือข่าย MCN • เปรียบเทียบรายงวด</div></div>
+        <div class="tools">
+            <span class="pill" onclick="exportTrendCSV()">⬇ Trend CSV</span>
+            <span class="pill" onclick="exportSummaryCSV()">⬇ สรุป CSV</span>
+            <span class="pill primary" onclick="exportJSON()">💾 สำรอง JSON</span>
         </div>
-    </aside>
-    <main class="main">
-        <div class="topbar">
-            <div>
-                <h1>MCN Exclusive Dashboard</h1>
-                <div class="date">ระบบวิเคราะห์รายได้เครือข่าย MCN • เปรียบเทียบรายงวด</div>
-            </div>
-            <div class="top-right">
-                <div class="icbtn" title="ค้นหา">🔍</div>
-                <div class="icbtn" title="แจ้งเตือน">🔔</div>
-                <div class="user"><div class="av">S1</div><div><b>S1 MUSIC</b><span>ผู้ดูแลเครือข่าย</span></div></div>
-            </div>
     </div>
         <div class="header-card">
             <h2>📈 S1 MUSIC — MCN Exclusive Dashboard</h2>
@@ -350,41 +326,30 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
 
         <div class="hidden" id="view-analysis">
             <div class="metric-row">
-                <div class="metric-box hero">
-                    <div class="metric-title">รายได้สุทธิเครือข่าย (Net Revenue)</div>
-                    <div class="metric-value" id="m-total-rev">฿0.00</div>
-                    <div class="metric-change" id="m-total-rev-change">MoM: --</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-title">รายได้จากโฆษณา (Ad Revenue)</div>
-                    <div class="metric-value" id="m-ads-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-avg-cpm">Avg. CPM: ฿0.00</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-title">รายได้ YouTube Premium</div>
-                    <div class="metric-value" id="m-premium-rev">฿0.00</div>
-                    <div class="metric-change neutral" id="m-premium-ratio">สัดส่วนพอร์ต: --</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-title">ยอดวิวสะสมรวม (Total Views)</div>
-                    <div class="metric-value" id="m-total-views">0</div>
-                    <div class="metric-change" id="m-total-views-change">MoM: --</div>
-                </div>
+                <div class="kpi p"><div class="kpi-lbl">รายได้สุทธิเครือข่าย</div><div class="kpi-val" id="m-total-rev">฿0.00</div><div class="kpi-sub" id="m-total-rev-change">MoM: --</div></div>
+                <div class="kpi t"><div class="kpi-lbl">รายได้จากโฆษณา (Ad)</div><div class="kpi-val" id="m-ads-rev">฿0.00</div><div class="kpi-sub" id="m-avg-cpm">Avg. CPM: ฿0.00</div></div>
+                <div class="kpi b"><div class="kpi-lbl">YouTube Premium</div><div class="kpi-val" id="m-premium-rev">฿0.00</div><div class="kpi-sub" id="m-premium-ratio">สัดส่วน: --</div></div>
+                <div class="kpi d"><div class="kpi-lbl">ยอดวิวสะสมรวม</div><div class="kpi-val" id="m-total-views">0</div><div class="kpi-sub" id="m-total-views-change">MoM: --</div></div>
+            </div>
+
+            <div class="chart-card">
+                <div class="ch-h"><b>รายได้เครือข่ายรายเดือน</b><div class="ch-leg"><span><span class="dot" style="background:#5b3df5"></span>รายได้รวม</span><span><span class="dot" style="background:#1bcfb4"></span>โฆษณา</span><span><span class="dot" style="background:#fe5c8a"></span>Premium</span></div></div>
+                <div class="rev-canvas-wrap"><canvas id="rev-line-chart" role="img" aria-label="กราฟรายได้รายเดือน"></canvas></div>
             </div>
 
             <div class="panel-split">
                 <div class="card" style="margin-bottom: 0;">
                     <h3>สัดส่วนรายได้เครือข่าย (Revenue Composition)</h3>
                     <div class="donut-container">
-                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#0ea5e9 0% 100%);">
+                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#5b3df5 0% 100%);">
                             <div class="donut-center">
                                 <span class="pct" id="donut-pct-val">0%</span>
                                 <span class="lbl">รายได้จากโฆษณา</span>
                             </div>
                         </div>
                         <div class="legend-list">
-                            <div><span class="legend-dot" style="background-color: #0ea5e9;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้จากโฆษณา</span></div>
-                            <div><span class="legend-dot" style="background-color: #8b5cf6;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้ YouTube Premium</span></div>
+                            <div><span class="legend-dot" style="background-color: #5b3df5;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้จากโฆษณา</span></div>
+                            <div><span class="legend-dot" style="background-color: #1bcfb4;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้ YouTube Premium</span></div>
                         </div>
                     </div>
                 </div>
@@ -416,8 +381,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
                 </div>
             </div>
         </div>
-    </main>
-</div>
+    </div>
 
     <div id="toast"></div>
 
@@ -852,6 +816,33 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             });
         }
 
+        // กราฟเส้นรายได้รายเดือน (Chart.js) — อ่านจากทุกงวดที่โหลดไว้
+        let _revChart = null;
+        function renderRevTrendChart() {
+            const cv = document.getElementById('rev-line-chart');
+            if (!cv || typeof Chart === 'undefined') return;
+            Chart.defaults.font.family = "'Sarabun',sans-serif";
+            const labels = Object.keys(store.channels);
+            const sumKey = (arr, k) => arr.reduce((s, x) => s + (x[k] || 0), 0);
+            const rev = labels.map(lb => { const t = store.channels[lb].totals; return t ? t.rev : sumKey(store.channels[lb], 'rev'); });
+            const prem = labels.map(lb => { const t = store.channels[lb].totals; return t ? t.premium : sumKey(store.channels[lb], 'premium'); });
+            const ads = rev.map((r, i) => r - prem[i]);
+            if (_revChart) _revChart.destroy();
+            const ctx = cv.getContext('2d');
+            const grad = (c) => { const g = ctx.createLinearGradient(0, 0, 0, 260); g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)'); return g; };
+            _revChart = new Chart(cv, {
+                type: 'line',
+                data: { labels, datasets: [
+                    { label: 'รายได้รวม', data: rev, borderColor: '#5b3df5', backgroundColor: grad('rgba(91,61,245,.22)'), fill: true, tension: .4, borderWidth: 3, pointRadius: 3, pointBackgroundColor: '#5b3df5' },
+                    { label: 'โฆษณา', data: ads, borderColor: '#1bcfb4', fill: false, tension: .4, borderWidth: 2, pointRadius: 2 },
+                    { label: 'Premium', data: prem, borderColor: '#fe5c8a', fill: false, tension: .4, borderWidth: 2, pointRadius: 2 }
+                ]},
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { color: '#9a9ab5', font: { size: 10 } } },
+                              y: { grid: { color: '#f1f1f7' }, ticks: { color: '#9a9ab5', font: { size: 10 }, callback: v => '฿' + (v / 1e6).toFixed(1) + 'M' } } } }
+            });
+        }
+
         function generateExecutiveReport() {
             const base = document.getElementById('channel-base-select').value;
             const target = document.getElementById('channel-target-select').value;
@@ -893,6 +884,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             document.getElementById('m-avg-cpm').innerText = `Avg. CPM: ${fmtTHB(avgCpm)}`;
             document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
             document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
+            renderRevTrendChart();
 
             if (totalRevPrev > 0) {
                 let momRevDiff = (((totalRevCur - totalRevPrev) / totalRevPrev) * 100).toFixed(1);
@@ -910,7 +902,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #34374f;bac
             let adsRatio = (100 - premiumRatioNum).toFixed(1);
             document.getElementById('m-premium-ratio').innerText = `สัดส่วนพอร์ต: ${premiumRatio}%`;
 
-            donutRender.style.background = `conic-gradient(#0ea5e9 0% ${adsRatio}%, #8b5cf6 ${adsRatio}% 100%)`;
+            donutRender.style.background = `conic-gradient(#5b3df5 0% ${adsRatio}%, #1bcfb4 ${adsRatio}% 100%)`;
             donutPctVal.innerText = `${adsRatio}%`;
 
             const top5 = [...curChannels].sort((a, b) => b.rev - a.rev).slice(0, 5);
