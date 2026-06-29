@@ -245,6 +245,16 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             <div class="dz-hint" style="margin-top:8px;">💡 วาง URL ปกติของ Google Sheet ได้เลย (รองรับ #gid ของแต่ละชีต) — <b>สำคัญ:</b> ต้องตั้งแชร์เป็น "ทุกคนที่มีลิงก์ดูได้ (Anyone with the link)" ก่อน ไม่งั้นจะดึงไม่ได้</div>
         </div>
 
+        <div class="card gsheet-card">
+            <label class="upload-label">☁️ ซิงค์ข้ามเครื่องผ่าน Google Drive (เปิดเครื่องไหนก็เห็นข้อมูลเดิม)</label>
+            <div class="gsheet-row">
+                <input type="text" id="cloud-url" placeholder="วาง Apps Script Web App URL ที่นี่ (ลงท้าย /exec)" oninput="cloudSetUrl(this.value)" />
+                <button class="btn-fetch" onclick="cloudSync()">☁️ Sync ขึ้น Drive</button>
+                <button class="mini-btn" onclick="cloudLoad()" style="padding:11px 16px;">⬇️ ดึงจาก Drive</button>
+            </div>
+            <div class="dz-hint" id="cloud-status" style="margin-top:8px;">💡 ต้อง Deploy Google Apps Script เป็น Web App ก่อน (ทำครั้งเดียว) — กดปุ่มช่วยเหลือเพื่อดูวิธี: <a href="#" onclick="showCloudHelp();return false;" style="color:var(--purple);font-weight:700;">📖 วิธีตั้งค่า</a></div>
+        </div>
+
 
         <div class="card" id="view-overview">
             <div class="period-bar">
@@ -1352,7 +1362,57 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             try { if (await loadStore()) updateDropdownsAndBadges(); } catch (e) { console.error(e); }
             updateStorageInfo();
         })();
+        // ============================================================
+        //  ☁️ Cloud Sync ข้ามเครื่อง ผ่าน Google Apps Script → Drive
+        // ============================================================
+        const CLOUD_KEY = 'mcn_cloud_url';
+        function cloudSetUrl(v) { try { localStorage.setItem(CLOUD_KEY, (v || '').trim()); } catch (e) {} }
+        function cloudUrl() { try { return (localStorage.getItem(CLOUD_KEY) || '').trim(); } catch (e) { return ''; } }
+
+        async function cloudSync() {
+            const url = cloudUrl();
+            if (!url || !/\/exec/.test(url)) { showToast('⚠️ วาง Apps Script URL (ลงท้าย /exec) ก่อน', true); return; }
+            if (Object.keys(store.channels).length === 0 && Object.keys(store.assets).length === 0) { showToast('⚠️ ยังไม่มีข้อมูลให้ sync', true); return; }
+            showToast('☁️ กำลังอัปขึ้น Drive...');
+            try {
+                // ใช้ text/plain เพื่อเลี่ยง CORS preflight ของ Apps Script
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: serializeStore() });
+                const j = await res.json().catch(() => ({}));
+                showToast(j.ok ? '✅ Sync ขึ้น Drive สำเร็จ — เปิดเครื่องอื่นแล้วกด "ดึงจาก Drive" ได้เลย' : ('❌ ' + (j.error || 'ไม่สำเร็จ')), !j.ok);
+            } catch (e) { console.error(e); showToast('❌ Sync ไม่สำเร็จ: ' + e.message + ' — ตรวจ URL/สิทธิ์ Deploy', true); }
+        }
+
+        async function cloudLoad() {
+            const url = cloudUrl();
+            if (!url || !/\/exec/.test(url)) { showToast('⚠️ วาง Apps Script URL (ลงท้าย /exec) ก่อน', true); return; }
+            if (!confirm('ดึงข้อมูลจาก Google Drive มาแทนข้อมูลในเครื่องนี้?')) return;
+            showToast('☁️ กำลังดึงจาก Drive...');
+            try {
+                const res = await fetch(url);
+                const txt = await res.text();
+                if (!txt || txt.trim() === '{}' || txt.trim() === '') { showToast('ℹ️ ยังไม่มีข้อมูลบน Drive', true); return; }
+                store = { channels: {}, assets: {} };
+                applyLoadedJSON(txt);
+                await saveStore();
+                updateDropdownsAndBadges();
+                showToast('✅ ดึงข้อมูลจาก Drive เข้าเครื่องนี้แล้ว');
+            } catch (e) { console.error(e); showToast('❌ ดึงไม่สำเร็จ: ' + e.message, true); }
+        }
+
+        function showCloudHelp() {
+            alert('วิธีตั้งค่า Google Drive Sync (ทำครั้งเดียว ~3 นาที):\n\n' +
+                '1. เปิด https://script.google.com → New project\n' +
+                '2. ลบโค้ดเดิม วางโค้ดที่ผมให้ (ดูในแชต) แล้ว Save\n' +
+                '3. กด Deploy → New deployment → เลือก "Web app"\n' +
+                '   • Execute as: Me\n' +
+                '   • Who has access: Anyone\n' +
+                '4. Authorize (อนุญาตให้เข้าถึง Drive ของคุณ)\n' +
+                '5. ก็อป Web app URL (ลงท้าย /exec) มาวางในช่อง\n' +
+                '6. กด "Sync ขึ้น Drive" → เปิดอีกเครื่อง วาง URL เดิม กด "ดึงจาก Drive"');
+        }
+
         setupDropzone('channel-dropzone', 'channel-upload', 'channels');
+        { const _cu = document.getElementById('cloud-url'); if (_cu) _cu.value = cloudUrl(); }
         setupDropzone('asset-dropzone', 'asset-upload', 'assets');
 </script>
 </body>
