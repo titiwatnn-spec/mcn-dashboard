@@ -1417,27 +1417,26 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             // ---------- SLIDE 3: Top 5 ----------
             const s3 = pptx.addSlide(); s3.background = { color: 'FFFFFF' };
             head(s3, `Top 5 ช่องที่ทำรายได้สูงสุด (${d.target})`, 'ผู้ขับเคลื่อนรายได้และประสิทธิภาพ — รายได้ | Views | RPM');
+            const shortName = (n) => n.length > 16 ? n.slice(0, 15) + '…' : n;
+            // กราฟแท่ง: pptx เรียง category จากล่างขึ้นบน → ต้อง reverse เพื่อให้อันดับ 1 อยู่บนสุด
+            const barTop = [...d.top5].reverse();
             s3.addChart(pptx.ChartType.bar,
-                [{ name: 'รายได้ (THB)', labels: d.top5.map(c => c.name.length > 18 ? c.name.slice(0, 17) + '…' : c.name), values: d.top5.map(c => +c.rev.toFixed(0)) }],
-                { x: 0.4, y: 1.2, w: 5.15, h: 3.05, barDir: 'bar', chartColors: [TEAL], showLegend: false,
-                  catAxisLabelFontFace: F, catAxisLabelFontSize: 8.5, catAxisLabelColor: NAVY,
+                [{ name: 'รายได้ (THB)', labels: barTop.map((c, i) => `${d.top5.length - i}. ${shortName(c.name)}`), values: barTop.map(c => +c.rev.toFixed(0)) }],
+                { x: 0.35, y: 1.2, w: 4.6, h: 3.05, barDir: 'bar', chartColors: [TEAL], showLegend: false,
+                  catAxisLabelFontFace: F, catAxisLabelFontSize: 8, catAxisLabelColor: NAVY,
                   valAxisLabelFontFace: F, valAxisLabelFontSize: 8, valAxisLabelColor: GRAY, valGridLine: { color: 'EEF1F5' },
                   showValue: true, dataLabelFontFace: F, dataLabelFontSize: 8, dataLabelColor: NAVY, dataLabelPosition: 'outEnd', dataLabelFormatCode: '#,##0' });
-            const tbl = [[
-                { text: '#', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'center' } },
-                { text: 'Views', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
-                { text: 'RPM', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
-                { text: 'MoM', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
-                { text: 'สัดส่วน', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } }
-            ]];
+            const th = (t, al) => ({ text: t, options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: al || 'right', fontFace: F } });
+            const tbl = [[ th('#', 'center'), th('ช่อง', 'left'), th('Views'), th('RPM'), th('MoM'), th('สัดส่วน') ]];
             d.top5.forEach((c, i) => tbl.push([
-                { text: String(i + 1), options: { fontSize: 8.5, color: NAVY, align: 'center' } },
+                { text: String(i + 1), options: { fontSize: 8.5, bold: true, color: NAVY, align: 'center' } },
+                { text: shortName(c.name), options: { fontSize: 8, color: NAVY, align: 'left' } },
                 { text: vw(c.views), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
                 { text: c.rpm.toFixed(2), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
-                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 8.5, bold: true, color: clr(c.mom), align: 'right' } },
+                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 8, bold: true, color: clr(c.mom), align: 'right' } },
                 { text: c.contrib.toFixed(1) + '%', options: { fontSize: 8.5, color: GRAY, align: 'right' } }
             ]));
-            s3.addTable(tbl, { x: 5.75, y: 1.35, w: 3.85, colW: [0.4, 1.0, 0.75, 0.95, 0.75], rowH: 0.42,
+            s3.addTable(tbl, { x: 5.1, y: 1.35, w: 4.5, colW: [0.32, 1.56, 0.72, 0.53, 0.76, 0.61], rowH: 0.42,
                 fontFace: F, border: { type: 'solid', color: LINE, pt: 0.5 }, valign: 'middle' });
             const t1 = d.top5[0];
             bar(s3, [
