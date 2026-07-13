@@ -1316,7 +1316,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             const adsRatio = 100 - premRatio;
             const top5 = [...cur].sort((a, b) => b.rev - a.rev).slice(0, 5).map(c => {
                 const p = prev ? prev.find(x => x.id === c.id) : null;
-                return { name: c.name, rev: c.rev, views: c.views, rpm: c.rpm,
+                return { name: c.name, rev: c.rev, prevRev: p ? p.rev : 0, views: c.views, rpm: c.rpm,
                     mom: (p && p.rev > 0) ? ((c.rev - p.rev) / p.rev * 100) : null,
                     contrib: totalRevCur > 0 ? (c.rev / totalRevCur * 100) : 0 };
             });
@@ -1417,26 +1417,34 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             // ---------- SLIDE 3: Top 5 ----------
             const s3 = pptx.addSlide(); s3.background = { color: 'FFFFFF' };
             head(s3, `Top 5 ช่องที่ทำรายได้สูงสุด (${d.target})`, 'ผู้ขับเคลื่อนรายได้และประสิทธิภาพ — รายได้ | Views | RPM');
-            const shortName = (n) => n.length > 16 ? n.slice(0, 15) + '…' : n;
-            // กราฟแท่ง: pptx เรียง category จากล่างขึ้นบน → ต้อง reverse เพื่อให้อันดับ 1 อยู่บนสุด
+            const shortName = (n) => n.length > 14 ? n.slice(0, 13) + '…' : n;
+            const kBaht = (v) => v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : (v / 1e3).toFixed(0) + 'K';
+            const arwShort = (v) => v == null ? '(ใหม่)' : (v >= 0 ? `▲+${v.toFixed(1)}%` : `▼${v.toFixed(1)}%`);
+            const GRAYBAR = 'C9D2DE';
+            // กราฟแท่งกลุ่ม 2 เดือน: pptx เรียง category ล่าง→บน จึง reverse ให้อันดับ 1 อยู่บนสุด
+            // ป้ายแกน = อันดับ + ชื่อ + %MoM รายได้ (▲เพิ่ม/▼ลด เทียบเดือนก่อน)
             const barTop = [...d.top5].reverse();
             s3.addChart(pptx.ChartType.bar,
-                [{ name: 'รายได้ (THB)', labels: barTop.map((c, i) => `${d.top5.length - i}. ${shortName(c.name)}`), values: barTop.map(c => +c.rev.toFixed(0)) }],
-                { x: 0.35, y: 1.2, w: 4.6, h: 3.05, barDir: 'bar', chartColors: [TEAL], showLegend: false,
+                [
+                    { name: `เดือนปัจจุบัน (${d.target})`, labels: barTop.map((c, i) => `${d.top5.length - i}. ${shortName(c.name)}  ${arwShort(c.mom)}`), values: barTop.map(c => +c.rev.toFixed(0)) },
+                    { name: `เดือนก่อน (${d.base})`, labels: barTop.map(c => c.name), values: barTop.map(c => +c.prevRev.toFixed(0)) }
+                ],
+                { x: 0.3, y: 1.2, w: 5.0, h: 3.15, barDir: 'bar', barGrouping: 'clustered', chartColors: [TEAL, GRAYBAR],
+                  showLegend: true, legendPos: 'b', legendFontFace: F, legendFontSize: 8, legendColor: NAVY,
                   catAxisLabelFontFace: F, catAxisLabelFontSize: 8, catAxisLabelColor: NAVY,
-                  valAxisLabelFontFace: F, valAxisLabelFontSize: 8, valAxisLabelColor: GRAY, valGridLine: { color: 'EEF1F5' },
-                  showValue: true, dataLabelFontFace: F, dataLabelFontSize: 8, dataLabelColor: NAVY, dataLabelPosition: 'outEnd', dataLabelFormatCode: '#,##0' });
-            const th = (t, al) => ({ text: t, options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: al || 'right', fontFace: F } });
-            const tbl = [[ th('#', 'center'), th('ช่อง', 'left'), th('Views'), th('RPM'), th('MoM'), th('สัดส่วน') ]];
+                  valAxisLabelFontFace: F, valAxisLabelFontSize: 7.5, valAxisLabelColor: GRAY, valGridLine: { color: 'EEF1F5' },
+                  showValue: true, dataLabelFontFace: F, dataLabelFontSize: 6.5, dataLabelColor: GRAY, dataLabelPosition: 'outEnd', dataLabelFormatCode: '#,##0' });
+            const th = (t, al) => ({ text: t, options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8, align: al || 'right', fontFace: F } });
+            const tbl = [[ th('#', 'center'), th('ช่อง', 'left'), th('รายได้'), th('Views'), th('RPM'), th('MoM รายได้') ]];
             d.top5.forEach((c, i) => tbl.push([
-                { text: String(i + 1), options: { fontSize: 8.5, bold: true, color: NAVY, align: 'center' } },
-                { text: shortName(c.name), options: { fontSize: 8, color: NAVY, align: 'left' } },
-                { text: vw(c.views), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
-                { text: c.rpm.toFixed(2), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
-                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 8, bold: true, color: clr(c.mom), align: 'right' } },
-                { text: c.contrib.toFixed(1) + '%', options: { fontSize: 8.5, color: GRAY, align: 'right' } }
+                { text: String(i + 1), options: { fontSize: 8, bold: true, color: NAVY, align: 'center' } },
+                { text: shortName(c.name), options: { fontSize: 7.5, color: NAVY, align: 'left' } },
+                { text: kBaht(c.rev), options: { fontSize: 8, bold: true, color: NAVY, align: 'right' } },
+                { text: vw(c.views), options: { fontSize: 8, color: NAVY, align: 'right' } },
+                { text: c.rpm.toFixed(2), options: { fontSize: 8, color: NAVY, align: 'right' } },
+                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 7.5, bold: true, color: clr(c.mom), align: 'right' } }
             ]));
-            s3.addTable(tbl, { x: 5.1, y: 1.35, w: 4.5, colW: [0.32, 1.56, 0.72, 0.53, 0.76, 0.61], rowH: 0.42,
+            s3.addTable(tbl, { x: 5.45, y: 1.35, w: 4.15, colW: [0.3, 1.35, 0.72, 0.68, 0.5, 0.6], rowH: 0.42,
                 fontFace: F, border: { type: 'solid', color: LINE, pt: 0.5 }, valign: 'middle' });
             const t1 = d.top5[0];
             bar(s3, [
