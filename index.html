@@ -169,6 +169,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
 #toast.error{background:#7f1d1d}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
 <body>
 
@@ -192,7 +193,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
         <div class="tools">
             <span class="pill" onclick="exportTrendCSV()">⬇ Trend CSV</span>
             <span class="pill" onclick="exportSummaryCSV()">⬇ สรุป CSV</span>
-            <span class="pill primary" onclick="exportJSON()">💾 สำรอง JSON</span>
+            <span class="pill" onclick="exportJSON()">💾 สำรอง JSON</span>
+            <span class="pill primary" onclick="exportPPTX()">📊 Export PPTX</span>
         </div>
     </div>
         <div class="header-card">
@@ -1290,6 +1292,163 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             });
             downloadFile(`MCN_Summary_${base || 'NA'}_to_${target}.csv`, csvRows([header, ...rows]), 'text/csv');
             showToast('📥 Export สรุปรายช่องแล้ว');
+        }
+
+        // ============================================================
+        //  📊 Export PPTX — สร้างสไลด์ 3 หน้า ตามธีมอ้างอิง (REF2)
+        //  สี/เลย์เอาต์ดูดจากไฟล์ธีมจริง: navy #042B56, teal #1EBAAD, blue #164A86
+        // ============================================================
+        function computeReportData() {
+            const base = document.getElementById('channel-base-select').value;
+            const target = document.getElementById('channel-target-select').value;
+            if (!target || !store.channels[target]) return null;
+            const cur = store.channels[target], prev = base ? store.channels[base] : null;
+            const sum = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0);
+            const totalRevCur = sum(cur, 'rev'), totalRevPrev = prev ? sum(prev, 'rev') : 0;
+            const premCur = sum(cur, 'premium'), premPrev = prev ? sum(prev, 'premium') : 0;
+            const adsCur = totalRevCur - premCur, adsPrev = totalRevPrev - premPrev;
+            const viewsCur = sum(cur, 'views'), viewsPrev = prev ? sum(prev, 'views') : 0;
+            const tC = cur.totals, tP = prev ? prev.totals : null;
+            const rpmCur = tC ? tC.rpm : (viewsCur > 0 ? totalRevCur / viewsCur * 1000 : 0);
+            const rpmPrev = tP ? tP.rpm : (viewsPrev > 0 ? totalRevPrev / viewsPrev * 1000 : 0);
+            const pbCur = tC ? tC.playbackCpm : 0, pbPrev = tP ? tP.playbackCpm : 0;
+            const premRatio = totalRevCur > 0 ? Math.min(100, Math.max(0, premCur / totalRevCur * 100)) : 0;
+            const adsRatio = 100 - premRatio;
+            const top5 = [...cur].sort((a, b) => b.rev - a.rev).slice(0, 5).map(c => {
+                const p = prev ? prev.find(x => x.id === c.id) : null;
+                return { name: c.name, rev: c.rev, views: c.views, rpm: c.rpm,
+                    mom: (p && p.rev > 0) ? ((c.rev - p.rev) / p.rev * 100) : null,
+                    contrib: totalRevCur > 0 ? (c.rev / totalRevCur * 100) : 0 };
+            });
+            return { base: base || 'งวดก่อน', target, totalRevCur, totalRevPrev, premCur, premPrev,
+                adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev, premRatio, adsRatio, top5 };
+        }
+
+        async function exportPPTX() {
+            if (typeof PptxGenJS === 'undefined') { showToast('❌ ไลบรารี PPTX ยังโหลดไม่เสร็จ (ต้องต่อเน็ต)', true); return; }
+            const d = computeReportData();
+            if (!d) { showToast('⚠️ เลือกเดือนปัจจุบัน + โหลดข้อมูลก่อน export', true); return; }
+            showToast('📊 กำลังสร้างไฟล์ PPTX...');
+
+            const NAVY = '042B56', TEAL = '1EBAAD', BLUE = '164A86', BG = 'F1F5F8',
+                  GREEN = '16A34A', RED = 'DC2626', GRAY = '64748B', LINE = 'E2E8F0', MINT = 'E6F7F6', DEEPTEAL = '0F766E';
+            const F = 'Tahoma'; // ฟอนต์ที่มากับ Office และรองรับภาษาไทย
+            const pctOf = (cur, prev) => (!prev || prev === 0) ? null : ((cur - prev) / prev * 100);
+            const arw = v => v == null ? '—' : (v >= 0 ? `▲ +${v.toFixed(1)}%` : `▼ ${v.toFixed(1)}%`);
+            const clr = v => v == null ? GRAY : (v >= 0 ? GREEN : RED);
+            const thb = v => Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' THB';
+            const mil = v => (v / 1e6).toFixed(2) + 'M';
+            const vw = v => v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : Number(v).toLocaleString();
+
+            const dRev = pctOf(d.totalRevCur, d.totalRevPrev), dViews = pctOf(d.viewsCur, d.viewsPrev);
+            const dPb = pctOf(d.pbCur, d.pbPrev), dRpm = pctOf(d.rpmCur, d.rpmPrev);
+            const dAds = pctOf(d.adsCur, d.adsPrev), dPrem = pctOf(d.premCur, d.premPrev);
+
+            const pptx = new PptxGenJS();
+            pptx.layout = 'LAYOUT_16x9';
+            pptx.author = 'S1 MUSIC'; pptx.title = `MCN Report ${d.base} → ${d.target}`;
+
+            const bar = (s, text) => {
+                s.addShape(pptx.ShapeType.roundRect, { x: 0.4, y: 4.45, w: 9.2, h: 0.95, fill: { color: MINT }, line: { color: TEAL, width: 1 }, rectRadius: 0.06 });
+                s.addText(text, { x: 0.6, y: 4.52, w: 8.8, h: 0.8, fontSize: 10, color: NAVY, fontFace: F, valign: 'top' });
+            };
+            const head = (s, t, sub) => {
+                s.addText(t, { x: 0.4, y: 0.28, w: 9.2, h: 0.45, fontSize: 18, bold: true, color: NAVY, fontFace: F });
+                s.addText(sub, { x: 0.4, y: 0.74, w: 9.2, h: 0.28, fontSize: 10, color: GRAY, fontFace: F });
+            };
+
+            // ---------- SLIDE 1: Executive Summary ----------
+            const s1 = pptx.addSlide(); s1.background = { color: 'FFFFFF' };
+            head(s1, `Executive Summary: ภาพรวมรายได้ ${d.target} ที่ ${mil(d.totalRevCur)} บาท`, `เปรียบเทียบ ${d.base} → ${d.target}`);
+            const boxes = [
+                { l: 'Total Revenue (รายได้รวม)', v: thb(d.totalRevCur), dd: dRev, p: thb(d.totalRevPrev) },
+                { l: 'Total Views (ยอดวิวรวม)', v: vw(d.viewsCur) + ' Views', dd: dViews, p: vw(d.viewsPrev) },
+                { l: 'Playback-based CPM', v: d.pbCur.toFixed(2) + ' THB', dd: dPb, p: d.pbPrev.toFixed(2) },
+                { l: 'Average RPM', v: d.rpmCur.toFixed(2) + ' THB', dd: dRpm, p: d.rpmPrev.toFixed(2) }
+            ];
+            boxes.forEach((b, i) => {
+                const x = 0.4 + i * 2.35;
+                s1.addShape(pptx.ShapeType.roundRect, { x, y: 1.35, w: 2.15, h: 1.75, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.07 });
+                s1.addText(b.l, { x: x + 0.12, y: 1.46, w: 1.91, h: 0.34, fontSize: 8.5, color: GRAY, fontFace: F });
+                s1.addText(b.v, { x: x + 0.12, y: 1.85, w: 1.91, h: 0.5, fontSize: 14, bold: true, color: NAVY, fontFace: F });
+                s1.addText(arw(b.dd), { x: x + 0.12, y: 2.4, w: 1.91, h: 0.26, fontSize: 9.5, bold: true, color: clr(b.dd), fontFace: F });
+                s1.addText(`จาก ${b.p}`, { x: x + 0.12, y: 2.68, w: 1.91, h: 0.26, fontSize: 8, color: GRAY, fontFace: F });
+            });
+            const upV = dViews != null && dViews >= 0, dnR = dRpm != null && dRpm < 0;
+            bar(s1, [
+                { text: 'ความเห็นเชิงวิเคราะห์: ', options: { bold: true, color: DEEPTEAL } },
+                { text: `รายได้รวมเดือน ${d.target} อยู่ที่ ${thb(d.totalRevCur)} (${arw(dRev)}) ` +
+                    `${upV ? `โดยได้แรงหนุนจากปริมาณวิวที่เพิ่มขึ้น (${arw(dViews)})` : `ขณะที่ปริมาณวิวปรับตัว ${arw(dViews)}`} ` +
+                    `${dnR ? 'แม้ค่าเฉลี่ยรายได้ต่อวิว (RPM/CPM) จะปรับฐานลงเล็กน้อย สะท้อนการเติบโตเชิงปริมาณที่ยังรักษาฐานรายได้ไว้ได้' : 'พร้อมค่าเฉลี่ยรายได้ต่อวิวที่ปรับตัวดีขึ้น เป็นการเติบโตทั้งปริมาณและประสิทธิภาพ'}`, options: { color: NAVY } }
+            ]);
+
+            // ---------- SLIDE 2: ที่มาของรายได้ ----------
+            const s2 = pptx.addSlide(); s2.background = { color: 'FFFFFF' };
+            const driver = Math.abs(d.adsCur - d.adsPrev) >= Math.abs(d.premCur - d.premPrev) ? 'รายได้จากโฆษณา (Ad Revenue)' : 'รายได้ Premium';
+            head(s2, `วิเคราะห์ที่มาของรายได้: ${driver} เป็นตัวขับเคลื่อนหลัก`, `สัดส่วนและการเปลี่ยนแปลง ${d.base} → ${d.target}`);
+            s2.addChart(pptx.ChartType.doughnut,
+                [{ name: 'สัดส่วนรายได้', labels: ['Ad Revenue (โฆษณา)', 'Premium Revenue'], values: [+d.adsRatio.toFixed(1), +d.premRatio.toFixed(1)] }],
+                { x: 0.5, y: 1.25, w: 4.0, h: 3.0, chartColors: [TEAL, BLUE], holeSize: 58, showLegend: true, legendPos: 'b', legendFontFace: F, legendFontSize: 9,
+                  showValue: true, dataLabelFormatCode: '0.0"%"', dataLabelColor: 'FFFFFF', dataLabelFontFace: F, dataLabelFontSize: 10 });
+            const rows = [
+                { l: 'Ad Revenue (โฆษณา)', cur: d.adsCur, prev: d.adsPrev, dd: dAds, ratio: d.adsRatio, c: TEAL },
+                { l: 'Premium Revenue', cur: d.premCur, prev: d.premPrev, dd: dPrem, ratio: d.premRatio, c: BLUE }
+            ];
+            rows.forEach((r, i) => {
+                const y = 1.35 + i * 1.15;
+                s2.addShape(pptx.ShapeType.roundRect, { x: 4.9, y, w: 4.7, h: 1.0, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.06 });
+                s2.addShape(pptx.ShapeType.rect, { x: 4.9, y, w: 0.09, h: 1.0, fill: { color: r.c } });
+                s2.addText(`${r.l}  •  สัดส่วน ${r.ratio.toFixed(1)}%`, { x: 5.12, y: y + 0.08, w: 4.4, h: 0.3, fontSize: 9.5, bold: true, color: NAVY, fontFace: F });
+                s2.addText(`${thb(r.prev)}  →  ${thb(r.cur)}`, { x: 5.12, y: y + 0.38, w: 3.1, h: 0.3, fontSize: 9, color: GRAY, fontFace: F });
+                s2.addText(arw(r.dd), { x: 8.25, y: y + 0.34, w: 1.25, h: 0.36, fontSize: 12, bold: true, color: clr(r.dd), fontFace: F, align: 'right' });
+            });
+            s2.addShape(pptx.ShapeType.roundRect, { x: 4.9, y: 3.65, w: 4.7, h: 0.62, fill: { color: 'FFFFFF' }, line: { color: LINE, width: 1 }, rectRadius: 0.05 });
+            s2.addText([
+                { text: 'Volume (Views) ', options: { color: NAVY, bold: true } }, { text: arw(dViews), options: { color: clr(dViews), bold: true } },
+                { text: '     ⟷     ', options: { color: GRAY } },
+                { text: 'Margin (RPM) ', options: { color: NAVY, bold: true } }, { text: arw(dRpm), options: { color: clr(dRpm), bold: true } }
+            ], { x: 5.0, y: 3.75, w: 4.5, h: 0.42, fontSize: 10, fontFace: F, align: 'center' });
+            bar(s2, [
+                { text: 'กลยุทธ์ที่ต้องผลักดันต่อ: ', options: { bold: true, color: DEEPTEAL } },
+                { text: dnR ? 'Views เติบโตสวนทางกับ RPM ที่ลดลง สะท้อนว่าการเติบโตมาจากปริมาณคอนเทนต์ที่มากขึ้น ทีมควรเร่งยกระดับรายได้ต่อวิว (RPM) ผ่านการจัดสรรโฆษณา และดันสัดส่วนรายได้ Premium ให้สูงขึ้น'
+                    : 'ทั้งปริมาณวิวและรายได้ต่อวิวปรับตัวไปในทางเดียวกัน เป็นสัญญาณการเติบโตที่แข็งแรง ทีมควรรักษาโมเมนตัมและขยายฐานคอนเทนต์คุณภาพต่อเนื่อง', options: { color: NAVY } }
+            ]);
+
+            // ---------- SLIDE 3: Top 5 ----------
+            const s3 = pptx.addSlide(); s3.background = { color: 'FFFFFF' };
+            head(s3, `Top 5 ช่องที่ทำรายได้สูงสุด (${d.target})`, 'ผู้ขับเคลื่อนรายได้และประสิทธิภาพ — รายได้ | Views | RPM');
+            s3.addChart(pptx.ChartType.bar,
+                [{ name: 'รายได้ (THB)', labels: d.top5.map(c => c.name.length > 18 ? c.name.slice(0, 17) + '…' : c.name), values: d.top5.map(c => +c.rev.toFixed(0)) }],
+                { x: 0.4, y: 1.2, w: 5.15, h: 3.05, barDir: 'bar', chartColors: [TEAL], showLegend: false,
+                  catAxisLabelFontFace: F, catAxisLabelFontSize: 8.5, catAxisLabelColor: NAVY,
+                  valAxisLabelFontFace: F, valAxisLabelFontSize: 8, valAxisLabelColor: GRAY, valGridLine: { color: 'EEF1F5' },
+                  showValue: true, dataLabelFontFace: F, dataLabelFontSize: 8, dataLabelColor: NAVY, dataLabelPosition: 'outEnd', dataLabelFormatCode: '#,##0' });
+            const tbl = [[
+                { text: '#', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'center' } },
+                { text: 'Views', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
+                { text: 'RPM', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
+                { text: 'MoM', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } },
+                { text: 'สัดส่วน', options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8.5, align: 'right' } }
+            ]];
+            d.top5.forEach((c, i) => tbl.push([
+                { text: String(i + 1), options: { fontSize: 8.5, color: NAVY, align: 'center' } },
+                { text: vw(c.views), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
+                { text: c.rpm.toFixed(2), options: { fontSize: 8.5, color: NAVY, align: 'right' } },
+                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 8.5, bold: true, color: clr(c.mom), align: 'right' } },
+                { text: c.contrib.toFixed(1) + '%', options: { fontSize: 8.5, color: GRAY, align: 'right' } }
+            ]));
+            s3.addTable(tbl, { x: 5.75, y: 1.35, w: 3.85, colW: [0.4, 1.0, 0.75, 0.95, 0.75], rowH: 0.42,
+                fontFace: F, border: { type: 'solid', color: LINE, pt: 0.5 }, valign: 'middle' });
+            const t1 = d.top5[0];
+            bar(s3, [
+                { text: 'ข้อสังเกต: ', options: { bold: true, color: DEEPTEAL } },
+                { text: t1 ? `${t1.name} เป็นช่องอันดับ 1 คิดเป็น ${t1.contrib.toFixed(1)}% ของรายได้เครือข่าย — ควรบาลานซ์พอร์ตคอนเทนต์ระหว่างช่องที่เน้น "ปริมาณวิว" กับช่องที่มี "RPM สูง" เพื่อให้รายได้เติบโตอย่างมีคุณภาพและยั่งยืน` : '', options: { color: NAVY } }
+            ]);
+
+            try {
+                await pptx.writeFile({ fileName: `MCN_Report_${d.base}_to_${d.target}.pptx` });
+                showToast('✅ สร้างไฟล์ PPTX เรียบร้อย!');
+            } catch (e) { console.error(e); showToast('❌ สร้าง PPTX ไม่สำเร็จ: ' + e.message, true); }
         }
 
         // 3) สำรองข้อมูลทั้งหมด (JSON) — กู้คืนภายหลังได้
