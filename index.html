@@ -697,7 +697,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                         id: idVal,
                         name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
                         rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
-                        views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]), cpm: toNum(r[cpmIdx])
+                        views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]), cpm: toNum(r[cpmIdx]),
+                        playbackCpm: toNum(r[playbackIdx])
                     });
                 }
 
@@ -1320,8 +1321,18 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                     mom: (p && p.rev > 0) ? ((c.rev - p.rev) / p.rev * 100) : null,
                     contrib: totalRevCur > 0 ? (c.rev / totalRevCur * 100) : 0 };
             });
+            // อันดับ (rank) ของทุกช่องในแต่ละงวด เพื่อคำนวณ "แนวโน้ม" = การขยับอันดับเทียบเดือนก่อน
+            const rankMap = (arr) => { const m = {}; [...arr].sort((a, b) => b.rev - a.rev).forEach((c, i) => m[c.id] = i + 1); return m; };
+            const curRankMap = rankMap(cur), prevRankMap = prev ? rankMap(prev) : {};
+            const top10 = [...cur].sort((a, b) => b.rev - a.rev).slice(0, 10).map(c => {
+                const pr = prevRankMap[c.id];
+                return { name: c.name, rev: c.rev, views: c.views, rpm: c.rpm, playbackCpm: c.playbackCpm || 0,
+                    contrib: totalRevCur > 0 ? (c.rev / totalRevCur * 100) : 0,
+                    curRank: curRankMap[c.id], prevRank: pr || null,
+                    rankChange: pr ? (pr - curRankMap[c.id]) : null }; // + = ขยับขึ้น
+            });
             return { base: base || 'งวดก่อน', target, totalRevCur, totalRevPrev, premCur, premPrev,
-                adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev, premRatio, adsRatio, top5 };
+                adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev, premRatio, adsRatio, top5, top10 };
         }
 
         async function exportPPTX() {
@@ -1414,56 +1425,29 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                     : 'ทั้งปริมาณวิวและรายได้ต่อวิวปรับตัวไปในทางเดียวกัน เป็นสัญญาณการเติบโตที่แข็งแรง ทีมควรรักษาโมเมนตัมและขยายฐานคอนเทนต์คุณภาพต่อเนื่อง', options: { color: NAVY } }
             ]);
 
-            // ---------- SLIDE 3: Top 5 ----------
+            // ---------- SLIDE 3: ตาราง Top 10 ----------
             const s3 = pptx.addSlide(); s3.background = { color: 'FFFFFF' };
-            head(s3, `Top 5 ช่องที่ทำรายได้สูงสุด (${d.target})`, 'ผู้ขับเคลื่อนรายได้และประสิทธิภาพ — รายได้ | Views | RPM');
-            const shortName = (n) => n.length > 15 ? n.slice(0, 14) + '…' : n;
-            const kBaht = (v) => v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : (v / 1e3).toFixed(0) + 'K';
-            const GRAYBAR = 'C9D2DE';
-            // วาดกราฟแท่งเองด้วย shapes — คุมตำแหน่งได้เป๊ะ: %MoM อยู่เหนือแท่ง + เว้นระยะแถวโปร่ง
-            // อันดับ 1 อยู่บนสุด (วนตามลำดับ), แต่ละช่อง = 2 แท่ง (ปัจจุบัน teal / เดือนก่อน เทา)
-            const maxRev = Math.max(...d.top5.map(c => Math.max(c.rev, c.prevRev, 1)));
-            const rowTop = 1.32, rowH = 0.56, nameX = 0.3, nameW = 1.35, barX = 1.72, maxBarW = 2.8;
-            d.top5.forEach((c, i) => {
-                const y0 = rowTop + i * rowH;
-                const curW = Math.max(0.03, c.rev / maxRev * maxBarW);
-                const prevW = c.prevRev > 0 ? Math.max(0.03, c.prevRev / maxRev * maxBarW) : 0;
-                // %MoM เหนือแท่ง (สีเขียว=เพิ่ม / แดง=ลด)
-                s3.addText(c.mom == null ? '(ช่องใหม่)' : (c.mom >= 0 ? `▲ +${c.mom.toFixed(1)}%` : `▼ ${c.mom.toFixed(1)}%`),
-                    { x: barX, y: y0, w: 2.3, h: 0.16, fontSize: 8.5, bold: true, color: clr(c.mom), fontFace: F, valign: 'bottom' });
-                // ชื่อช่อง (คอลัมน์ซ้าย)
-                s3.addText(`${i + 1}. ${shortName(c.name)}`, { x: nameX, y: y0 + 0.14, w: nameW, h: 0.3, fontSize: 8, color: NAVY, fontFace: F, valign: 'middle' });
-                // แท่งเดือนปัจจุบัน (teal) + ค่ารายได้
-                s3.addShape(pptx.ShapeType.roundRect, { x: barX, y: y0 + 0.19, w: curW, h: 0.13, fill: { color: TEAL }, rectRadius: 0.02 });
-                s3.addText(kBaht(c.rev), { x: barX + curW + 0.03, y: y0 + 0.15, w: 0.75, h: 0.2, fontSize: 7, bold: true, color: DEEPTEAL, fontFace: F, valign: 'middle' });
-                // แท่งเดือนก่อน (เทา) + ค่ารายได้
-                if (prevW > 0) {
-                    s3.addShape(pptx.ShapeType.roundRect, { x: barX, y: y0 + 0.34, w: prevW, h: 0.13, fill: { color: GRAYBAR }, rectRadius: 0.02 });
-                    s3.addText(kBaht(c.prevRev), { x: barX + prevW + 0.03, y: y0 + 0.30, w: 0.75, h: 0.2, fontSize: 7, color: GRAY, fontFace: F, valign: 'middle' });
-                }
+            s3.addText(`ตาราง Top 10 ช่องทำเงินสูงสุด (${d.target})`, { x: 0.4, y: 0.32, w: 9.2, h: 0.6, fontSize: 24, bold: true, color: NAVY, fontFace: F });
+            const nm = (n) => n.length > 33 ? n.slice(0, 32) + '\u2026' : n;
+            const th2 = (t, al) => ({ text: t, options: { bold: true, color: NAVY, fill: { color: 'EAF0F6' }, fontSize: 10.5, align: al || 'right', fontFace: F, valign: 'middle' } });
+            const tblRows = [[ th2('อันดับ', 'center'), th2('แนวโน้ม (+/-)', 'center'), th2('ชื่อช่อง', 'left'), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM') ]];
+            d.top10.forEach((c, i) => {
+                const rc = c.rankChange;
+                const tr = rc == null ? { t: 'ใหม่', c: GRAY } : (rc > 0 ? { t: `\u25B2 +${rc}`, c: GREEN } : (rc < 0 ? { t: `\u25BC ${rc}`, c: RED } : { t: '\u2013', c: GRAY }));
+                const climber = rc != null && rc >= 10;
+                const rf = climber ? 'E1ECFA' : (i % 2 ? 'F7FAFC' : 'FFFFFF');
+                tblRows.push([
+                    { text: String(i + 1), options: { fontSize: 11, bold: true, color: NAVY, align: 'center', fill: { color: rf } } },
+                    { text: tr.t, options: { fontSize: 11, bold: true, color: tr.c, align: 'center', fill: { color: rf } } },
+                    { text: nm(c.name), options: { fontSize: 10.5, bold: climber, color: NAVY, align: 'left', fill: { color: rf } } },
+                    { text: Math.round(c.rev).toLocaleString(), options: { fontSize: 11, bold: true, color: NAVY, align: 'right', fill: { color: rf } } },
+                    { text: vw(c.views), options: { fontSize: 11, color: NAVY, align: 'right', fill: { color: rf } } },
+                    { text: (c.playbackCpm || 0).toFixed(2), options: { fontSize: 10, color: GRAY, align: 'right', fill: { color: rf } } }
+                ]);
             });
-            // legend 2 เดือน
-            s3.addShape(pptx.ShapeType.rect, { x: barX, y: 4.18, w: 0.14, h: 0.14, fill: { color: TEAL } });
-            s3.addText(`เดือนปัจจุบัน (${d.target})`, { x: barX + 0.18, y: 4.12, w: 1.55, h: 0.24, fontSize: 7.5, color: NAVY, fontFace: F, valign: 'middle' });
-            s3.addShape(pptx.ShapeType.rect, { x: barX + 1.75, y: 4.18, w: 0.14, h: 0.14, fill: { color: GRAYBAR } });
-            s3.addText(`เดือนก่อน (${d.base})`, { x: barX + 1.93, y: 4.12, w: 1.4, h: 0.24, fontSize: 7.5, color: NAVY, fontFace: F, valign: 'middle' });
-            const th = (t, al) => ({ text: t, options: { bold: true, color: 'FFFFFF', fill: { color: NAVY }, fontSize: 8, align: al || 'right', fontFace: F } });
-            const tbl = [[ th('#', 'center'), th('ช่อง', 'left'), th('รายได้'), th('Views'), th('RPM'), th('MoM รายได้') ]];
-            d.top5.forEach((c, i) => tbl.push([
-                { text: String(i + 1), options: { fontSize: 8, bold: true, color: NAVY, align: 'center' } },
-                { text: shortName(c.name), options: { fontSize: 7.5, color: NAVY, align: 'left' } },
-                { text: kBaht(c.rev), options: { fontSize: 8, bold: true, color: NAVY, align: 'right' } },
-                { text: vw(c.views), options: { fontSize: 8, color: NAVY, align: 'right' } },
-                { text: c.rpm.toFixed(2), options: { fontSize: 8, color: NAVY, align: 'right' } },
-                { text: c.mom == null ? 'ใหม่' : arw(c.mom), options: { fontSize: 7.5, bold: true, color: clr(c.mom), align: 'right' } }
-            ]));
-            s3.addTable(tbl, { x: 5.45, y: 1.35, w: 4.15, colW: [0.3, 1.35, 0.72, 0.68, 0.5, 0.6], rowH: 0.42,
-                fontFace: F, border: { type: 'solid', color: LINE, pt: 0.5 }, valign: 'middle' });
-            const t1 = d.top5[0];
-            bar(s3, [
-                { text: 'ข้อสังเกต: ', options: { bold: true, color: DEEPTEAL } },
-                { text: t1 ? `${t1.name} เป็นช่องอันดับ 1 คิดเป็น ${t1.contrib.toFixed(1)}% ของรายได้เครือข่าย — ควรบาลานซ์พอร์ตคอนเทนต์ระหว่างช่องที่เน้น "ปริมาณวิว" กับช่องที่มี "RPM สูง" เพื่อให้รายได้เติบโตอย่างมีคุณภาพและยั่งยืน` : '', options: { color: NAVY } }
-            ]);
+            s3.addTable(tblRows, { x: 0.4, y: 1.15, w: 9.2, colW: [0.9, 1.5, 3.4, 1.4, 1.0, 1.0], rowH: 0.375,
+                fontFace: F, border: { type: 'solid', color: 'DCE4EC', pt: 0.75 }, valign: 'middle' });
+            s3.addText(`* แนวโน้ม = การเปลี่ยนอันดับเทียบเดือน ${d.base} (\u25B2 อันดับดีขึ้น / \u25BC อันดับลดลง)`, { x: 0.4, y: 5.36, w: 9.2, h: 0.22, fontSize: 8, italic: true, color: GRAY, fontFace: F });
 
             try {
                 await pptx.writeFile({ fileName: `MCN_Report_${d.base}_to_${d.target}.pptx` });
