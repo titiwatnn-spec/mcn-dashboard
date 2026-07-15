@@ -1451,9 +1451,9 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                     { text: [ { text: (c.rpm || 0).toFixed(2), options: { fontSize: 9, color: GRAY, breakLine: true } }, { text: arw(c.momRpm), options: { fontSize: 6.5, bold: true, color: clr(c.momRpm) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } }
                 ]);
             });
-            s3.addTable(tblRows, { x: 0.35, y: 1.02, w: 9.3, colW: [0.6, 0.95, 2.75, 1.5, 1.1, 1.3, 1.1], rowH: 0.40,
-                fontFace: F, border: { type: 'solid', color: 'DCE4EC', pt: 0.75 }, valign: 'middle' });
-            s3.addText(`* แนวโน้ม = อันดับขยับเทียบเดือน ${d.base} (▲ ดีขึ้น / ▼ ลดลง)   •   ▲/▼ ใต้ตัวเลข (รายได้/ยอดวิว/CPM/RPM) = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.48, w: 9.3, h: 0.22, fontSize: 8, italic: true, color: GRAY, fontFace: F });
+            s3.addTable(tblRows, { x: 0.35, y: 0.92, w: 9.3, colW: [0.6, 0.95, 2.75, 1.5, 1.1, 1.3, 1.1], rowH: 0.40,
+                fontFace: F, border: { type: 'solid', color: 'DCE4EC', pt: 0.75 }, valign: 'middle', margin: [1, 2, 1, 2] });
+            s3.addText(`* แนวโน้ม = อันดับขยับเทียบเดือน ${d.base} (▲ ดีขึ้น / ▼ ลดลง)   •   ▲/▼ ใต้ตัวเลข (รายได้/ยอดวิว/CPM/RPM) = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.44, w: 9.3, h: 0.16, fontSize: 7.5, italic: true, color: GRAY, fontFace: F });
 
             try {
                 await pptx.writeFile({ fileName: `MCN_Report_${d.base}_to_${d.target}.pptx` });
