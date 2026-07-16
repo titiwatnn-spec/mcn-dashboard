@@ -87,7 +87,7 @@ table{width:100%;border-collapse:collapse;text-align:left}
 th{padding:12px 13px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line2);background:#fafbff;font-size:11.5px;white-space:nowrap;position:sticky;top:0;z-index:2}
 td{padding:13px;border-bottom:1px solid var(--line);font-size:12.5px;white-space:nowrap}
 tbody tr{transition:.12s}tbody tr:hover{background:#faf9ff}
-.rpm-col{background:#fafbff}
+.rpm-col,.emp-col{background:#fafbff}
 .empty-state{padding:46px 20px;text-align:center;color:var(--faint);font-weight:700}
 
 /* KPI strip */
@@ -274,7 +274,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                             <th style="text-align:right;">รายได้สุทธิ (THB)</th>
                             <th style="text-align:right;">รายได้ YouTube Premium</th>
                             <th style="text-align:right;">ปริมาณวิวรวม</th>
-                            <th style="text-align:right;">RPM (THB)</th>
+                            <th style="text-align:right;" title="Estimated monetised playbacks — จำนวนวิวที่มีโฆษณาแสดง">EMP (วิวที่โชว์โฆษณา)</th>
                             <th style="text-align:right;">Avg. CPM (THB)</th>
                         </tr>
                     </thead>
@@ -672,7 +672,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                 const revIdx = headers.findIndex(h => h.includes('estimated partner revenue'));
                 const premiumIdx = headers.findIndex(h => h.includes('premium partner revenue'));
                 const viewsIdx = headers.findIndex(h => h === 'views' || h.includes('views'));
-                const rpmIdx = headers.findIndex(h => h.includes('rpm'));
+                const rpmIdx = headers.findIndex(h => h.includes('rpm')); // เก็บไว้เผื่ออนาคต (CSV ใหม่ไม่มีแล้ว → -1 → rpm=0)
+                const empIdx = headers.findIndex(h => h.includes('monetised playbacks') || h.includes('monetized playbacks'));
                 let cpmIdx = headers.findIndex(h => h === 'cpm (thb)' || h === 'cpm');
                 if (cpmIdx === -1) cpmIdx = headers.findIndex(h => h.includes('cpm'));
                 const playbackIdx = headers.findIndex(h => h.includes('playback-based'));
@@ -688,6 +689,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                         totals = {
                             rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
                             views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]),
+                            emp: Math.round(toNum(r[empIdx])),
                             cpm: toNum(r[cpmIdx]), playbackCpm: toNum(r[playbackIdx])
                         };
                         continue;
@@ -698,6 +700,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                         name: (nameIdx > -1 && r[nameIdx]) ? r[nameIdx] : 'Unknown',
                         rev: toNum(r[revIdx]), premium: toNum(r[premiumIdx]),
                         views: Math.round(toNum(r[viewsIdx])), rpm: toNum(r[rpmIdx]), cpm: toNum(r[cpmIdx]),
+                        emp: Math.round(toNum(r[empIdx])),
                         playbackCpm: toNum(r[playbackIdx])
                     });
                 }
@@ -814,7 +817,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             tbody.innerHTML = '';
             sorted.forEach(c => {
                 let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
-                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="rpm-col">${createComparisonCell(c.rpm, prevItem?.rpm || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="emp-col">${createComparisonCell(c.emp, prevItem?.emp || 0, target, base, false)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
@@ -1313,6 +1316,10 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             const rpmCur = tC ? tC.rpm : (viewsCur > 0 ? totalRevCur / viewsCur * 1000 : 0);
             const rpmPrev = tP ? tP.rpm : (viewsPrev > 0 ? totalRevPrev / viewsPrev * 1000 : 0);
             const pbCur = tC ? tC.playbackCpm : 0, pbPrev = tP ? tP.playbackCpm : 0;
+            // EMP = Estimated monetised playbacks (จำนวนวิวที่โชว์โฆษณา). กล่อง "Average EMP" = EMP ÷ รายได้ (ตามที่ผู้ใช้กำหนด)
+            const empCur = sum(cur, 'emp'), empPrev = prev ? sum(prev, 'emp') : 0;
+            const empPerRevCur = totalRevCur > 0 ? empCur / totalRevCur : 0;
+            const empPerRevPrev = totalRevPrev > 0 ? empPrev / totalRevPrev : 0;
             const premRatio = totalRevCur > 0 ? Math.min(100, Math.max(0, premCur / totalRevCur * 100)) : 0;
             const adsRatio = 100 - premRatio;
             const top5 = [...cur].sort((a, b) => b.rev - a.rev).slice(0, 5).map(c => {
@@ -1337,7 +1344,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                     momRpm: (p && p.rpm > 0) ? ((c.rpm - p.rpm) / p.rpm * 100) : null };
             });
             return { base: base || 'งวดก่อน', target, totalRevCur, totalRevPrev, premCur, premPrev,
-                adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev, premRatio, adsRatio, top5, top10 };
+                adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev,
+                empCur, empPrev, empPerRevCur, empPerRevPrev, premRatio, adsRatio, top5, top10 };
         }
 
         async function exportPPTX() {
@@ -1359,6 +1367,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             const dRev = pctOf(d.totalRevCur, d.totalRevPrev), dViews = pctOf(d.viewsCur, d.viewsPrev);
             const dPb = pctOf(d.pbCur, d.pbPrev), dRpm = pctOf(d.rpmCur, d.rpmPrev);
             const dAds = pctOf(d.adsCur, d.adsPrev), dPrem = pctOf(d.premCur, d.premPrev);
+            const dEmp = pctOf(d.empPerRevCur, d.empPerRevPrev); // Average EMP = EMP ÷ รายได้
 
             const pptx = new PptxGenJS();
             pptx.layout = 'LAYOUT_16x9';
@@ -1373,69 +1382,48 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                 s.addText(sub, { x: 0.4, y: 0.74, w: 9.2, h: 0.28, fontSize: 10, color: GRAY, fontFace: F });
             };
 
-            // ---------- SLIDE 1: Executive Summary ----------
+            // ==========================================================
+            //  SLIDE 1 (รวมของเดิม 2 หน้า): โดนัท Ad/Premium (ซ้าย) + 4 กล่อง KPI (ขวา)
+            // ==========================================================
             const s1 = pptx.addSlide(); s1.background = { color: 'FFFFFF' };
-            head(s1, `Executive Summary: ภาพรวมรายได้ ${d.target} ที่ ${mil(d.totalRevCur)} บาท`, `เปรียบเทียบ ${d.base} → ${d.target}`);
-            const boxes = [
-                { l: 'Total Revenue (รายได้รวม)', v: thb(d.totalRevCur), dd: dRev, p: thb(d.totalRevPrev) },
-                { l: 'Total Views (ยอดวิวรวม)', v: vw(d.viewsCur) + ' Views', dd: dViews, p: vw(d.viewsPrev) },
-                { l: 'Playback-based CPM', v: d.pbCur.toFixed(2) + ' THB', dd: dPb, p: d.pbPrev.toFixed(2) },
-                { l: 'Average RPM', v: d.rpmCur.toFixed(2) + ' THB', dd: dRpm, p: d.rpmPrev.toFixed(2) }
-            ];
-            boxes.forEach((b, i) => {
-                const x = 0.4 + i * 2.35;
-                s1.addShape(pptx.ShapeType.roundRect, { x, y: 1.35, w: 2.15, h: 1.75, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.07 });
-                s1.addText(b.l, { x: x + 0.12, y: 1.46, w: 1.91, h: 0.34, fontSize: 8.5, color: GRAY, fontFace: F });
-                s1.addText(b.v, { x: x + 0.12, y: 1.85, w: 1.91, h: 0.5, fontSize: 14, bold: true, color: NAVY, fontFace: F });
-                s1.addText(arw(b.dd), { x: x + 0.12, y: 2.4, w: 1.91, h: 0.26, fontSize: 9.5, bold: true, color: clr(b.dd), fontFace: F });
-                s1.addText(`จาก ${b.p}`, { x: x + 0.12, y: 2.68, w: 1.91, h: 0.26, fontSize: 8, color: GRAY, fontFace: F });
-            });
-            const upV = dViews != null && dViews >= 0, dnR = dRpm != null && dRpm < 0;
-            bar(s1, [
-                { text: 'ความเห็นเชิงวิเคราะห์: ', options: { bold: true, color: DEEPTEAL } },
-                { text: `รายได้รวมเดือน ${d.target} อยู่ที่ ${thb(d.totalRevCur)} (${arw(dRev)}) ` +
-                    `${upV ? `โดยได้แรงหนุนจากปริมาณวิวที่เพิ่มขึ้น (${arw(dViews)})` : `ขณะที่ปริมาณวิวปรับตัว ${arw(dViews)}`} ` +
-                    `${dnR ? 'แม้ค่าเฉลี่ยรายได้ต่อวิว (RPM/CPM) จะปรับฐานลงเล็กน้อย สะท้อนการเติบโตเชิงปริมาณที่ยังรักษาฐานรายได้ไว้ได้' : 'พร้อมค่าเฉลี่ยรายได้ต่อวิวที่ปรับตัวดีขึ้น เป็นการเติบโตทั้งปริมาณและประสิทธิภาพ'}`, options: { color: NAVY } }
-            ]);
+            head(s1, `Summary: ภาพรวมรายได้ เดือน ${d.target}`, `สัดส่วนและการเปลี่ยนแปลง ${d.base} → ${d.target}`);
 
-            // ---------- SLIDE 2: ที่มาของรายได้ ----------
-            const s2 = pptx.addSlide(); s2.background = { color: 'FFFFFF' };
-            const driver = Math.abs(d.adsCur - d.adsPrev) >= Math.abs(d.premCur - d.premPrev) ? 'รายได้จากโฆษณา (Ad Revenue)' : 'รายได้ Premium';
-            head(s2, `วิเคราะห์ที่มาของรายได้: ${driver} เป็นตัวขับเคลื่อนหลัก`, `สัดส่วนและการเปลี่ยนแปลง ${d.base} → ${d.target}`);
-            s2.addChart(pptx.ChartType.doughnut,
+            // -- ซ้าย: โดนัทสัดส่วนรายได้ + แถว Ad/Premium --
+            s1.addChart(pptx.ChartType.doughnut,
                 [{ name: 'สัดส่วนรายได้', labels: ['Ad Revenue (โฆษณา)', 'Premium Revenue'], values: [+d.adsRatio.toFixed(1), +d.premRatio.toFixed(1)] }],
-                { x: 0.5, y: 1.25, w: 4.0, h: 3.0, chartColors: [TEAL, BLUE], holeSize: 58, showLegend: true, legendPos: 'b', legendFontFace: F, legendFontSize: 9,
+                { x: 0.4, y: 1.0, w: 4.3, h: 2.45, chartColors: [TEAL, BLUE], holeSize: 56, showLegend: true, legendPos: 'b', legendFontFace: F, legendFontSize: 9,
                   showValue: true, dataLabelFormatCode: '0.0"%"', dataLabelColor: 'FFFFFF', dataLabelFontFace: F, dataLabelFontSize: 10 });
-            const rows = [
-                { l: 'Ad Revenue (โฆษณา)', cur: d.adsCur, prev: d.adsPrev, dd: dAds, ratio: d.adsRatio, c: TEAL },
-                { l: 'Premium Revenue', cur: d.premCur, prev: d.premPrev, dd: dPrem, ratio: d.premRatio, c: BLUE }
-            ];
-            rows.forEach((r, i) => {
-                const y = 1.35 + i * 1.15;
-                s2.addShape(pptx.ShapeType.roundRect, { x: 4.9, y, w: 4.7, h: 1.0, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.06 });
-                s2.addShape(pptx.ShapeType.rect, { x: 4.9, y, w: 0.09, h: 1.0, fill: { color: r.c } });
-                s2.addText(`${r.l}  •  สัดส่วน ${r.ratio.toFixed(1)}%`, { x: 5.12, y: y + 0.08, w: 4.4, h: 0.3, fontSize: 9.5, bold: true, color: NAVY, fontFace: F });
-                s2.addText(`${thb(r.prev)}  →  ${thb(r.cur)}`, { x: 5.12, y: y + 0.38, w: 3.1, h: 0.3, fontSize: 9, color: GRAY, fontFace: F });
-                s2.addText(arw(r.dd), { x: 8.25, y: y + 0.34, w: 1.25, h: 0.36, fontSize: 12, bold: true, color: clr(r.dd), fontFace: F, align: 'right' });
-            });
-            s2.addShape(pptx.ShapeType.roundRect, { x: 4.9, y: 3.65, w: 4.7, h: 0.62, fill: { color: 'FFFFFF' }, line: { color: LINE, width: 1 }, rectRadius: 0.05 });
-            s2.addText([
-                { text: 'Volume (Views) ', options: { color: NAVY, bold: true } }, { text: arw(dViews), options: { color: clr(dViews), bold: true } },
-                { text: '     ⟷     ', options: { color: GRAY } },
-                { text: 'Margin (RPM) ', options: { color: NAVY, bold: true } }, { text: arw(dRpm), options: { color: clr(dRpm), bold: true } }
-            ], { x: 5.0, y: 3.75, w: 4.5, h: 0.42, fontSize: 10, fontFace: F, align: 'center' });
-            bar(s2, [
-                { text: 'กลยุทธ์ที่ต้องผลักดันต่อ: ', options: { bold: true, color: DEEPTEAL } },
-                { text: dnR ? 'Views เติบโตสวนทางกับ RPM ที่ลดลง สะท้อนว่าการเติบโตมาจากปริมาณคอนเทนต์ที่มากขึ้น ทีมควรเร่งยกระดับรายได้ต่อวิว (RPM) ผ่านการจัดสรรโฆษณา และดันสัดส่วนรายได้ Premium ให้สูงขึ้น'
-                    : 'ทั้งปริมาณวิวและรายได้ต่อวิวปรับตัวไปในทางเดียวกัน เป็นสัญญาณการเติบโตที่แข็งแรง ทีมควรรักษาโมเมนตัมและขยายฐานคอนเทนต์คุณภาพต่อเนื่อง', options: { color: NAVY } }
-            ]);
+            const revRow = (x, y, label, prev, cur, dd, ratio, accent) => {
+                s1.addShape(pptx.ShapeType.roundRect, { x, y, w: 4.3, h: 0.66, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.06 });
+                s1.addShape(pptx.ShapeType.rect, { x, y, w: 0.09, h: 0.66, fill: { color: accent } });
+                s1.addText(`${label}  •  ${ratio.toFixed(1)}%`, { x: x + 0.22, y: y + 0.07, w: 3.0, h: 0.26, fontSize: 9, bold: true, color: NAVY, fontFace: F });
+                s1.addText(`${thb(prev)}  →  ${thb(cur)}`, { x: x + 0.22, y: y + 0.35, w: 3.2, h: 0.24, fontSize: 8, color: GRAY, fontFace: F });
+                s1.addText(arw(dd), { x: x + 3.1, y: y + 0.18, w: 1.1, h: 0.32, fontSize: 11, bold: true, color: clr(dd), fontFace: F, align: 'right' });
+            };
+            revRow(0.4, 3.62, 'Ad Revenue (โฆษณา)', d.adsPrev, d.adsCur, dAds, d.adsRatio, TEAL);
+            revRow(0.4, 4.34, 'Premium Revenue', d.premPrev, d.premCur, dPrem, d.premRatio, BLUE);
 
-            // ---------- SLIDE 3: ตาราง Top 10 ----------
-            const s3 = pptx.addSlide(); s3.background = { color: 'FFFFFF' };
-            s3.addText(`ตาราง Top 10 ช่องทำเงินสูงสุด (${d.target})`, { x: 0.4, y: 0.32, w: 9.2, h: 0.6, fontSize: 24, bold: true, color: NAVY, fontFace: F });
+            // -- ขวา: 4 กล่อง KPI (2×2) --
+            const kpi = (x, y, label, val, dd, prevStr) => {
+                s1.addShape(pptx.ShapeType.roundRect, { x, y, w: 2.15, h: 1.75, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.07 });
+                s1.addText(label, { x: x + 0.12, y: y + 0.11, w: 1.91, h: 0.34, fontSize: 8.5, color: GRAY, fontFace: F });
+                s1.addText(val, { x: x + 0.12, y: y + 0.50, w: 1.91, h: 0.5, fontSize: 14, bold: true, color: NAVY, fontFace: F });
+                s1.addText(arw(dd), { x: x + 0.12, y: y + 1.05, w: 1.91, h: 0.26, fontSize: 9.5, bold: true, color: clr(dd), fontFace: F });
+                s1.addText(`จาก ${prevStr}`, { x: x + 0.12, y: y + 1.33, w: 1.91, h: 0.26, fontSize: 8, color: GRAY, fontFace: F });
+            };
+            kpi(4.89, 0.86, 'Total Revenue (รายได้รวม)', thb(d.totalRevCur), dRev, thb(d.totalRevPrev));
+            kpi(7.35, 0.86, 'Total Views (ยอดวิวรวม)', vw(d.viewsCur) + ' Views', dViews, vw(d.viewsPrev));
+            kpi(4.89, 2.81, 'Playback-based CPM', d.pbCur.toFixed(2) + ' THB', dPb, d.pbPrev.toFixed(2));
+            kpi(7.35, 2.81, 'Average EMP (วิว/฿)', d.empPerRevCur.toFixed(2), dEmp, d.empPerRevPrev.toFixed(2));
+
+            // ==========================================================
+            //  SLIDE 2 (=หน้า 3 เดิม): ตาราง Top 10 — 6 คอลัมน์ (ตัด RPM ออก)
+            // ==========================================================
+            const s2 = pptx.addSlide(); s2.background = { color: 'FFFFFF' };
+            s2.addText(`ตาราง Top 10 ช่องทำเงินสูงสุด (${d.target})`, { x: 0.4, y: 0.32, w: 9.2, h: 0.6, fontSize: 24, bold: true, color: NAVY, fontFace: F });
             const nm = (n) => n.length > 24 ? n.slice(0, 23) + '…' : n;
             const th2 = (t, al) => ({ text: t, options: { bold: true, color: NAVY, fill: { color: 'EAF0F6' }, fontSize: 10.5, align: al || 'right', fontFace: F, valign: 'middle' } });
-            const tblRows = [[ th2('อันดับ', 'center'), th2('แนวโน้ม', 'center'), th2('ชื่อช่อง', 'left'), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM'), th2('RPM') ]];
+            const tblRows = [[ th2('อันดับ', 'center'), th2('แนวโน้ม', 'center'), th2('ชื่อช่อง', 'left'), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM') ]];
             d.top10.forEach((c, i) => {
                 const rc = c.rankChange, m = c.mom;
                 const tr = rc == null ? { t: 'ใหม่', c: GRAY } : (rc > 0 ? { t: `▲ +${rc}`, c: GREEN } : (rc < 0 ? { t: `▼ ${rc}`, c: RED } : { t: '–', c: GRAY }));
@@ -1447,13 +1435,12 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                     { text: nm(c.name), options: { fontSize: 9.5, bold: grower, color: NAVY, align: 'left', fill: { color: rf } } },
                     { text: [ { text: Math.round(c.rev).toLocaleString(), options: { fontSize: 10, bold: true, color: NAVY, breakLine: true } }, { text: arw(m), options: { fontSize: 6.5, bold: true, color: clr(m) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } },
                     { text: [ { text: vw(c.views), options: { fontSize: 9, color: NAVY, breakLine: true } }, { text: arw(c.momViews), options: { fontSize: 6.5, bold: true, color: clr(c.momViews) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } },
-                    { text: [ { text: (c.playbackCpm || 0).toFixed(2), options: { fontSize: 9, color: GRAY, breakLine: true } }, { text: arw(c.momCpm), options: { fontSize: 6.5, bold: true, color: clr(c.momCpm) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } },
-                    { text: [ { text: (c.rpm || 0).toFixed(2), options: { fontSize: 9, color: GRAY, breakLine: true } }, { text: arw(c.momRpm), options: { fontSize: 6.5, bold: true, color: clr(c.momRpm) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } }
+                    { text: [ { text: (c.playbackCpm || 0).toFixed(2), options: { fontSize: 9, color: GRAY, breakLine: true } }, { text: arw(c.momCpm), options: { fontSize: 6.5, bold: true, color: clr(c.momCpm) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } }
                 ]);
             });
-            s3.addTable(tblRows, { x: 0.35, y: 0.92, w: 9.3, colW: [0.6, 0.95, 2.75, 1.5, 1.1, 1.3, 1.1], rowH: 0.40,
+            s2.addTable(tblRows, { x: 0.35, y: 0.92, w: 9.3, colW: [0.65, 1.0, 3.05, 1.6, 1.4, 1.6], rowH: 0.40,
                 fontFace: F, border: { type: 'solid', color: 'DCE4EC', pt: 0.75 }, valign: 'middle', margin: [1, 2, 1, 2] });
-            s3.addText(`* แนวโน้ม = อันดับขยับเทียบเดือน ${d.base} (▲ ดีขึ้น / ▼ ลดลง)   •   ▲/▼ ใต้ตัวเลข (รายได้/ยอดวิว/CPM/RPM) = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.44, w: 9.3, h: 0.16, fontSize: 7.5, italic: true, color: GRAY, fontFace: F });
+            s2.addText(`* แนวโน้ม = อันดับขยับเทียบเดือน ${d.base} (▲ ดีขึ้น / ▼ ลดลง)   •   ▲/▼ ใต้ตัวเลข (รายได้/ยอดวิว/CPM) = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.44, w: 9.3, h: 0.16, fontSize: 7.5, italic: true, color: GRAY, fontFace: F });
 
             try {
                 await pptx.writeFile({ fileName: `MCN_Report_${d.base}_to_${d.target}.pptx` });
