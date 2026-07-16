@@ -189,7 +189,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
 </div>
 <div class="wrap">
     <div class="crumb">
-        <div><h1>MCN Exclusive Dashboard</h1><div class="sub2">ระบบวิเคราะห์รายได้เครือข่าย MCN • เปรียบเทียบรายงวด</div></div>
+        <div><h1>MCN Exclusive Dashboard</h1><div class="sub2">ระบบวิเคราะห์รายได้เครือข่าย MCN • เปรียบเทียบรายงวด <span style="color:#0f766e;font-weight:700;">· build: EMP-perview</span></div></div>
         <div class="tools">
             <span class="pill" onclick="exportTrendCSV()">⬇ Trend CSV</span>
             <span class="pill" onclick="exportSummaryCSV()">⬇ สรุป CSV</span>
@@ -817,7 +817,17 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             tbody.innerHTML = '';
             sorted.forEach(c => {
                 let prevItem = prevData ? prevData.find(x => x.id === c.id) : null;
-                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="emp-col">${createComparisonCell(c.emp, prevItem?.emp || 0, target, base, false)}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
+                // per view = รายได้ ÷ EMP (รายได้ต่อวิวที่โชว์โฆษณา) — ต่อท้ายคอลัมน์ EMP เพื่อวิเคราะห์
+                const pv = c.emp > 0 ? c.rev / c.emp : 0;
+                const pvPrev = (prevItem && prevItem.emp > 0) ? prevItem.rev / prevItem.emp : 0;
+                let pvChip = '';
+                if (pvPrev > 0) {
+                    const dpv = ((pv - pvPrev) / pvPrev * 100).toFixed(1);
+                    pvChip = parseFloat(dpv) > 0 ? `<span style="color:#10b981;font-weight:bold;">▲ +${dpv}%</span>`
+                        : (parseFloat(dpv) < 0 ? `<span style="color:#ef4444;font-weight:bold;">▼ ${dpv}%</span>` : `<span style="color:#64748b;">0.0%</span>`);
+                }
+                const pvLine = `<div style="margin-top:6px;padding-top:5px;border-top:1px dashed #e2e8f0;font-size:11px;"><span style="color:#94a3b8;">per view</span> <b style="color:#0f766e;">฿${pv.toFixed(4)}/view</b> ${pvChip}</div>`;
+                tbody.innerHTML += `<tr><td><b style="color:#0f172a;">${c.name}</b></td><td align="right">${createComparisonCell(c.rev, prevItem?.rev || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.premium, prevItem?.premium || 0, target, base, true)}</td><td align="right">${createComparisonCell(c.views, prevItem?.views || 0, target, base, false)}</td><td align="right" class="emp-col">${createComparisonCell(c.emp, prevItem?.emp || 0, target, base, false)}${pvLine}</td><td align="right">${createComparisonCell(c.cpm, prevItem?.cpm || 0, target, base, true)}</td></tr>`;
             });
         }
 
@@ -1318,8 +1328,9 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             const pbCur = tC ? tC.playbackCpm : 0, pbPrev = tP ? tP.playbackCpm : 0;
             // EMP = Estimated monetised playbacks (จำนวนวิวที่โชว์โฆษณา). กล่อง "Average EMP" = EMP ÷ รายได้ (ตามที่ผู้ใช้กำหนด)
             const empCur = sum(cur, 'emp'), empPrev = prev ? sum(prev, 'emp') : 0;
-            const empPerRevCur = totalRevCur > 0 ? empCur / totalRevCur : 0;
-            const empPerRevPrev = totalRevPrev > 0 ? empPrev / totalRevPrev : 0;
+            // per view = รายได้ ÷ EMP (รายได้ต่อวิวที่โชว์โฆษณา, THB/view)
+            const revPerViewCur = empCur > 0 ? totalRevCur / empCur : 0;
+            const revPerViewPrev = empPrev > 0 ? totalRevPrev / empPrev : 0;
             const premRatio = totalRevCur > 0 ? Math.min(100, Math.max(0, premCur / totalRevCur * 100)) : 0;
             const adsRatio = 100 - premRatio;
             const top5 = [...cur].sort((a, b) => b.rev - a.rev).slice(0, 5).map(c => {
@@ -1345,7 +1356,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             });
             return { base: base || 'งวดก่อน', target, totalRevCur, totalRevPrev, premCur, premPrev,
                 adsCur, adsPrev, viewsCur, viewsPrev, rpmCur, rpmPrev, pbCur, pbPrev,
-                empCur, empPrev, empPerRevCur, empPerRevPrev, premRatio, adsRatio, top5, top10 };
+                empCur, empPrev, revPerViewCur, revPerViewPrev, premRatio, adsRatio, top5, top10 };
         }
 
         async function exportPPTX() {
@@ -1367,7 +1378,8 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             const dRev = pctOf(d.totalRevCur, d.totalRevPrev), dViews = pctOf(d.viewsCur, d.viewsPrev);
             const dPb = pctOf(d.pbCur, d.pbPrev), dRpm = pctOf(d.rpmCur, d.rpmPrev);
             const dAds = pctOf(d.adsCur, d.adsPrev), dPrem = pctOf(d.premCur, d.premPrev);
-            const dEmp = pctOf(d.empPerRevCur, d.empPerRevPrev); // Average EMP = EMP ÷ รายได้
+            const dEmp = pctOf(d.revPerViewCur, d.revPerViewPrev); // per view = รายได้ ÷ EMP
+            const dEmpCount = pctOf(d.empCur, d.empPrev); // MoM ของจำนวน views ที่โชว์โฆษณา (EMP นับจริง)
 
             const pptx = new PptxGenJS();
             pptx.layout = 'LAYOUT_16x9';
@@ -1414,7 +1426,17 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             kpi(4.89, 0.86, 'Total Revenue (รายได้รวม)', thb(d.totalRevCur), dRev, thb(d.totalRevPrev));
             kpi(7.35, 0.86, 'Total Views (ยอดวิวรวม)', vw(d.viewsCur) + ' Views', dViews, vw(d.viewsPrev));
             kpi(4.89, 2.81, 'Playback-based CPM', d.pbCur.toFixed(2) + ' THB', dPb, d.pbPrev.toFixed(2));
-            kpi(7.35, 2.81, 'Average EMP (วิว/฿)', d.empPerRevCur.toFixed(2), dEmp, d.empPerRevPrev.toFixed(2));
+            // กล่อง EMP พิเศษ: ตัวหลัก = จำนวนวิวที่โชว์โฆษณา (นับจริง) → ล่าง = per view (EMP ÷ รายได้)
+            (function (x, y) {
+                s1.addShape(pptx.ShapeType.roundRect, { x, y, w: 2.15, h: 1.75, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.07 });
+                s1.addText('EMP · views ที่โชว์โฆษณา', { x: x + 0.12, y: y + 0.10, w: 1.91, h: 0.3, fontSize: 8.5, color: GRAY, fontFace: F });
+                s1.addText(vw(d.empCur) + ' views', { x: x + 0.12, y: y + 0.42, w: 1.91, h: 0.44, fontSize: 14, bold: true, color: NAVY, fontFace: F });
+                s1.addText([{ text: arw(dEmpCount) + ' ', options: { bold: true, color: clr(dEmpCount) } }, { text: `จาก ${vw(d.empPrev)}`, options: { color: GRAY } }],
+                    { x: x + 0.12, y: y + 0.92, w: 1.91, h: 0.24, fontSize: 8, fontFace: F });
+                s1.addShape(pptx.ShapeType.line, { x: x + 0.12, y: y + 1.18, w: 1.91, h: 0, line: { color: LINE, width: 0.75 } });
+                s1.addText([{ text: 'per view  ', options: { color: GRAY, fontSize: 8 } }, { text: `฿${d.revPerViewCur.toFixed(4)}/view`, options: { bold: true, color: DEEPTEAL } }, { text: `  ${arw(dEmp)}`, options: { color: clr(dEmp) } }],
+                    { x: x + 0.12, y: y + 1.22, w: 1.91, h: 0.5, fontSize: 10, fontFace: F, valign: 'top' });
+            })(7.35, 2.81);
 
             // ==========================================================
             //  SLIDE 2 (=หน้า 3 เดิม): ตาราง Top 10 — 6 คอลัมน์ (ตัด RPM ออก)
