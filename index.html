@@ -1401,10 +1401,19 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             head(s1, `Summary: ภาพรวมรายได้ เดือน ${d.target}`, `สัดส่วนและการเปลี่ยนแปลง ${d.base} → ${d.target}`);
 
             // -- ซ้าย: โดนัทสัดส่วนรายได้ + แถว Ad/Premium --
+            // ปิด data label อัตโนมัติ (pptxgenjs วางชิดรูตรงกลาง → โดนรูขาวบัง) แล้ววาง % เองบนวง คุมตำแหน่งเป๊ะ
+            const dcS = 2.3, dcX = 1.0, dcY = 1.02, dcx = dcX + dcS / 2, dcy = dcY + dcS / 2, dcR = 0.68; // dcR = รัศมีที่วางเลข (อยู่กลางความหนาวง)
             s1.addChart(pptx.ChartType.doughnut,
-                [{ name: 'สัดส่วนรายได้', labels: ['Ad Revenue (โฆษณา)', 'Premium Revenue'], values: [+d.adsRatio.toFixed(1), +d.premRatio.toFixed(1)] }],
-                { x: 0.55, y: 1.05, w: 3.6, h: 2.15, chartColors: [TEAL, BLUE], holeSize: 48, showLegend: true, legendPos: 'b', legendFontFace: F, legendFontSize: 9,
-                  showValue: true, dataLabelFormatCode: '0.0"%"', dataLabelPosition: 'ctr', dataLabelColor: 'FFFFFF', dataLabelFontFace: F, dataLabelFontSize: 10, dataLabelFontBold: true });
+                [{ name: 'สัดส่วนรายได้', labels: ['Ad Revenue', 'Premium Revenue'], values: [+d.adsRatio.toFixed(1), +d.premRatio.toFixed(1)] }],
+                { x: dcX, y: dcY, w: dcS, h: dcS, chartColors: [TEAL, BLUE], holeSize: 45, showLegend: false, showValue: false });
+            // pie เริ่ม 12 นาฬิกา หมุนตามเข็ม: Ad กลางส่วน = (adsRatio/2)%, Premium = (adsRatio + premRatio/2)%
+            const donutLbl = (pctPos, txt) => {
+                const deg = pctPos * 3.6, rad = deg * Math.PI / 180;
+                const lx = dcx + dcR * Math.sin(rad), ly = dcy - dcR * Math.cos(rad);
+                s1.addText(txt, { x: lx - 0.45, y: ly - 0.14, w: 0.9, h: 0.28, fontSize: 11, bold: true, color: 'FFFFFF', fontFace: F, align: 'center', valign: 'middle' });
+            };
+            donutLbl(d.adsRatio / 2, `${d.adsRatio.toFixed(1)}%`);
+            donutLbl(d.adsRatio + d.premRatio / 2, `${d.premRatio.toFixed(1)}%`);
             const revRow = (x, y, label, prev, cur, dd, ratio, accent) => {
                 s1.addShape(pptx.ShapeType.roundRect, { x, y, w: 4.3, h: 0.66, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.06 });
                 s1.addShape(pptx.ShapeType.rect, { x, y, w: 0.09, h: 0.66, fill: { color: accent } });
