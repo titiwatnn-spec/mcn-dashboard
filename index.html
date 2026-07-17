@@ -1448,30 +1448,40 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             })(7.35, 2.81);
 
             // ==========================================================
-            //  SLIDE 2 (=หน้า 3 เดิม): ตาราง Top 10 — 6 คอลัมน์ (ตัด RPM ออก)
+            //  SLIDE 2 (=หน้า 3 เดิม): ตาราง Top 10 — 5 คอลัมน์ (รวมแนวโน้มเข้าอันดับ, %MoM ต่อท้ายตัวเลข)
             // ==========================================================
             const s2 = pptx.addSlide(); s2.background = { color: 'FFFFFF' };
             s2.addText(`ตาราง Top 10 ช่องทำเงินสูงสุด (${d.target})`, { x: 0.4, y: 0.32, w: 9.2, h: 0.6, fontSize: 24, bold: true, color: NAVY, fontFace: F });
-            const nm = (n) => n.length > 24 ? n.slice(0, 23) + '…' : n;
-            const th2 = (t, al) => ({ text: t, options: { bold: true, color: NAVY, fill: { color: 'EAF0F6' }, fontSize: 10.5, align: al || 'right', fontFace: F, valign: 'middle' } });
-            const tblRows = [[ th2('อันดับ', 'center'), th2('แนวโน้ม', 'center'), th2('ชื่อช่อง', 'left'), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM') ]];
+            const nm = (n) => n.length > 30 ? n.slice(0, 29) + '…' : n;
+            const th2 = (t, al, mg) => ({ text: t, options: { bold: true, color: NAVY, fill: { color: 'EAF0F6' }, fontSize: 10.5, align: al || 'right', fontFace: F, valign: 'middle', margin: mg } });
+            // %MoM = ข้อมูลรอง → ตัวเล็ก ไม่หนา สีนุ่ม (ไม่ให้แย่งสายตาจากตัวเลขหลัก)
+            const SOFTUP = '5FA37C', SOFTDN = 'C08080';
+            const sclr = v => v == null ? GRAY : (v >= 0 ? SOFTUP : SOFTDN);
+            const metricCell = (valStr, mom, rf, valOpts) => ({
+                text: [ { text: valStr, options: valOpts }, { text: '  ' + arw(mom), options: { fontSize: 7.5, color: sclr(mom) } } ],
+                options: { align: 'right', fill: { color: rf }, valign: 'middle' }
+            });
+            const tblRows = [[ th2('อันดับ', 'right', [1, 8, 1, 2]), th2('ชื่อช่อง', 'left', [1, 2, 1, 8]), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM') ]];
             d.top10.forEach((c, i) => {
                 const rc = c.rankChange, m = c.mom;
-                const tr = rc == null ? { t: 'ใหม่', c: GRAY } : (rc > 0 ? { t: `▲ +${rc}`, c: GREEN } : (rc < 0 ? { t: `▼ ${rc}`, c: RED } : { t: '–', c: GRAY }));
                 const grower = m != null && m >= 20;
                 const rf = grower ? 'E1ECFA' : (i % 2 ? 'F7FAFC' : 'FFFFFF');
+                // อันดับ: ลูกศรขยับอันดับวางไว้ "หน้าเลข" + ชิดขวา → เลขอันดับเรียงตรงแนวกันทุกแถว
+                const rankRuns = [];
+                if (rc == null) rankRuns.push({ text: 'ใหม่  ', options: { fontSize: 7, color: GRAY } });
+                else if (rc !== 0) rankRuns.push({ text: (rc > 0 ? `▲+${rc}` : `▼${rc}`) + '  ', options: { fontSize: 7.5, color: rc > 0 ? SOFTUP : SOFTDN } });
+                rankRuns.push({ text: String(i + 1), options: { fontSize: 10, bold: true, color: NAVY } });
                 tblRows.push([
-                    { text: String(i + 1), options: { fontSize: 10, bold: true, color: NAVY, align: 'center', fill: { color: rf } } },
-                    { text: tr.t, options: { fontSize: 9.5, bold: true, color: tr.c, align: 'center', fill: { color: rf } } },
-                    { text: nm(c.name), options: { fontSize: 9.5, bold: grower, color: NAVY, align: 'left', fill: { color: rf } } },
-                    { text: [ { text: Math.round(c.rev).toLocaleString(), options: { fontSize: 10, bold: true, color: NAVY, breakLine: true } }, { text: arw(m), options: { fontSize: 6.5, bold: true, color: clr(m) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } },
-                    { text: [ { text: vw(c.views), options: { fontSize: 9, color: NAVY, breakLine: true } }, { text: arw(c.momViews), options: { fontSize: 6.5, bold: true, color: clr(c.momViews) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } },
-                    { text: [ { text: (c.playbackCpm || 0).toFixed(2), options: { fontSize: 9, color: GRAY, breakLine: true } }, { text: arw(c.momCpm), options: { fontSize: 6.5, bold: true, color: clr(c.momCpm) } } ], options: { align: 'right', fill: { color: rf }, valign: 'middle' } }
+                    { text: rankRuns, options: { align: 'right', fill: { color: rf }, valign: 'middle', margin: [1, 8, 1, 2] } },
+                    { text: nm(c.name), options: { fontSize: 9.5, bold: grower, color: NAVY, align: 'left', fill: { color: rf }, margin: [1, 2, 1, 8] } },
+                    metricCell(Math.round(c.rev).toLocaleString(), m, rf, { fontSize: 10, bold: true, color: NAVY }),
+                    metricCell(vw(c.views), c.momViews, rf, { fontSize: 9, color: NAVY }),
+                    metricCell((c.playbackCpm || 0).toFixed(2), c.momCpm, rf, { fontSize: 9, color: GRAY })
                 ]);
             });
-            s2.addTable(tblRows, { x: 0.35, y: 0.92, w: 9.3, colW: [0.65, 1.0, 3.05, 1.6, 1.4, 1.6], rowH: 0.40,
+            s2.addTable(tblRows, { x: 0.35, y: 0.92, w: 9.3, colW: [0.8, 3.35, 1.85, 1.55, 1.75], rowH: 0.40,
                 fontFace: F, border: { type: 'solid', color: 'DCE4EC', pt: 0.75 }, valign: 'middle', margin: [1, 2, 1, 2] });
-            s2.addText(`* แนวโน้ม = อันดับขยับเทียบเดือน ${d.base} (▲ ดีขึ้น / ▼ ลดลง)   •   ▲/▼ ใต้ตัวเลข (รายได้/ยอดวิว/CPM) = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.44, w: 9.3, h: 0.16, fontSize: 7.5, italic: true, color: GRAY, fontFace: F });
+            s2.addText(`* ▲/▼ หน้าอันดับ = อันดับขยับเทียบเดือน ${d.base}   •   ▲/▼ ท้ายตัวเลข = %MoM เทียบเดือน ${d.base}`, { x: 0.35, y: 5.44, w: 9.3, h: 0.16, fontSize: 7.5, italic: true, color: GRAY, fontFace: F });
 
             try {
                 await pptx.writeFile({ fileName: `MCN_Report_${d.base}_to_${d.target}.pptx` });
