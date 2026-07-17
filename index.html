@@ -1454,11 +1454,9 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             s2.addText(`ตาราง Top 10 ช่องทำเงินสูงสุด (${d.target})`, { x: 0.4, y: 0.32, w: 9.2, h: 0.6, fontSize: 24, bold: true, color: NAVY, fontFace: F });
             const nm = (n) => n.length > 30 ? n.slice(0, 29) + '…' : n;
             const th2 = (t, al, mg) => ({ text: t, options: { bold: true, color: NAVY, fill: { color: 'EAF0F6' }, fontSize: 10.5, align: al || 'right', fontFace: F, valign: 'middle', margin: mg } });
-            // %MoM = ข้อมูลรอง → ตัวเล็ก ไม่หนา สีนุ่ม (ไม่ให้แย่งสายตาจากตัวเลขหลัก)
-            const SOFTUP = '5FA37C', SOFTDN = 'C08080';
-            const sclr = v => v == null ? GRAY : (v >= 0 ? SOFTUP : SOFTDN);
+            // %MoM = ข้อมูลรอง → ความ "ไม่เด่น" มาจากตัวเล็ก + ไม่หนา (ใช้สีเขียว/แดงจริงเพื่อให้อ่านออก ตรงกับสไลด์ 1)
             const metricCell = (valStr, mom, rf, valOpts) => ({
-                text: [ { text: valStr, options: valOpts }, { text: '  ' + arw(mom), options: { fontSize: 7.5, color: sclr(mom) } } ],
+                text: [ { text: valStr, options: valOpts }, { text: '  ' + arw(mom), options: { fontSize: 7.5, color: clr(mom) } } ],
                 options: { align: 'right', fill: { color: rf }, valign: 'middle' }
             });
             const tblRows = [[ th2('อันดับ', 'right', [1, 8, 1, 2]), th2('ชื่อช่อง', 'left', [1, 2, 1, 8]), th2('รายได้ (THB)'), th2('ยอดวิว'), th2('Playback CPM') ]];
@@ -1469,7 +1467,7 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
                 // อันดับ: ลูกศรขยับอันดับวางไว้ "หน้าเลข" + ชิดขวา → เลขอันดับเรียงตรงแนวกันทุกแถว
                 const rankRuns = [];
                 if (rc == null) rankRuns.push({ text: 'ใหม่  ', options: { fontSize: 7, color: GRAY } });
-                else if (rc !== 0) rankRuns.push({ text: (rc > 0 ? `▲+${rc}` : `▼${rc}`) + '  ', options: { fontSize: 7.5, color: rc > 0 ? SOFTUP : SOFTDN } });
+                else if (rc !== 0) rankRuns.push({ text: (rc > 0 ? `▲+${rc}` : `▼${rc}`) + '  ', options: { fontSize: 7.5, color: rc > 0 ? GREEN : RED } });
                 rankRuns.push({ text: String(i + 1), options: { fontSize: 10, bold: true, color: NAVY } });
                 tblRows.push([
                     { text: rankRuns, options: { align: 'right', fill: { color: rf }, valign: 'middle', margin: [1, 8, 1, 2] } },
