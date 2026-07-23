@@ -1410,28 +1410,36 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             head(s1, `Summary: ภาพรวมรายได้ เดือน ${d.target}`, `สัดส่วนและการเปลี่ยนแปลง ${d.base} → ${d.target}`);
 
             // -- ซ้าย: โดนัทสัดส่วนรายได้ + แถว Ad/Premium --
-            // ปิด data label อัตโนมัติ (pptxgenjs วางชิดรูตรงกลาง → โดนรูขาวบัง) แล้ววาง % เองบนวง คุมตำแหน่งเป๊ะ
-            const dcS = 2.3, dcX = 1.0, dcY = 1.02, dcx = dcX + dcS / 2, dcy = dcY + dcS / 2, dcR = 0.68; // dcR = รัศมีที่วางเลข (อยู่กลางความหนาวง)
+            // ===== โดนัทในการ์ดเดียว: Premium (ซ้ายบน) · โดนัทกลาง · Ad (ขวาล่าง) วางทแยงเพื่อให้วงใหญ่ =====
+            const SLATE = '334155';
+            const thbInt = v => Math.round(v).toLocaleString() + ' THB';
+            const num0 = v => Math.round(v).toLocaleString();
+            // การ์ดพื้นหลัง + เงา
+            s1.addShape(pptx.ShapeType.roundRect, { x: 0.35, y: 1.25, w: 4.4, h: 3.2, fill: { color: 'FFFFFF' }, line: { color: LINE, width: 1 }, rectRadius: 0.1,
+                shadow: { type: 'outer', color: 'A0AEC0', blur: 7, offset: 3, angle: 90, opacity: 0.35 } });
+            // โดนัทกลางการ์ด — ปิด label อัตโนมัติ (pptxgenjs วางชิดรูจนโดนบัง) แล้ววาง % เองบนวง
+            const dcx = 2.55, dcy = 2.84, dcR = 0.66; // dcR = รัศมีที่วางเลข (กลางความหนาวง)
             s1.addChart(pptx.ChartType.doughnut,
                 [{ name: 'สัดส่วนรายได้', labels: ['Ad Revenue', 'Premium Revenue'], values: [+d.adsRatio.toFixed(1), +d.premRatio.toFixed(1)] }],
-                { x: dcX, y: dcY, w: dcS, h: dcS, chartColors: [TEAL, BLUE], holeSize: 45, showLegend: false, showValue: false });
-            // pie เริ่ม 12 นาฬิกา หมุนตามเข็ม: Ad กลางส่วน = (adsRatio/2)%, Premium = (adsRatio + premRatio/2)%
-            const donutLbl = (pctPos, txt) => {
-                const deg = pctPos * 3.6, rad = deg * Math.PI / 180;
-                const lx = dcx + dcR * Math.sin(rad), ly = dcy - dcR * Math.cos(rad);
-                s1.addText(txt, { x: lx - 0.45, y: ly - 0.14, w: 0.9, h: 0.28, fontSize: 11, bold: true, color: 'FFFFFF', fontFace: F, align: 'center', valign: 'middle' });
+                { x: dcx - 1.1, y: dcy - 1.1, w: 2.2, h: 2.2, chartColors: [TEAL, BLUE], holeSize: 45, showLegend: false, showValue: false });
+            const donutLbl = (pctPos, txt) => { // pie เริ่ม 12 นาฬิกา ตามเข็ม
+                const rad = pctPos * 3.6 * Math.PI / 180;
+                s1.addText(txt, { x: dcx + dcR * Math.sin(rad) - 0.45, y: dcy - dcR * Math.cos(rad) - 0.14, w: 0.9, h: 0.28, fontSize: 11, bold: true, color: 'FFFFFF', fontFace: F, align: 'center', valign: 'middle' });
             };
             donutLbl(d.adsRatio / 2, `${d.adsRatio.toFixed(1)}%`);
             donutLbl(d.adsRatio + d.premRatio / 2, `${d.premRatio.toFixed(1)}%`);
-            const revRow = (x, y, label, prev, cur, dd, ratio, accent) => {
-                s1.addShape(pptx.ShapeType.roundRect, { x, y, w: 4.3, h: 0.66, fill: { color: BG }, line: { color: LINE, width: 1 }, rectRadius: 0.06 });
-                s1.addShape(pptx.ShapeType.rect, { x, y, w: 0.09, h: 0.66, fill: { color: accent } });
-                s1.addText(`${label}  •  ${ratio.toFixed(1)}%`, { x: x + 0.22, y: y + 0.07, w: 3.0, h: 0.26, fontSize: 9, bold: true, color: NAVY, fontFace: F });
-                s1.addText(`${thb(prev)}  →  ${thb(cur)}`, { x: x + 0.22, y: y + 0.35, w: 3.2, h: 0.24, fontSize: 8, color: GRAY, fontFace: F });
-                s1.addText(arw(dd), { x: x + 3.1, y: y + 0.18, w: 1.1, h: 0.32, fontSize: 11, bold: true, color: clr(dd), fontFace: F, align: 'right' });
-            };
-            revRow(0.4, 3.62, 'Ad Revenue (โฆษณา)', d.adsPrev, d.adsCur, dAds, d.adsRatio, TEAL);
-            revRow(0.4, 4.34, 'Premium Revenue', d.premPrev, d.premCur, dPrem, d.premRatio, BLUE);
+            // Premium — ซ้ายบน (ตรงกับส่วนน้ำเงินในวง) · ไม่ใส่ %ซ้ำ (บนวงมีแล้ว)
+            s1.addShape(pptx.ShapeType.rect, { x: 0.55, y: 1.5, w: 0.14, h: 0.14, fill: { color: BLUE } });
+            s1.addText('Premium Revenue', { x: 0.74, y: 1.45, w: 1.9, h: 0.24, fontSize: 9, color: SLATE, fontFace: F });
+            s1.addText(thbInt(d.premCur), { x: 0.55, y: 1.72, w: 2.3, h: 0.34, fontSize: 13, bold: true, color: NAVY, fontFace: F });
+            s1.addText([{ text: arw(dPrem) + ' ', options: { bold: true, color: clr(dPrem) } }, { text: `จาก ${num0(d.premPrev)}`, options: { color: GRAY } }],
+                { x: 0.55, y: 2.06, w: 2.6, h: 0.24, fontSize: 8, fontFace: F });
+            // Ad — ขวาล่าง (ตรงกับส่วน teal ในวง)
+            s1.addText('Ad Revenue (โฆษณา)', { x: 2.5, y: 3.32, w: 1.9, h: 0.24, fontSize: 9, color: SLATE, fontFace: F, align: 'right' });
+            s1.addShape(pptx.ShapeType.rect, { x: 4.45, y: 3.36, w: 0.14, h: 0.14, fill: { color: TEAL } });
+            s1.addText(thbInt(d.adsCur), { x: 2.0, y: 3.58, w: 2.4, h: 0.34, fontSize: 13, bold: true, color: NAVY, fontFace: F, align: 'right' });
+            s1.addText([{ text: arw(dAds) + ' ', options: { bold: true, color: clr(dAds) } }, { text: `จาก ${num0(d.adsPrev)}`, options: { color: GRAY } }],
+                { x: 1.9, y: 3.92, w: 2.5, h: 0.24, fontSize: 8, fontFace: F, align: 'right' });
 
             // -- ขวา: 4 กล่อง KPI (2×2) --
             const kpi = (x, y, label, val, dd, prevStr) => {
