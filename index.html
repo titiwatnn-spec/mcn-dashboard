@@ -167,7 +167,16 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
 #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c2c44;color:#fff;padding:13px 22px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:100;display:flex;align-items:center;gap:8px}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.error{background:#7f1d1d}
-</style>
+
+.dash-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.dash-sc{background:#fff;border:.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(15,23,42,.05)}
+.dash-sc .l{font-size:11px;color:#64748b;margin-bottom:2px}
+.dash-sc .v{font-size:20px;font-weight:700;color:#042B56;letter-spacing:-.3px}
+.dash-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:12px;margin-top:5px}
+.dash-pill.u{background:#DCFCE7;color:#16A34A}.dash-pill.d{background:#FEE2E2;color:#DC2626}
+.dash-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:720px){.dash-kpis{grid-template-columns:repeat(2,1fr)}.dash-2col{grid-template-columns:1fr}}
+    </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
@@ -337,47 +346,19 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
 
         <div id="view-analysis">
             <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-                <h2 style="margin:0;font-size:18px;color:var(--purple);">ภาพรวมเครือข่าย (Network Overview)</h2>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><h2 style="margin:0;font-size:18px;color:var(--purple);">ภาพรวมเครือข่าย</h2><span id="dash-period" style="font-size:12px;font-weight:700;background:#eef2f7;color:#164A86;padding:4px 10px;border-radius:8px;"></span></div>
                 <span class="pill primary" onclick="exportPPTX()">📊 Export PPTX</span>
             </div>
-            <div class="metric-row">
-                <div class="kpi p"><div class="kpi-lbl">รายได้สุทธิเครือข่าย</div><div class="kpi-val" id="m-total-rev">฿0.00</div><div class="kpi-sub" id="m-total-rev-change">MoM: --</div></div>
-                <div class="kpi t"><div class="kpi-lbl">รายได้จากโฆษณา (Ad)</div><div class="kpi-val" id="m-ads-rev">฿0.00</div><div class="kpi-sub" id="m-avg-cpm">Avg. CPM: ฿0.00</div></div>
-                <div class="kpi b"><div class="kpi-lbl">YouTube Premium</div><div class="kpi-val" id="m-premium-rev">฿0.00</div><div class="kpi-sub" id="m-premium-ratio">สัดส่วน: --</div></div>
-                <div class="kpi d"><div class="kpi-lbl">ยอดวิวสะสมรวม</div><div class="kpi-val" id="m-total-views">0</div><div class="kpi-sub" id="m-total-views-change">MoM: --</div></div>
+            <div class="dash-kpis" id="dash-kpis"></div>
+
+            <div class="dash-2col">
+                <div class="chart-card" style="margin-bottom:0;"><div class="ch-h"><b>Monetization rate · อัตราวิวที่โชว์โฆษณา</b></div><div id="dash-gauge" style="text-align:center;padding:6px 0;"></div></div>
+                <div class="chart-card" style="margin-bottom:0;"><div class="ch-h"><b>สัดส่วนรายได้ Ad / Premium</b></div><div id="dash-donut" style="padding:8px 4px;"></div></div>
             </div>
 
-            <div class="chart-card">
-                <div class="ch-h"><b>รายได้เครือข่ายรายเดือน</b><div class="ch-leg"><span><span class="dot" style="background:#164A86"></span>รายได้รวม</span><span><span class="dot" style="background:#1EBAAD"></span>โฆษณา</span><span><span class="dot" style="background:#fe5c8a"></span>Premium</span></div></div>
-                <div class="rev-canvas-wrap"><canvas id="rev-line-chart" role="img" aria-label="กราฟรายได้รายเดือน"></canvas></div>
-            </div>
+            <div class="chart-card"><div class="ch-h"><b>รายได้รายเดือน (แท่ง) + Playback CPM (เส้น) · เทรนด์</b></div><div id="dash-mixed" style="overflow-x:auto;"></div></div>
 
-            <div class="panel-split">
-                <div class="card" style="margin-bottom: 0;">
-                    <h3>สัดส่วนรายได้เครือข่าย (Revenue Composition)</h3>
-                    <div class="donut-container">
-                        <div class="donut-graphic" id="donut-render" style="background: conic-gradient(#164A86 0% 100%);">
-                            <div class="donut-center">
-                                <span class="pct" id="donut-pct-val">0%</span>
-                                <span class="lbl">รายได้จากโฆษณา</span>
-                            </div>
-                        </div>
-                        <div class="legend-list">
-                            <div><span class="legend-dot" style="background-color: #164A86;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้จากโฆษณา</span></div>
-                            <div><span class="legend-dot" style="background-color: #1EBAAD;"></span><span style="font-size:13px; font-weight:700; color: #334155;">รายได้ YouTube Premium</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-bottom: 0;">
-                    <h3>Top 5 Strategic Partners (เปรียบเทียบ Contribution)</h3>
-                    <div class="v-chart-area" id="v-bar-chart-render"></div>
-                    <div style="display:flex; justify-content:center; gap:24px; font-size:12px; font-weight:bold; margin-top:16px;">
-                        <div><span style="display:inline-block; width:12px; height:12px; background:#cbd5e1; border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-base">เดือนที่เปรียบเทียบ</span></div>
-                        <div><span style="display:inline-block; width:12px; height:12px; background:linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius:4px; margin-right:6px; vertical-align:middle;"></span><span class="text-target">เดือนปัจจุบัน</span></div>
-                    </div>
-                </div>
-            </div>
+            <div class="chart-card"><div class="ch-h"><b>Top 5 ช่องทำเงินสูงสุด</b></div><div id="dash-top5"></div></div>
 
             <div class="card" style="margin-top: 24px;">
                 <h3>🎯 คอนเทนต์ที่ขับเคลื่อนการเติบโต (Content Growth Drivers)</h3>
@@ -872,112 +853,74 @@ textarea{width:100%;height:350px;border-radius:12px;border:1px solid #3d3d5c;bac
             });
         }
 
+
+        function vwShort(v){return v>=1e6?(v/1e6).toFixed(2)+'M':fmtNum(Math.round(v));}
+        function _spark(a){var col='#164A86',w=110,h=30,mn=Math.min.apply(null,a),mx=Math.max.apply(null,a),r=(mx-mn)||1;var pts=a.map(function(v,i){return [6+i*(w-12)/((a.length-1)||1),h-3-(v-mn)/r*(h-8)];});var dd=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ');var last=pts[pts.length-1];return '<svg width="'+w+'" height="'+h+'" style="margin-top:6px;"><path d="'+dd+'" fill="none" stroke="'+col+'" stroke-width="1.8"/><circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="2.4" fill="'+col+'"/></svg>';}
+        function _gauge(pct,sub){var R=52,C=Math.PI*R,off=C*(1-Math.max(0,Math.min(100,pct))/100);return '<svg width="150" height="90" viewBox="0 0 140 82"><path d="M18 64 A52 52 0 0 1 122 64" fill="none" stroke="#E2E8F0" stroke-width="13" stroke-linecap="round"/><path d="M18 64 A52 52 0 0 1 122 64" fill="none" stroke="#1EBAAD" stroke-width="13" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/><text x="70" y="58" text-anchor="middle" font-size="24" font-weight="700" fill="#042B56">'+pct.toFixed(1)+'%</text><text x="70" y="76" text-anchor="middle" font-size="10" fill="#64748b">'+sub+'</text></svg>';}
+        function _donutHTML(adR,prR,adV,prV,adM,prM){var arw=function(m){return m==null?'':'<span style="color:'+(m>=0?'#16A34A':'#DC2626')+';font-size:11px;">'+(m>=0?'▲':'▼')+Math.abs(m).toFixed(1)+'%</span>';};return '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;"><div style="position:relative;width:118px;height:118px;flex-shrink:0;border-radius:50%;background:conic-gradient(#1EBAAD 0 '+adR+'%,#164A86 '+adR+'% 100%);"><div style="position:absolute;inset:32%;border-radius:50%;background:#fff;"></div><div style="position:absolute;left:72%;top:64%;transform:translate(-50%,-50%);color:#fff;font-size:12px;font-weight:700;">'+adR.toFixed(1)+'%</div><div style="position:absolute;left:25%;top:36%;transform:translate(-50%,-50%);color:#fff;font-size:11px;font-weight:700;">'+prR.toFixed(1)+'%</div></div><div style="font-size:12px;line-height:1.9;"><div><span style="display:inline-block;width:10px;height:10px;background:#1EBAAD;border-radius:2px;"></span> Ad Revenue <b>'+fmtTHBshort(adV)+'</b> '+arw(adM)+'</div><div><span style="display:inline-block;width:10px;height:10px;background:#164A86;border-radius:2px;"></span> Premium <b>'+fmtTHBshort(prV)+'</b> '+arw(prM)+'</div></div></div>';}
+        function _mixed(ser){var n=ser.labels.length;if(!n)return '';var w=Math.max(520,n*95),h=175,pl=22,pr=22,pbb=26,pt=12,iw=w-pl-pr,ih=h-pbb-pt;var rmx=(Math.max.apply(null,ser.rev)*1.15)||1;var cmn=Math.min.apply(null,ser.pb),cmx=Math.max.apply(null,ser.pb);if(cmx-cmn<1){cmn-=1;cmx+=1;}var bw=iw/n*0.5;var s='<svg width="100%" viewBox="0 0 '+w+' '+h+'" style="min-width:'+w+'px;">';for(var i=0;i<n;i++){var x=pl+iw/n*(i+0.5);var bh=ser.rev[i]/rmx*ih;var y=pt+ih-bh;s+='<rect x="'+(x-bw/2).toFixed(0)+'" y="'+y.toFixed(0)+'" width="'+bw.toFixed(0)+'" height="'+bh.toFixed(0)+'" rx="3" fill="#164A86"/>';s+='<text x="'+x.toFixed(0)+'" y="'+(pt+ih+16).toFixed(0)+'" text-anchor="middle" font-size="10" fill="#64748b">'+ser.labels[i]+'</text>';s+='<text x="'+x.toFixed(0)+'" y="'+(y-4).toFixed(0)+'" text-anchor="middle" font-size="9" fill="#164A86" font-weight="700">'+(ser.rev[i]/1e6).toFixed(2)+'</text>';}var lp=ser.pb.map(function(v,i){return [pl+iw/n*(i+0.5),pt+ih-(v-cmn)/((cmx-cmn)||1)*ih];});s+='<path d="'+lp.map(function(p,i){return (i?'L':'M')+p[0].toFixed(0)+' '+p[1].toFixed(0);}).join(' ')+'" fill="none" stroke="#1EBAAD" stroke-width="2.5"/>';lp.forEach(function(p){s+='<circle cx="'+p[0].toFixed(0)+'" cy="'+p[1].toFixed(0)+'" r="3" fill="#1EBAAD"/>';});s+='</svg><div style="font-size:10.5px;color:#475569;margin-top:4px;"><span style="display:inline-block;width:9px;height:9px;background:#164A86;border-radius:2px;"></span> รายได้ (M฿) &nbsp; <span style="display:inline-block;width:9px;height:9px;background:#1EBAAD;border-radius:50%;"></span> Playback CPM</div>';return s;}
+
         function generateExecutiveReport() {
             const base = document.getElementById('channel-base-select').value;
             const target = document.getElementById('channel-target-select').value;
             const astTarget = document.getElementById('asset-target-select').value;
             const astBase = document.getElementById('asset-base-select').value;
-
             const aiTextBox = document.getElementById('ai-summary-text');
-            const vBarChartContainer = document.getElementById('v-bar-chart-render');
-            const donutRender = document.getElementById('donut-render');
-            const donutPctVal = document.getElementById('donut-pct-val');
-
-            if (!target || !store.channels[target]) {
-                aiTextBox.value = "ระบบรอรับไฟล์ข้อมูล CSV...";
-                vBarChartContainer.innerHTML = '<div class="empty-state" style="width:100%;">ยังไม่มีข้อมูลช่องสำหรับงวดปัจจุบัน</div>';
+            const periodChip = document.getElementById('dash-period');
+            const showEmpty = (msg) => {
+                aiTextBox.value = msg;
+                ['dash-gauge','dash-donut','dash-mixed','dash-top5'].forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML='';});
+                document.getElementById('dash-kpis').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">ยังไม่มีข้อมูล — อัปโหลด CSV ในแท็บ Channels</div>';
                 document.getElementById('drivers-render').innerHTML = '<div class="empty-state">อัปโหลดทั้งไฟล์ช่องและไฟล์ Asset เพื่อดูคอนเทนต์ที่ขับเคลื่อนช่อง</div>';
-                return;
-            }
-
+                if (periodChip) periodChip.textContent='';
+            };
+            if (!target || !store.channels[target]) { showEmpty("ระบบรอรับไฟล์ข้อมูล CSV..."); return; }
+            const d = computeReportData();
+            if (!d) { showEmpty("ระบบรอรับไฟล์ข้อมูล CSV..."); return; }
             const curChannels = store.channels[target];
             const prevChannels = base ? store.channels[base] : null;
             const assets = store.assets[astTarget] || [];
             const prevAssets = store.assets[astBase] || [];
             const assetIndex = buildAssetIndex(assets);
+            if (periodChip) periodChip.textContent = '📅 ' + target + ' · เทียบ ' + (base || '—');
 
-            // ใช้แถว Total ของรายงานเป็นตัวเลขระดับเครือข่าย (ไฟล์ export ลิสต์รายช่องได้ไม่ครบ ~500 แถว)
-            const _net = (arr, k) => (arr && arr.totals && arr.totals[k] > 0) ? arr.totals[k] : (arr ? arr.reduce((s, x) => s + (x[k] || 0), 0) : 0);
-            let totalRevCur = _net(curChannels, 'rev');
-            let totalRevPrev = prevChannels ? _net(prevChannels, 'rev') : 0;
-            let premiumCur = _net(curChannels, 'premium');
-            let adsCur = totalRevCur - premiumCur;
-            let viewsCur = _net(curChannels, 'views');
-            let viewsPrev = prevChannels ? _net(prevChannels, 'views') : 0;
+            const totalRevCur=d.totalRevCur, totalRevPrev=d.totalRevPrev, premiumCur=d.premCur,
+                  adsCur=d.adsCur, viewsCur=d.viewsCur, viewsPrev=d.viewsPrev, empCur=d.empCur, empPrev=d.empPrev;
+            const adsRatio=d.adsRatio.toFixed(1), premiumRatio=d.premRatio.toFixed(1);
+            const pctOf=(c,p)=>(!p||p===0)?null:((c-p)/p*100);
 
-            let avgCpm = 0;
-            let validCpmCount = 0;
-            curChannels.forEach(x => { if (x.cpm > 0) { avgCpm += x.cpm; validCpmCount++; } });
-            if (validCpmCount > 0) avgCpm = avgCpm / validCpmCount;
+            const _mk=Object.keys(store.channels).sort();
+            const _net=(a,k)=>(a&&a.totals&&a.totals[k]>0)?a.totals[k]:(a?a.reduce((s,x)=>s+(x[k]||0),0):0);
+            const ser={labels:[],rev:[],views:[],emp:[],prem:[],pb:[]};
+            _mk.forEach(k=>{const a=store.channels[k];ser.labels.push(k);ser.rev.push(_net(a,'rev'));ser.views.push(_net(a,'views'));ser.emp.push(_net(a,'emp'));ser.prem.push(_net(a,'premium'));ser.pb.push(a&&a.totals?a.totals.playbackCpm:0);});
 
-            document.getElementById('m-total-rev').innerText = fmtTHB(totalRevCur);
-            document.getElementById('m-ads-rev').innerText = fmtTHB(adsCur);
-            document.getElementById('m-avg-cpm').innerText = `Avg. CPM: ${fmtTHB(avgCpm)}`;
-            document.getElementById('m-premium-rev').innerText = fmtTHB(premiumCur);
-            document.getElementById('m-total-views').innerText = fmtNum(viewsCur);
-            renderRevTrendChart();
+            const monet = viewsCur>0 ? empCur/viewsCur*100 : 0;
+            const cards=[
+              ['รายได้รวม (Total Revenue)', fmtTHBshort(totalRevCur), pctOf(totalRevCur,totalRevPrev), ser.rev],
+              ['ยอดวิวรวม (Total Views)', vwShort(viewsCur), pctOf(viewsCur,viewsPrev), ser.views],
+              ['EMP · วิวที่โชว์โฆษณา', vwShort(empCur), pctOf(empCur,empPrev), ser.emp],
+              ['Playback CPM', d.pbCur.toFixed(2)+' ฿', pctOf(d.pbCur,d.pbPrev), ser.pb],
+              ['Premium Revenue', fmtTHBshort(premiumCur), pctOf(premiumCur,d.premPrev), ser.prem],
+              ['per view (รายได้/EMP)', '฿'+d.revPerViewCur.toFixed(4), pctOf(d.revPerViewCur,d.revPerViewPrev), ser.emp.map((e,i)=>e>0?ser.rev[i]/e:0)]
+            ];
+            document.getElementById('dash-kpis').innerHTML = cards.map(c=>{
+              const m=c[2], up=m==null?null:m>=0;
+              const pill=m==null?'<span class="dash-pill" style="background:#eef2f7;color:#64748b;">—</span>':('<span class="dash-pill '+(up?'u':'d')+'">'+(up?'▲ +':'▼ ')+Math.abs(m).toFixed(1)+'%</span>');
+              return '<div class="dash-sc"><div class="l">'+c[0]+'</div><div class="v">'+c[1]+'</div>'+pill+_spark(c[3])+'</div>';
+            }).join('');
 
-            if (totalRevPrev > 0) {
-                let momRevDiff = (((totalRevCur - totalRevPrev) / totalRevPrev) * 100).toFixed(1);
-                document.getElementById('m-total-rev-change').innerHTML = parseFloat(momRevDiff) >= 0 ? `<span class="up">▲ +${momRevDiff}% MoM</span>` : `<span class="down">▼ ${momRevDiff}% MoM</span>`;
-            } else { document.getElementById('m-total-rev-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
+            document.getElementById('dash-gauge').innerHTML = _gauge(monet, vwShort(empCur)+' / '+vwShort(viewsCur)+' วิว');
+            document.getElementById('dash-donut').innerHTML = _donutHTML(+adsRatio, +premiumRatio, adsCur, premiumCur, pctOf(adsCur,d.adsPrev), pctOf(premiumCur,d.premPrev));
+            document.getElementById('dash-mixed').innerHTML = _mixed(ser);
 
-            if (viewsPrev > 0) {
-                let momViewDiff = (((viewsCur - viewsPrev) / viewsPrev) * 100).toFixed(1);
-                document.getElementById('m-total-views-change').innerHTML = parseFloat(momViewDiff) >= 0 ? `<span class="up">▲ +${momViewDiff}% MoM</span>` : `<span class="down">▼ ${momViewDiff}% MoM</span>`;
-            } else { document.getElementById('m-total-views-change').innerHTML = `<span class="neutral">ไม่มีงวดฐาน</span>`; }
-
-            // clamp สัดส่วนไม่ให้หลุด 0–100% กรณีข้อมูลผิดปกติ
-            let premiumRatioNum = totalRevCur > 0 ? Math.min(100, Math.max(0, (premiumCur / totalRevCur) * 100)) : 0;
-            let premiumRatio = premiumRatioNum.toFixed(1);
-            let adsRatio = (100 - premiumRatioNum).toFixed(1);
-            document.getElementById('m-premium-ratio').innerText = `สัดส่วนพอร์ต: ${premiumRatio}%`;
-
-            donutRender.style.background = `conic-gradient(#164A86 0% ${adsRatio}%, #1EBAAD ${adsRatio}% 100%)`;
-            donutPctVal.innerText = `${adsRatio}%`;
-
-            const top5 = [...curChannels].sort((a, b) => b.rev - a.rev).slice(0, 5);
-            let maxRevenueFound = 1;
-            top5.forEach(c => {
-                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                if (c.rev > maxRevenueFound) maxRevenueFound = c.rev;
-                if (p && p.rev > maxRevenueFound) maxRevenueFound = p.rev;
-            });
-
-            vBarChartContainer.innerHTML = '';
-            top5.forEach(c => {
-                let p = prevChannels ? prevChannels.find(x => x.id === c.id) : null;
-                // สเกลแท่งสูงสุด ~80% เพื่อเหลือที่ว่างด้านบนให้กล่องป้าย (ไม่ชนหัวข้อ)
-                let hBase = p ? Math.max(0, (p.rev / maxRevenueFound) * 80).toFixed(1) : 0;
-                let hTarget = Math.max(0, (c.rev / maxRevenueFound) * 80).toFixed(1);
-
-                let barMoM = p && p.rev > 0 ? (((c.rev - p.rev) / p.rev) * 100).toFixed(1) : null;
-                let barDiffSymbol = barMoM === null ? `<span class="neutral" style="padding:2px 6px; border-radius:4px;">ใหม่</span>`
-                    : (parseFloat(barMoM) > 0 ? `<span class="up" style="padding:2px 6px; border-radius:4px;">▲ +${barMoM}%</span>`
-                    : (parseFloat(barMoM) < 0 ? `<span class="down" style="padding:2px 6px; border-radius:4px;">▼ ${barMoM}%</span>`
-                    : `<span class="neutral" style="padding:2px 6px; border-radius:4px;">0.0%</span>`));
-
-                let contributionPct = totalRevCur > 0 ? ((c.rev / totalRevCur) * 100).toFixed(1) : "0.0";
-
-                vBarChartContainer.innerHTML += `
-                    <div class="v-bar-group">
-                        <div class="v-bar-combo">
-                            <div class="v-grp-top" style="bottom: ${Math.max(hBase, hTarget)}%;">
-                                <div class="gt-cur">${fmtTHBshort(c.rev)}<span class="gt-contrib">${contributionPct}%</span></div>
-                                ${p ? `<div class="gt-base">ฐาน ${fmtTHBshort(p.rev || 0)}</div>` : ''}
-                            </div>
-                            <div class="v-bar-wrapper">
-                                <div class="v-bar v-bar-base" style="height: ${hBase}%;" title="เดือนที่เปรียบเทียบ — ${c.name}: ${fmtTHB(p?.rev || 0)}"></div>
-                            </div>
-                            <div class="v-bar-wrapper">
-                                <div class="v-bar v-bar-target" style="height: ${hTarget}%;" title="เดือนปัจจุบัน — ${c.name}: ${fmtTHB(c.rev)} | สัดส่วน ${contributionPct}%"></div>
-                            </div>
-                        </div>
-                        <div style="font-size:10px; margin-top:8px;">${barDiffSymbol}</div>
-                        <div class="v-bar-label" title="${c.name}">${c.name}</div>
-                    </div>
-                `;
-            });
+            const top5=[...curChannels].sort((a,b)=>b.rev-a.rev).slice(0,5);
+            const _mx5=Math.max.apply(null, top5.map(c=>c.rev).concat([1]));
+            document.getElementById('dash-top5').innerHTML = top5.map(c=>{
+              const p=prevChannels?prevChannels.find(x=>x.id===c.id):null;
+              const m=p&&p.rev>0?((c.rev-p.rev)/p.rev*100):null;
+              const chip=m==null?'':'<span style="color:'+(m>=0?'#16A34A':'#DC2626')+';font-weight:700;font-size:11px;white-space:nowrap;"> '+(m>=0?'▲+':'▼')+Math.abs(m).toFixed(1)+'%</span>';
+              return '<div style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;"><div style="width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0f172a;">'+c.name+'</div><div style="flex:1;background:#eef2f7;border-radius:5px;height:16px;overflow:hidden;"><div style="width:'+(c.rev/_mx5*100).toFixed(1)+'%;height:100%;background:linear-gradient(90deg,#164A86,#1EBAAD);border-radius:5px;"></div></div><div style="width:78px;text-align:right;font-weight:700;color:#042B56;">'+fmtTHBshort(c.rev)+'</div>'+chip+'</div>';
+            }).join('');
 
             renderDrivers(top5, assetIndex, prevAssets, prevChannels);
 
